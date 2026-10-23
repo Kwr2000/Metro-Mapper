@@ -24,7 +24,7 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 | TCAD certified appraisal export | Market value, deed date, situs, improvements, land, subdivision | Parcel | T | Yearly (July) + supplements | Yes (direct zip, byte ranges OK) | Yes, no license stated |
 | WCAD open data portal (data.wcad.org) | Property, values, improvement segments, parcels, subdivisions, permits | Parcel | W | Daily–monthly | Yes (Socrata API) | Yes, no license stated |
 | WCAD certified roll downloads (SharePoint) | — | Parcel | W | Yearly | **No** (HTTP 401) | — |
-| WCAD sale records (sales ratios) | Possibly area-level checks | Sale | W | Monthly | Yes (Socrata API) | **Owner decision** (see Q3) |
+| WCAD sale records (sales ratios) | Possibly area-level checks | Sale | W | Monthly | Yes (Socrata API) | Checks only, area level (DECISIONS 2026-10-23) |
 | Hays CAD property data exports | Market value, living area, segments, neighborhood | Parcel | H | Monthly + certified | Yes (direct zip) | Yes, no license stated |
 | TxGIO StratMap Land Parcels 2026 | Parcel polygons | Parcel | T W H | Yearly | Yes (public S3) | **Yes** (CC0) |
 | Travis County GIS, TCAD parcels layer | Parcel polygons (fresher than StratMap) | Parcel | T | Monthly | Yes (2,000 per page) | Yes, no license stated |
@@ -258,4 +258,4 @@ published in 2027.
 
 ## Open questions for the owner
 
-- **Q3. WCAD sales ratios:** use them at all, and how? (Q1 and Q2 decided 2026-10-23.)
+None (Q1–Q3 decided 2026-10-23; see DECISIONS).
