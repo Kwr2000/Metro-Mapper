@@ -21,7 +21,7 @@ are decided (`DECISIONS.md`).
 - Decided: Hays is in v1; StratMap 2026 (CC0) as baseline parcel shapes; WCAD via its open-data
   portal; GTFS from data.texas.gov (current); APD block groups + DPS agency-level crime.
 
-- **P1-01 skeleton** (`claude/p1-01-skeleton`): pipeline `mm` (adapters, budgets, run log,
+- **P1-01 skeleton** (merged, PR #7; finalize hook PR #8; P1-02 spec PR #9): pipeline `mm` (adapters, budgets, run log,
   canonical store, empty-layer guard, registry/health, privacy and demographics guards),
   site shell (Map/Sources/Health/About, Test data banner), CI, Pages deploy workflow.
   58 pipeline + 18 web tests; checked in Chromium at 1440×900 and 390×844.
@@ -29,8 +29,9 @@ are decided (`DECISIONS.md`).
 ## Next
 
 1. Owner: turn on GitHub Pages once (Settings → Pages → Source: GitHub Actions).
-2. Codex: P1-02 (block groups and names), then P1-03 (ACS) and P1-04 (flood); prompts
-   in the chat. Claude reviews each, runs `make test`, and does the live run before merging.
+2. Codex: P1-02 (block groups and names; prompt given 2026-10-23). After it merges, Claude
+   refines P1-03 (ACS) and P1-04 (flood) against its code and gives their prompts.
+   Claude reviews each PR, runs `make test`, and does the live run before merging.
 3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
 
 ## Open issues
@@ -41,6 +42,7 @@ are decided (`DECISIONS.md`).
 ## Waiting on the owner
 
 - Turn on GitHub Pages: Settings → Pages → Build and deployment → Source: GitHub Actions.
+  The first deploy (after PR #7) failed only because Pages is off; re-run "Deploy site" after.
 
 ## Working notes for agents
 
