@@ -47,4 +47,8 @@ def load_layers() -> list[LayerManifest]:
             if key in variants:
                 raise ManifestError(f"{layer.id}: duplicate layer variant")
             variants.add(key)
+    ids = {layer.id for layer in layers}
+    for bundle in bundles:
+        if bundle in ids:
+            raise ManifestError(f"data bundle '{bundle}' has the same name as a layer id")
     return layers
