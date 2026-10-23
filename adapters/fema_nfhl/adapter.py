@@ -93,6 +93,27 @@ def reproject(geom, operation):
     return result
 
 
+def hazard_area_polygon(geom):
+    """FEMA polygon in EPSG:5070, repaired; None when nothing with area is left."""
+    def coordinates(xy):
+        result = xy.copy()
+        result[:, 0], result[:, 1] = TO_AREA(xy[:, 0], xy[:, 1])
+        return result
+    try:
+        result = transform(geom, coordinates)
+        if not result.is_valid:
+            result = make_valid(result)
+        parts = polygon_parts(result)
+        if not parts:
+            return None
+        result = union_all(parts)
+    except (ValueError, TypeError, AttributeError, GEOSException):
+        return None
+    if result.is_empty or not math.isfinite(result.area) or result.area <= 0:
+        return None
+    return result
+
+
 def display_geometry(projected):
     doc = mapping(reproject(projected.simplify(5, preserve_topology=True), TO_WGS84))
 
@@ -208,7 +229,17 @@ class FemaNFHL(SourceAdapter):
 
     def finalize(self, records):
         boundaries, hazards = {}, []
+        skipped = 0
         for record in records:
+            if record.dataset != "block_group_input":
+                # FEMA slivers can turn invalid or zero-area when projected: repair, or skip
+                # and count. Census block groups stay strict.
+                geom = hazard_area_polygon(shape(record.geometry))
+                if geom is None:
+                    skipped += 1
+                else:
+                    hazards.append((geom, record.properties))
+                continue
             geom = reproject(shape(record.geometry), TO_AREA)
             if record.dataset == "block_group_input":
                 if record.feature_id in boundaries:
@@ -216,6 +247,9 @@ class FemaNFHL(SourceAdapter):
                 boundaries[record.feature_id] = geom
             else:
                 hazards.append((geom, record.properties))
+        if skipped:
+            print(f"fema_nfhl: skipped {skipped} FEMA polygons with no area after projection",
+                  file=sys.stderr)
         if not boundaries:
             raise ValueError("no TIGER block-group polygons")
         tree = STRtree([geom for geom, _ in hazards])

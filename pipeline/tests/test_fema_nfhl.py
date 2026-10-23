@@ -350,3 +350,12 @@ def test_budget_and_live_gate(context, monkeypatch):
     run = runner.run("fema_nfhl", mode="live", now=NOW)
     assert run.status == "skipped" and run.calls_made == 0
     assert "awaiting Claude's first live check" in " ".join(run.notes)
+
+
+def test_hazard_slivers_are_repaired_or_skipped():
+    # A bow-tie repairs to two triangles with area; a degenerate sliver is skipped.
+    bowtie = Polygon([(-97.7, 30.3), (-97.69, 30.31), (-97.69, 30.3), (-97.7, 30.31), (-97.7, 30.3)])
+    fixed = flood.hazard_area_polygon(bowtie)
+    assert fixed is not None and fixed.is_valid and fixed.area > 0
+    point_like = Polygon([(-97.7, 30.3), (-97.7, 30.3), (-97.7, 30.3), (-97.7, 30.3)])
+    assert flood.hazard_area_polygon(point_like) is None
