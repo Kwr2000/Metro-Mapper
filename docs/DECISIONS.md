@@ -3,6 +3,27 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-02b naming details (Codex)
+
+- Drop nested parenthetical annotations, including an unclosed final parenthesis caused
+  by Austin's 50-character truncation. Treat "FINAL PLAT OF" as one removable phrase so
+  cleaning cannot leave an orphan "Of". Preserve Roman numerals through XX in base names,
+  matching the required "Met Center II" example while title-casing the rest.
+- Hays subdivisions use the existing conservative subdivision cleaner (title case and
+  trailing plat qualifiers); Austin alone uses the stronger cleaner. Each county's names
+  are grouped and unioned only within its designated source. Existing alphabetical ties,
+  coverage thresholds and projection tolerance stay as in P1-02.
+- Austin paging accepts the GeoJSON transfer flag at the top level or in collection
+  properties. An empty promised continuation fails, even if its final flag is false.
+  Hays requests up to 2,000 records in its single call and fails on a transfer limit.
+  Malformed pages preserve the last publication; short/empty cleaned Austin names are
+  skipped and counted. The normal live plan is about 24 calls within the approved 30/day.
+- Applied the owner's recorded areas budget approval by changing only that adapter's
+  budget line. All other adapter budgets and live gates are untouched.
+- (Claude, in review) A plat qualifier (SEC, PH, UNIT, BLOCK, LOT, …) is removed only with
+  an identifier after it (a number, a single letter, a Roman numeral or ONE–TEN), so
+  "Block House Creek Sec 2" stays "Block House Creek" rather than becoming "Creek".
+
 ## 2026-10-23 — ACS first live check; Census notes in plain words (Claude)
 
 - Live run 40015773545: 26 calls in 38 s, no retries. 1,206 block groups and 471 tracts,

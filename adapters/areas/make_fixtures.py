@@ -30,21 +30,24 @@ def feature(geom, **properties):
             "geometry": mapping(reproject(geom, TO_WGS84))}
 
 
-def write(key, features):
+def write(key, features, more=None):
     # One feature per line keeps the full 2,000-row page inspectable in a diff.
     rows = ",\n".join(json.dumps(row, separators=(",", ":")) for row in features)
     (OUT / f"{key}.json").write_text('{"status":200,"body":{"type":"FeatureCollection","features":[\n'
-                                  + rows + '\n]}}\n')
+                                  + rows + '\n]' + (',"exceededTransferLimit":' + json.dumps(more) if more is not None else '') + '}}\n')
 
 
 if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
     austin = square(-97.75, 30.27)
+    city45 = square(-97.80, 30.32)
+    city35 = square(-97.84, 30.35)
+    hays40 = square(-97.98, 30.07)
     wcad45 = square(-97.69, 30.51)
     wcad35 = square(-97.67, 30.54)
     near = square(-97.94, 29.89)
     fallback = square(-98.05, 30.02)
-    for county, geometries in (("453", [austin]), ("491", [wcad45, wcad35]), ("209", [near, fallback])):
+    for county, geometries in (("453", [austin, city45, city35]), ("491", [wcad45, wcad35]), ("209", [near, fallback, hays40])):
         write(f"block_group_{county}", [feature(geom, GEOID=f"48{county}010804{i}", STATE="48",
             COUNTY=county, TRACT="010804", BLKGRP=str(i), AREALAND=900000, AREAWATER=100000)
             for i, geom in enumerate(geometries, 1)])
@@ -52,10 +55,12 @@ if __name__ == "__main__":
             GEOID=f"48{county}010804", STATE="48", COUNTY=county, TRACT="010804",
             AREALAND=900000, AREAWATER=100000)]
         write(f"tract_{county}", tracts)
-    # One synthetic incorporated place (multipart), one synthetic CDP.
-    place_parts = [portion(austin, 0, .8), portion(wcad45, 0, .7), portion(wcad35, 0, .7)]
-    write("place_26", [feature(MultiPolygon(place_parts), GEOID="4800001", NAME="Testville",
-                                BASENAME="Testville", LSADC="25")])
+    # Native NAME has the Census suffix; BASENAME is the human-facing place name.
+    place_parts = [portion(wcad45, 0, .7), portion(wcad35, 0, .7)]
+    write("place_26", [feature(MultiPolygon(place_parts), GEOID="4800001", NAME="Testville city",
+                                BASENAME="Testville", LSADC="25"),
+        feature(MultiPolygon([portion(austin, 0, .8), city45, city35]), GEOID="4800003",
+                NAME="Austin city", BASENAME="Austin", LSADC="25")])
     write("place_28", [feature(portion(near, 0, .25), GEOID="4800002", NAME="Test CDP",
                                 BASENAME="Test", LSADC="57")])
     write("austin", [feature(portion(austin, 0, .6), PLANNING_AREA_NAME="Test Austin Plan")])
@@ -71,3 +76,14 @@ if __name__ == "__main__":
     write("wcad_0", wcad)
     write("wcad_2000", [feature(portion(wcad45, .25, .45), name="TEST CREEK REPLAT", scode="2000",
                                 type="SUB", filedate="2020-01-01T00:00:00")])
+
+    write("austin_subdivisions_0", [
+        feature(portion(city45, 0, .25), SUBDIVISION_NAME="MET CENTER II SECTION 3, LOT 4, BLOCK D, RESUBDIV*"),
+        feature(portion(city35, 0, .35), SUBDIVISION_NAME="NORTHWOODS PHASE 1-A (AKA STONE HEDGE) (RESUBMITT*"),
+        feature(austin, SUBDIVISION_NAME="WELLS BRANCH, PH B SEC 3, AMENDED PLAT OF LOTS 42*")], more=True)
+    write("austin_subdivisions_2000", [
+        feature(portion(city45, .25, .45), SUBDIVISION_NAME="MET CENTER II PHASE 2")], more=False)
+    write("hays_subdivisions", [
+        feature(portion(hays40, 0, .2), SUB_NAME="Wimberley View Estates"),
+        feature(portion(hays40, .2, .4), SUB_NAME="Wimberley View Estates"),
+        feature(portion(near, 0, .35), SUB_NAME="Test Hays Estates")])

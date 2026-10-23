@@ -20,8 +20,8 @@ popup:
   - {field: area_sq_mi, label: Area (sq mi), format: number}
 coverage: study_area
 refresh: annual
-attribution: U.S. Census Bureau, 2020 TIGER/Line via TIGERweb; City of Austin; Williamson Central Appraisal District
-license: "Census boundaries and places: public domain. Austin planning areas and WCAD subdivisions: No license stated."
+attribution: U.S. Census Bureau, 2020 TIGER/Line via TIGERweb; City of Austin; Williamson Central Appraisal District; Hays County
+license: "Census boundaries and places: public domain. Austin planning areas, City of Austin subdivisions, WCAD subdivisions and Hays County subdivisions: No license stated."
 disclaimer: This product is for informational purposes and may not have been prepared for or be suitable for legal, engineering, or surveying purposes.
 default_visible: true
 order: 10

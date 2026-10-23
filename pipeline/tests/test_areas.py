@@ -38,6 +38,10 @@ def feature(kind, geom=BASE, county="491", name="Synthetic Name", suffix="1"):
             row["BLKGRP"] = suffix
     elif kind == "austin":
         row = {"PLANNING_AREA_NAME": name}
+    elif kind == "austin_subdivision":
+        row = {"SUBDIVISION_NAME": name}
+    elif kind == "hays_subdivision":
+        row = {"SUB_NAME": name}
     elif kind == "wcad":
         row = dict(name=name, scode="TEST001", type="SUB", filedate="2020-01-01T00:00:00")
     else:
@@ -159,7 +163,7 @@ def test_largest_place_and_tie_are_deterministic(ad):
 
 
 @pytest.mark.parametrize("kind", ["austin", "place"])
-def test_only_wcad_names_are_grouped(ad, kind):
+def test_planning_areas_and_places_are_not_grouped(ad, kind):
     records = list(ad.normalize(payload("block_group", [feature("block_group")])))
     rows = [feature(kind, portion(.3), name="Same Name"),
             feature(kind, box(X + 300, Y, X + 600, Y + 1000), name="Same Name")]
@@ -195,7 +199,7 @@ def test_published_contract_area_precision_and_dates(ad):
 
 def test_plan_exact_endpoints_fields_and_paging(ad):
     requests = ad.plan(context())
-    assert len(requests) == 10
+    assert len(requests) == 12
     for kind, layer in (("block_group", 8), ("tract", 6)):
         for county in ("453", "491", "209"):
             req = next(req for req in requests if req.key == f"{kind}_{county}")
@@ -291,7 +295,7 @@ def test_fetch_uses_request_query_and_user_agent(ad, monkeypatch):
 def test_fixtures_publish_only_boundaries_and_show_test_data(repo):
     run = runner.run("areas", now=NOW)
     assert run.status == "success", run.errors
-    assert run.calls_made == 0 and run.planned_calls == 11 and run.rows_out == 7
+    assert run.calls_made == 0 and run.planned_calls == 14 and run.rows_out == 10
     reg = registry.compile_registry()
     layers = {layer.id: layer for layer in reg.layers if layer.source == "areas"}
     assert set(layers) == {"block_groups", "tracts"}
@@ -313,9 +317,13 @@ def test_fixtures_publish_only_boundaries_and_show_test_data(repo):
     props = [feature["properties"] for feature in documents["block_groups"]["features"]]
     assert {row["county"] for row in props} == {"Travis", "Williamson", "Hays"}
     assert {row["name_source"] for row in props} == {"City of Austin neighborhood planning area",
-        "WCAD subdivision", "Census place", "Census block group"}
+        "WCAD subdivision", "City of Austin subdivision", "Hays County subdivision", "Census place", "Census block group"}
     assert any(row["name_share"] == .45 and row["name_source"] == "WCAD subdivision" for row in props)
-    assert any(row["name"] == "Near Test CDP" for row in props)
+    assert any(row["name"] == "Met Center II" and row["name_source"] == "City of Austin subdivision" for row in props)
+    assert any(row["name"] == "Wimberley View Estates" and row["name_source"] == "Hays County subdivision" for row in props)
+    assert any(row["name"] == "Austin" and row["name_source"] == "Census place" for row in props)
+    assert "Hays County" in block.attribution and "Hays County subdivisions" in block.license
+    assert any(row["name"] == "Near Test" for row in props)
     assert any(row["name"] == "Testville" and row["name_source"] == "Census place" for row in props)
 
 
@@ -332,7 +340,7 @@ def test_bad_later_page_preserves_last_published_layers(repo):
 
 def test_budget_and_repo_live_gate(repo):
     b = config.budgets().adapters["areas"]
-    assert b.per_day == 20 and b.min_interval_seconds == 1
+    assert b.per_day == 30 and b.min_interval_seconds == 1
     # Ungated after Claude's first live check (run 40001981957, DECISIONS 2026-10-23).
     gate_path = MODULE_PATH.parents[2] / "config/live_gates.yaml"
     assert "areas" not in (yaml.safe_load(gate_path.read_text()).get("gated") or {})
@@ -355,3 +363,179 @@ def test_naming_polygons_are_repaired_or_skipped(ad):
     assert len(rows) == 2  # the good one and the repaired bow-tie
     from shapely.geometry import shape
     assert all(shape(r.geometry).is_valid and shape(r.geometry).area > 0 for r in rows)
+
+
+@pytest.mark.parametrize(("original", "expected"), [
+    ("MET CENTER II SECTION 3, LOT 4, BLOCK D, RESUBDIV*", "Met Center II"),
+    ("NORTHWOODS PHASE 1-A (AKA STONE HEDGE) (RESUBMITT*", "Northwoods"),
+    ("WELLS BRANCH, PH B SEC 3, AMENDED PLAT OF LOTS 42*", "Wells Branch"),
+    ("RIVER PLACE SECTION 1", "River Place"),
+    ("BARTON SEC. 3B CREEK", "Barton Creek"),
+    ("AVERY PHASE II RANCH", "Avery Ranch"),
+    ("PH 2 CANYON CREEK", "Canyon Creek"),
+    ("UNIT 4 OAK HILL", "Oak Hill"),
+    ("BLOCK A SHADY HOLLOW", "Shady Hollow"),
+    ("BLK 9 CIRCLE C RANCH", "Circle C Ranch"),
+    ("LOT 5 STEINER RANCH", "Steiner Ranch"),
+    ("LOTS 12-14 LAKE POINTE", "Lake Pointe"),
+    ("AMENDED PLAT OF SCOFIELD FARMS", "Scofield Farms"),
+    ("FINAL PLAT OF PARKSIDE", "Parkside"),
+    ("PRELIMINARY PLAT OF LAKEWAY", "Lakeway"),
+    ("REVISED BRUSHY CREEK REPLAT", "Brushy Creek"),
+    ("RESUBMITTAL CANYON CREEK", "Canyon Creek"),
+    ("RESUBDIVISION LOST CREEK", "Lost Creek"),
+    ("WESTLAKE (AKA OLD (HILL) RANCH) UNIT 3", "Westlake"),
+    ("LOTUS LOT 2 GARDENS", "Lotus Gardens"),
+    ("  BALCONES   WOODS (OLD NAME) PHASE 3 *", "Balcones Woods"),
+    ("AMENDED REPLAT RESUBDIVISION", None),
+    ("LOT 5", None), ("X*", None), (" ", None),
+    # A qualifier word followed by an ordinary word is part of the name.
+    ("BLOCK HOUSE CREEK SEC 2", "Block House Creek"),
+    ("STEINER RANCH PHASE ONE SEC 1A", "Steiner Ranch"),
+    ("LA FRONTERA VILLAGE UNIT 1", "La Frontera Village"),
+    ("CIRCLE C RANCH PH B SEC 10", "Circle C Ranch"),
+    ("BARTON CREEK SECTION K PHASE 1", "Barton Creek"),
+    ("PHEASANT RUN", "Pheasant Run"),
+    ("UNITED HEIGHTS SEC A-1", "United Heights"),
+])
+def test_clean_austin_subdivision_names(original, expected):
+    assert areas.clean_austin_subdivision_name(original) == expected
+
+
+@pytest.mark.parametrize(("share", "name"), [(.75, "Round Rock"), (.25, "Near Round Rock")])
+def test_place_uses_basename_in_both_rules(ad, share, name):
+    records = list(ad.normalize(payload("block_group", [feature("block_group")])))
+    place = feature("place", portion(share), name="Round Rock city")
+    place["properties"]["BASENAME"] = "Round Rock"
+    records.extend(ad.normalize(payload("place", [place])))
+    assert ad.finalize(records)[0].properties["name"] == name
+
+
+def test_empty_basename_does_not_invent_name_from_census_suffix(ad):
+    records = list(ad.normalize(payload("block_group", [feature("block_group")])))
+    place = feature("place", name="Austin city")
+    place["properties"]["BASENAME"] = ""
+    records.extend(ad.normalize(payload("place", [place])))
+    assert ad.finalize(records)[0].properties["name_source"] == "Census block group"
+
+
+@pytest.mark.parametrize(("county", "kind", "source"), [
+    ("453", "austin_subdivision", "City of Austin subdivision"),
+    ("209", "hays_subdivision", "Hays County subdivision"),
+    ("491", "wcad", "WCAD subdivision"),
+])
+@pytest.mark.parametrize("share", [.39999, .4, .40001])
+def test_county_subdivision_threshold_and_planning_priority(ad, county, kind, source, share):
+    inputs = list(ad.normalize(payload("block_group", [feature("block_group", county=county)])))
+    inputs.extend(ad.normalize(payload(kind, [feature(kind, portion(share), name="TEST ESTATES SEC 3")])))
+    inputs.extend(ad.normalize(payload("place", [feature("place", name="Place Name")])))
+    rec = ad.finalize(inputs)[0]
+    assert rec.properties["name_source"] == (source if share >= .4 else "Census place")
+    assert rec.properties["name"] == ("Test Estates" if share >= .4 else "Place Name")
+    inputs.extend(ad.normalize(payload("austin", [feature("austin", portion(.5), name="Planning Name")])))
+    rec = ad.finalize(inputs)[0]
+    assert rec.properties["name"] == "Planning Name"
+    assert rec.properties["name_source"] == "City of Austin neighborhood planning area"
+
+
+@pytest.mark.parametrize(("kind", "county"), [
+    ("austin_subdivision", "491"), ("austin_subdivision", "209"),
+    ("hays_subdivision", "453"), ("hays_subdivision", "491"),
+])
+def test_subdivisions_cannot_name_other_counties(ad, kind, county):
+    inputs = list(ad.normalize(payload("block_group", [feature("block_group", county=county)])))
+    inputs.extend(ad.normalize(payload(kind, [feature(kind, name="Wrong County Name")])))
+    assert ad.finalize(inputs)[0].properties["name_source"] == "Census block group"
+
+
+@pytest.mark.parametrize(("county", "kind", "source"), [
+    ("453", "austin_subdivision", "City of Austin subdivision"),
+    ("209", "hays_subdivision", "Hays County subdivision"),
+])
+def test_new_subdivision_groups_union_and_choose_largest(ad, county, kind, source):
+    inputs = list(ad.normalize(payload("block_group", [feature("block_group", county=county)])))
+    rows = [feature(kind, portion(.25), name="TEST ESTATES SEC 1"),
+            feature(kind, box(X + 250, Y, X + 450, Y + 1000), name="TEST ESTATES PH 2"),
+            feature(kind, portion(.25), name="TEST ESTATES REPLAT"),
+            feature(kind, portion(.42), name="OTHER ESTATES")]
+    inputs.extend(ad.normalize(payload(kind, rows)))
+    rec = ad.finalize(inputs)[0]
+    assert rec.properties["name"] == "Test Estates" and rec.properties["name_source"] == source
+    assert rec.properties["name_share"] == .45
+    # Two overlapping copies of 25% do not make a qualifying 50% group.
+    inputs = inputs[:1] + list(ad.normalize(payload(kind, [rows[0], rows[2]])))
+    assert ad.finalize(inputs)[0].properties["name_source"] == "Census block group"
+
+
+def test_short_and_empty_austin_names_are_skipped_and_counted(ad, capsys):
+    rows = [feature("austin_subdivision", name=name) for name in ("X*", "SEC 3", None, "GOOD ESTATES PH 1")]
+    records = list(ad.normalize(payload("austin_subdivision", rows)))
+    assert len(records) == 1 and records[0].properties["name"] == "Good Estates"
+    assert "skipped 3 rows without a usable subdivision name" in capsys.readouterr().err
+
+
+def test_new_source_plans_and_austin_paging(ad):
+    requests = ad.plan(context())
+    first = next(req for req in requests if req.key == "austin_subdivisions_0")
+    assert first.params["url"] == areas.AUSTIN_SUBDIVISIONS
+    assert first.params["query"] == {"where": "1=1", "outFields": "SUBDIVISION_NAME", "outSR": 4326,
+        "f": "geojson", "returnGeometry": "true", "orderByFields": "OBJECTID",
+        "resultOffset": 0, "resultRecordCount": 2000}
+    raw = adapter.read_fixture("areas", first)
+    assert len(raw.body["features"]) < 2000 and raw.body["exceededTransferLimit"] is True
+    [second] = ad.follow_up(raw, context())
+    assert second.key == "austin_subdivisions_2000" and second.params["query"]["resultOffset"] == 2000
+    assert ad.follow_up(adapter.read_fixture("areas", second), context()) == []
+    del raw.body["exceededTransferLimit"]
+    raw.body["properties"] = {"exceededTransferLimit": True}
+    assert ad.follow_up(raw, context()) == [second]
+    hays = next(req for req in requests if req.key == "hays_subdivisions")
+    assert hays.params["url"] == areas.HAYS_SUBDIVISIONS
+    assert hays.params["query"] == {"where": "1=1", "outFields": "SUB_NAME", "outSR": 4326,
+        "f": "geojson", "returnGeometry": "true", "resultRecordCount": 2000}
+    assert ad.follow_up(adapter.read_fixture("areas", hays), context()) == []
+
+
+@pytest.mark.parametrize("issue", ["empty_more", "empty_continuation", "bad_fields", "too_many", "bad_flag"])
+def test_bad_austin_subdivision_pages_fail(ad, issue):
+    req = ad.austin_subdivision_request(2000 if issue == "empty_continuation" else 0)
+    body = {"type": "FeatureCollection", "features": [feature("austin_subdivision")], "exceededTransferLimit": False}
+    if issue.startswith("empty"):
+        body["features"] = []
+        body["exceededTransferLimit"] = issue == "empty_more"
+    elif issue == "bad_fields":
+        body["features"][0]["properties"] = {"WRONG_NAME": "Synthetic"}
+    elif issue == "too_many":
+        body["features"] *= 2001
+    else:
+        body["exceededTransferLimit"] = "true"
+    with pytest.raises(ValueError):
+        ad.follow_up(RawPayload(req, body), context())
+
+
+def test_hays_truncation_fails_closed(ad):
+    req = next(req for req in ad.plan(context()) if req.key == "hays_subdivisions")
+    body = {"type": "FeatureCollection", "features": [feature("hays_subdivision")], "exceededTransferLimit": True}
+    with pytest.raises(ValueError, match="exceededTransferLimit"):
+        ad.follow_up(RawPayload(req, body), context())
+
+
+def test_new_sources_repair_geometry_and_strip_extra_fields(ad):
+    for kind in ("austin_subdivision", "hays_subdivision"):
+        row = feature(kind, name="Test Estates")
+        row["properties"].update(OBJECTID=7, OWNER_NAME="Never publish")
+        row["geometry"] = {"type": "Polygon", "coordinates": [
+            [[-97, 30], [-96, 31], [-96, 30], [-97, 31], [-97, 30]]]}
+        [rec] = list(ad.normalize(payload(kind, [row])))
+        assert set(rec.properties) == {"kind", "name"} and shape(rec.geometry).is_valid
+
+
+def test_bad_new_subdivision_page_preserves_previous_output(repo):
+    assert runner.run("areas", now=NOW).status == "success"
+    folder = repo / "web/public/data/layers"
+    previous = {path: path.read_bytes() for path in folder.glob("*.geojson")}
+    (repo / "adapters/areas/fixtures/austin_subdivisions_2000.json").write_text(
+        '{"status":200,"body":{"type":"FeatureCollection","features":[],"exceededTransferLimit":false}}')
+    run = runner.run("areas", now=NOW)
+    assert run.status == "failed" and "more features were promised" in " ".join(run.errors)
+    assert {path: path.read_bytes() for path in previous} == previous
