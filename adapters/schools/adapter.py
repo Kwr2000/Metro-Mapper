@@ -213,7 +213,18 @@ class Schools(SourceAdapter):
 
     def normalize(self, raw):
         kind = raw.request.params["kind"]
+        skipped = 0
         for feature in self.rows(raw):
+            if kind in {"directory", "rating"}:
+                # Statewide TEA files: a malformed row elsewhere in Texas must not sink the run.
+                # Skip and count it; the coverage checks in finalize still guard our campuses.
+                try:
+                    record = self._statewide_record(kind, feature)
+                except ValueError:
+                    skipped += 1
+                    continue
+                yield record
+                continue
             row = feature if kind in {"directory", "rating"} else feature["properties"]
             geom = EMPTY
             if kind in {"district", "block_group"}:
@@ -240,31 +251,45 @@ class Schools(SourceAdapter):
                         or not -180 <= coords[0] <= 180 or not -90 <= coords[1] <= 90):
                     raise ValueError("invalid NCES point")
                 props = {"nces_id": identity, "lea_id": lea_id, "name": text(row["NAME"]), "city": text(row["CITY"])}
-            elif kind == "directory":
-                identity = digits(row.get("nces_school_id"), 12)
-                props = {"nces_id": identity, "campus_number": digits(row.get("school_number"), 9),
-                    "tea_district_number": digits(row.get("district_number"), 6),
-                    "district": text(row.get("district_name")), "website": website(row.get("district_web_page_address"))}
-            else:
-                identity = digits(row.get("campus_number"), 9)
-                if row.get("school_type") == "District":
-                    raise ValueError("district row in campus ratings")
-                props = {"campus_number": identity, "tea_district_number": digits(row.get("district_number"), 6),
-                    "school_type": text(row.get("school_type")), "grades_served": text(row.get("grades_served")),
-                    "charter": yes_no(row.get("charter")), "alternative_education": text(row.get("alternative_education"))}
-                for domain in DOMAINS:
-                    value = rating(row.get(domain + "_rating"))
-                    props[domain + "_rating"] = value
-                    props[domain + "_score"] = score(row.get(domain + "_score")) if value not in {None, "Not Rated"} else None
-                props["relative_performance_rating"] = rating(row.get("relative_performance_rating"))
             yield AreaFeature(dataset="school_" + kind + "_input", feature_id=identity, geometry=geom, properties=props)
+        if skipped:
+            print(f"schools: {raw.request.key}: skipped {skipped} malformed statewide rows", file=sys.stderr)
+
+    def _statewide_record(self, kind, row):
+        geom = EMPTY
+        if kind == "directory":
+            identity = digits(row.get("nces_school_id"), 12)
+            props = {"nces_id": identity, "campus_number": digits(row.get("school_number"), 9),
+                "tea_district_number": digits(row.get("district_number"), 6),
+                "district": text(row.get("district_name")), "website": website(row.get("district_web_page_address"))}
+        else:
+            identity = digits(row.get("campus_number"), 9)
+            if row.get("school_type") == "District":
+                raise ValueError("district row in campus ratings")
+            props = {"campus_number": identity, "tea_district_number": digits(row.get("district_number"), 6),
+                "school_type": text(row.get("school_type")), "grades_served": text(row.get("grades_served")),
+                "charter": yes_no(row.get("charter")), "alternative_education": text(row.get("alternative_education"))}
+            for domain in DOMAINS:
+                value = rating(row.get(domain + "_rating"))
+                props[domain + "_rating"] = value
+                props[domain + "_score"] = score(row.get(domain + "_score")) if value not in {None, "Not Rated"} else None
+            props["relative_performance_rating"] = rating(row.get("relative_performance_rating"))
+        return AreaFeature(dataset="school_" + kind + "_input", feature_id=identity, geometry=geom, properties=props)
 
     def finalize(self, records):
         groups = {kind: [record for record in records if record.dataset == "school_" + kind + "_input"]
                   for kind in FIELDS}
         districts = unique(groups["district"], "geoid")
         campuses = unique(groups["campus"], "nces_id")
-        directory = unique(groups["directory"], "nces_id")
+        directory = {}
+        ambiguous = set()
+        for record in groups["directory"]:
+            key = record.properties["nces_id"]
+            if key in directory and directory[key] != record:
+                ambiguous.add(key)  # two TEA campuses claim one NCES id: don't guess
+            directory[key] = record
+        for key in ambiguous:
+            del directory[key]
         ratings = unique(groups["rating"], "campus_number")
         if len(campuses) < 500:
             raise ValueError("schools: fewer than 500 NCES campuses")
