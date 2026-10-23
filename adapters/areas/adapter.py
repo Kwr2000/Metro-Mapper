@@ -54,6 +54,12 @@ def clean_subdivision_name(value: str) -> str:
         value = cleaned
 
 
+PLAT_QUALIFIER = re.compile(
+    r"\b(?:SECTION|SEC|PHASE|PH|UNIT|BLOCK|BLK|LOTS|LOT)\.?\s+"
+    r"(?:\d[\w-]*|[A-Z](?:-?\d+[A-Z]?)?|[IVX]+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)\b",
+    re.IGNORECASE)
+
+
 def clean_austin_subdivision_name(value: str) -> str | None:
     value = value.rstrip().removesuffix("*")
     # Truncation can leave a parenthesis open; discard that annotation through the end.
@@ -68,8 +74,9 @@ def clean_austin_subdivision_name(value: str) -> str | None:
         elif depth == 0:
             outside.append(char)
     value = "".join(outside).split(",", 1)[0]
-    value = re.sub(r"\b(?:SECTION|SEC|PHASE|PH|UNIT|BLOCK|BLK|LOTS|LOT)\.?\s+\S+", " ", value,
-                   flags=re.IGNORECASE)
+    # Drop a plat qualifier only with an identifier after it ("SEC 3", "PH B", "PHASE ONE",
+    # "LOTS 42"), so names like "Block House Creek" keep their words.
+    value = PLAT_QUALIFIER.sub(" ", value)
     value = re.sub(r"\b(?:AMENDED|REPLAT|REVISED|RESUB\w*|RESUBDIV\w*|FINAL\s+PLAT(?:\s+OF)?|PLAT\s+OF|PRELIMINARY)\b",
                    " ", value, flags=re.IGNORECASE)
     value = " ".join(value.split()).strip(" ;:-").title()

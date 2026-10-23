@@ -389,6 +389,14 @@ def test_naming_polygons_are_repaired_or_skipped(ad):
     ("  BALCONES   WOODS (OLD NAME) PHASE 3 *", "Balcones Woods"),
     ("AMENDED REPLAT RESUBDIVISION", None),
     ("LOT 5", None), ("X*", None), (" ", None),
+    # A qualifier word followed by an ordinary word is part of the name.
+    ("BLOCK HOUSE CREEK SEC 2", "Block House Creek"),
+    ("STEINER RANCH PHASE ONE SEC 1A", "Steiner Ranch"),
+    ("LA FRONTERA VILLAGE UNIT 1", "La Frontera Village"),
+    ("CIRCLE C RANCH PH B SEC 10", "Circle C Ranch"),
+    ("BARTON CREEK SECTION K PHASE 1", "Barton Creek"),
+    ("PHEASANT RUN", "Pheasant Run"),
+    ("UNITED HEIGHTS SEC A-1", "United Heights"),
 ])
 def test_clean_austin_subdivision_names(original, expected):
     assert areas.clean_austin_subdivision_name(original) == expected

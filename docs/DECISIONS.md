@@ -20,6 +20,9 @@ why, and (for approvals) that the owner approved it in writing.
   skipped and counted. The normal live plan is about 24 calls within the approved 30/day.
 - Applied the owner's recorded areas budget approval by changing only that adapter's
   budget line. All other adapter budgets and live gates are untouched.
+- (Claude, in review) A plat qualifier (SEC, PH, UNIT, BLOCK, LOT, …) is removed only with
+  an identifier after it (a number, a single letter, a Roman numeral or ONE–TEN), so
+  "Block House Creek Sec 2" stays "Block House Creek" rather than becoming "Creek".
 
 ## 2026-10-23 — ACS first live check; Census notes in plain words (Claude)
 
