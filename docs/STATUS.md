@@ -3,13 +3,12 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (owner decisions Q1, Q2)._
+_Last updated 2026-10-23 (Phase 1 approved)._
 
 ## Phase
 
-**Phase 0 — discovery and verification: done; waiting for the owner's approval of Phase 1**
-and the answer to Q3 (`DECISIONS.md`). Q1 and Q2 were decided 2026-10-23: no permission requests,
-stay public, TEA ratings from data.texas.gov, district finder links instead of zone maps.
+**Phase 1 — approved 2026-10-23, in progress.** Phase 0 is done. All owner questions (Q1–Q3)
+are decided (`DECISIONS.md`).
 
 ## Done
 
@@ -24,9 +23,8 @@ stay public, TEA ratings from data.texas.gov, district finder links instead of z
 
 ## Next
 
-1. Owner: approve Phase 1 (or adjust) and answer Q3.
-2. Claude: P1-01 skeleton (ports Austin Watch seams). Then Codex prompts for P1-02, P1-03, P1-04.
-3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
+1. Claude: P1-01 skeleton (ports Austin Watch seams). Then Codex prompts for P1-02, P1-03, P1-04.
+2. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
 
 ## Open issues
 
@@ -35,7 +33,7 @@ stay public, TEA ratings from data.texas.gov, district finder links instead of z
 
 ## Waiting on the owner
 
-- Q3 (WCAD sales ratios).
+- Nothing.
 
 ## Working notes for agents
 
