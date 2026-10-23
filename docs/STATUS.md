@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-03 merged, P1-04 live)._
+_Last updated 2026-10-23 (P1-02b)._
 
 ## Phase
 
@@ -41,11 +41,15 @@ are decided (`DECISIONS.md`).
   its data was held back because of raw Census codes, and only its run log merged (PR #25).
   Still gated; the live site shows the People layers as "Test data" until the re-run.
 
+- **P1-02b** (Codex): Census base names, county-specific Austin/Hays subdivision names,
+  stronger Austin cleanup and the approved areas budget of 30/day. Synthetic fixtures only;
+  `make test` passes (318 pipeline + 19 web tests and build). Awaiting Claude's live check.
+
 ## Next
 
 1. Claude: re-run the `acs` live check after 00:00 UTC on 2026-10-24 (26 of 30 calls),
    merge its data PR, then ungate `acs`.
-2. Codex: P1-02b (budget 20 → 30 approved; prompt given to the owner).
+2. Claude: review P1-02b and check the new naming-source counts in a budgeted live run.
 3. Claude: review each PR, run `make test`, do the first live check with the Live run
    workflow, review the data PR, merge.
 
