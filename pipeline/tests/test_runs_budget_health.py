@@ -131,3 +131,24 @@ def test_fixture_files_are_labeled_test_data_even_after_live_runs(fake_live):
     assert cli.main(["publish"]) == 0  # republish stored live data
     layer = next(l for l in registry.compile_registry().layers if l.id == "fake_layer")
     assert layer.freshness == "fresh"
+
+
+def test_failed_request_is_retried_once_within_budget(fake_live, monkeypatch):
+    monkeypatch.setattr("mm.runner.time.sleep", lambda s: None)
+    b = fake_live / "config/budgets.yaml"
+    b.write_text(b.read_text().replace("per_day: 4", "per_day: 10"))
+    from mm import config
+    config.clear_cache()
+    p = fake_live / "adapters/fake_live/adapter.py"
+    p.write_text(p.read_text().replace(
+        'if os.environ.get("FAKE_FAIL") == req.key:',
+        'if os.environ.get("FAKE_FAIL") == req.key and not getattr(self, "_failed", False):\n'
+        '            self._failed = os.environ.get("FAKE_FAIL_ONCE") == "1"'))
+    monkeypatch.setenv("FAKE_FAIL", "page_1")
+    monkeypatch.setenv("FAKE_FAIL_ONCE", "1")
+    run = runner.run("fake_live", mode="live")
+    assert run.status == "success" and run.calls_made == 4  # 3 pages + 1 retry
+    assert any("retried" in n for n in run.notes)
+    monkeypatch.setenv("FAKE_FAIL_ONCE", "0")  # fails every time: one retry, then partial
+    run = runner.run("fake_live", mode="live")
+    assert run.status == "partial" and run.calls_made == 4

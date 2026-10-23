@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import gzip
 import os
+import time
 import hashlib
 import json
 import sys
@@ -27,6 +28,7 @@ from .paths import paths
 from .schemas import ENTITY_MODELS, IngestionRun
 
 MAX_FAIL_STREAK = 3
+RETRY_WAIT_SECONDS = 5  # one retry per request after a network error; it spends budget too
 # Claude's first live check of a gated adapter (the Live run workflow's first_check input).
 LIVE_CHECK_ENV = "MM_LIVE_CHECK"
 
@@ -108,6 +110,7 @@ def run(adapter_id: str, mode: Literal["live", "fixture"] = "fixture",
                                      adapter_dir=adapter_mod.adapter_dir(adapter_id))
         queue = deque(ad.plan(ctx))
         fail_streak = 0
+        retried: set[str] = set()
         planned = len(queue)
 
         while queue:
@@ -134,6 +137,14 @@ def run(adapter_id: str, mode: Literal["live", "fixture"] = "fixture",
                     raw = ad.fetch(req, ctx)
                     fail_streak = 0
                 except Exception as e:  # one failed call does not sink the run
+                    if req.key not in retried:
+                        # A dropped connection is common on long paged downloads: try the same
+                        # request once more, after a pause, within the same budget.
+                        retried.add(req.key)
+                        notes.append(f"{req.key}: retried after {type(e).__name__}")
+                        time.sleep(RETRY_WAIT_SECONDS)
+                        queue.appendleft(req)
+                        continue
                     errors.append(f"{req.key}: {type(e).__name__}: {e}")
                     status = "partial"
                     fail_streak += 1
