@@ -3,6 +3,18 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — FEMA paging: slower and gentler (Claude)
+
+- Both first live checks of `fema_nfhl` from GitHub Actions ended with "connection reset" on
+  the third FEMA page (offset 2000), and once on the first page. The same page loaded in
+  about 1 s (0.8 MB, 1,000 polygons) from the owner's browser, so the page itself is fine.
+- Changes: FEMA pages now start at least 15 s apart (`min_interval_seconds` 1 → 15; the
+  daily limit stays 40), a run stops after 20 minutes, the one retry waits 60 s instead of
+  5 s, and responses are requested gzip-compressed. This only makes us slower and lighter on
+  FEMA's server, so it is not a budget increase. A full run is about 23 calls and 6 minutes.
+- If resets continue, the next option is FEMA's official county NFHL downloads (3 files
+  instead of about 22 pages), probed first.
+
 ## 2026-10-23 — Owner approval: `areas` budget 20 → 30 calls a day; wider study area
 
 - **Approved by the owner in writing (2026-10-23):** raise `areas` from 20 to 30 calls a day

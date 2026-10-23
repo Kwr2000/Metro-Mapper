@@ -1,6 +1,7 @@
 """Synthetic native-field FEMA/TIGER data: classification, coverage, paging and repair."""
 
 import copy
+import gzip
 import importlib.util
 import json
 import math
@@ -281,14 +282,22 @@ def test_missing_or_invalid_tiger_boundary_fails(context, issue):
 def test_fetch_mocked_transport_only(context, monkeypatch):
     class Response(BytesIO):
         status = 200
+        headers: dict = {}
     def response(request, timeout):
         assert timeout == 90 and request.get_header("User-agent") == flood.FemaNFHL.user_agent
+        assert request.get_header("Accept-encoding") == "gzip"
         assert request.full_url.startswith(flood.FEMA + "?") and "resultOffset=1000" in request.full_url
         return Response(b'{"type":"FeatureCollection","features":[]}')
     monkeypatch.setattr("urllib.request.urlopen", response)
     ad = flood.FemaNFHL()
     raw = ad.fetch(ad.page_request(1000), context)
-    assert raw.status == 200 and raw.fetched_at is not None
+    assert raw.status == 200 and raw.fetched_at is not None and raw.body["features"] == []
+    def gzipped(request, timeout):
+        r = Response(gzip.compress(b'{"type":"FeatureCollection","features":[]}'))
+        r.headers = {"Content-Encoding": "gzip"}
+        return r
+    monkeypatch.setattr("urllib.request.urlopen", gzipped)
+    assert ad.fetch(ad.page_request(1000), context).body["type"] == "FeatureCollection"
     def error(*args, **kwargs):
         raise urllib.error.HTTPError(flood.FEMA, 503, "Unavailable", {}, None)
     monkeypatch.setattr("urllib.request.urlopen", error)
@@ -343,7 +352,8 @@ def test_bad_later_page_preserves_previous_published_layer(context, issue):
 
 def test_budget_and_live_gate(context, monkeypatch):
     limits = config.budgets().adapters["fema_nfhl"]
-    assert limits.per_day == 40 and limits.min_interval_seconds == 1
+    assert limits.per_day == 40 and limits.min_interval_seconds == 15 and limits.max_minutes == 20
+    assert flood.FemaNFHL.retry_wait_seconds == 60
     (context.adapter_dir.parents[1] / "config/live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
     config.clear_cache()
     monkeypatch.delenv("MM_LIVE_CHECK", raising=False)

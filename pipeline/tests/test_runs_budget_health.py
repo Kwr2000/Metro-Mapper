@@ -134,7 +134,8 @@ def test_fixture_files_are_labeled_test_data_even_after_live_runs(fake_live):
 
 
 def test_failed_request_is_retried_once_within_budget(fake_live, monkeypatch):
-    monkeypatch.setattr("mm.runner.time.sleep", lambda s: None)
+    waits = []
+    monkeypatch.setattr("mm.runner.time.sleep", waits.append)
     b = fake_live / "config/budgets.yaml"
     b.write_text(b.read_text().replace("per_day: 4", "per_day: 10"))
     from mm import config
@@ -148,6 +149,7 @@ def test_failed_request_is_retried_once_within_budget(fake_live, monkeypatch):
     monkeypatch.setenv("FAKE_FAIL_ONCE", "1")
     run = runner.run("fake_live", mode="live")
     assert run.status == "success" and run.calls_made == 4  # 3 pages + 1 retry
+    assert waits == [runner.RETRY_WAIT_SECONDS]  # adapters may ask for a longer pause
     assert any("retried" in n for n in run.notes)
     monkeypatch.setenv("FAKE_FAIL_ONCE", "0")  # fails every time: one retry, then partial
     run = runner.run("fake_live", mode="live")

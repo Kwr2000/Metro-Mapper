@@ -4,4 +4,4 @@
 # Changing a budget needs the owner's written approval in docs/DECISIONS.md.
 adapters:
   areas: {per_day: 20, min_interval_seconds: 1}
-  fema_nfhl: {per_day: 40, min_interval_seconds: 1}
+  fema_nfhl: {per_day: 40, min_interval_seconds: 15, max_minutes: 20}

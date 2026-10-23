@@ -142,7 +142,7 @@ def run(adapter_id: str, mode: Literal["live", "fixture"] = "fixture",
                         # request once more, after a pause, within the same budget.
                         retried.add(req.key)
                         notes.append(f"{req.key}: retried after {type(e).__name__}")
-                        time.sleep(RETRY_WAIT_SECONDS)
+                        time.sleep(ad.retry_wait_seconds or RETRY_WAIT_SECONDS)
                         queue.appendleft(req)
                         continue
                     errors.append(f"{req.key}: {type(e).__name__}: {e}")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gzip
 import json
 import math
 import re
@@ -141,6 +142,10 @@ class FemaNFHL(SourceAdapter):
     id = "fema_nfhl"
     entity = "area_feature"
     cadence = "monthly"
+    # FEMA's server reset the connection on the third page in both first live runs from
+    # GitHub (2026-10-23) while the same page loaded in ~1 s from a browser. Pace pages
+    # 15 s apart (config/budgets.yaml) and wait a full minute before the one retry.
+    retry_wait_seconds = 60
 
     def plan(self, ctx):
         return [Request("block_groups", {"kind": "tiger", "url": TIGER, "query": {
@@ -158,10 +163,14 @@ class FemaNFHL(SourceAdapter):
 
     def fetch(self, req, ctx):
         request = urllib.request.Request(req.params["url"] + "?" + urllib.parse.urlencode(req.params["query"]),
-                                         headers={"User-Agent": self.user_agent})
+                                         headers={"User-Agent": self.user_agent,
+                                                  "Accept-Encoding": "gzip"})
         try:
             with urllib.request.urlopen(request, timeout=90) as response:
-                return RawPayload(req, json.load(response), status=response.status,
+                data = response.read()
+                if response.headers.get("Content-Encoding", "").lower() == "gzip":
+                    data = gzip.decompress(data)  # ~0.8 MB pages compress several-fold
+                return RawPayload(req, json.loads(data), status=response.status,
                                   fetched_at=datetime.now(timezone.utc))
         except urllib.error.HTTPError as exc:
             return RawPayload(req, None, status=exc.code)
