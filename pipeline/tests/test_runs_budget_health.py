@@ -60,6 +60,18 @@ def test_live_gate_skips(fake_live):
     assert run.status == "skipped" and run.calls_made == 0
 
 
+def test_first_live_check_bypasses_gate_for_that_adapter_only(fake_live, monkeypatch):
+    (fake_live / "config/live_gates.yaml").write_text("gated:\n  fake_live: not checked yet\n")
+    from mm import config
+    config.clear_cache()
+    monkeypatch.setenv("MM_LIVE_CHECK", "other_adapter")
+    assert runner.run("fake_live", mode="live").status == "skipped"
+    monkeypatch.setenv("MM_LIVE_CHECK", "fake_live")
+    run = runner.run("fake_live", mode="live")
+    assert run.status == "success" and run.calls_made == 3
+    assert any("first live check" in n for n in run.notes)
+
+
 def test_budget_object_raises():
     b = CallBudget(adapter="x", per_day=1, per_month=None, min_interval_seconds=0, remaining=1)
     b.spend()
