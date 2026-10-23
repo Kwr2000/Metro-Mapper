@@ -44,6 +44,17 @@ def main(adapter_id: str) -> int:
         feats = doc.get("features") or []
         out.append(f"{len(feats):,} features; test_data={doc.get('test_data')}; "
                    f"source_as_of={doc.get('source_as_of')}; stale={doc.get('stale', False)}")
+        if adapter_id == "schools" and r.status == "success" and not doc.get("test_data"):
+            if layer.dataset == "district":
+                out.append(f"- note: districts kept={len(feats)}")
+            elif layer.dataset == "campus":
+                props = [feature.get("properties") or {} for feature in feats]
+                matched = sum(row.get("campus_number") is not None for row in props)
+                rating_rows = sum(row.get("rating_note") != "No TEA rating found for this campus" for row in props)
+                rated = sum(row.get("overall_rating") in {"A", "B", "C", "D", "F"} for row in props)
+                not_rated = sum(row.get("overall_rating") == "Not Rated" for row in props)
+                out.append(f"- note: campuses={len(props)}; matched={matched}; rating rows={rating_rows}; "
+                           f"rated={rated}; not rated={not_rated}; unmatched={len(props) - matched}")
         values: dict[str, list] = {}
         for f in feats:
             for k, v in (f.get("properties") or {}).items():

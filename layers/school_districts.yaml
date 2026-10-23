@@ -1,0 +1,25 @@
+id: school_districts
+title: School districts
+group: Schools
+description: School district boundaries and links to each district's school finder or website. District boundaries do not identify a campus serving an address.
+source: schools
+geometry: polygon
+join: jurisdiction
+dataset: district
+publish: geojson
+style:
+  type: fill
+  paint:
+    fill-opacity: 0
+    fill-outline-color: "#454545"
+popup:
+  - {field: name, label: District}
+  - {field: grades, label: Grades}
+  - {field: finder_link, label: School finder, format: link, annotation_field: finder_label}
+  - {field: zone_note, label: Assigned schools}
+coverage: study_area
+refresh: annual
+attribution: U.S. Census Bureau, TIGERweb
+license: Public domain
+default_visible: false
+order: 300

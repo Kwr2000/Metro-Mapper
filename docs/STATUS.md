@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-02b)._
+_Last updated 2026-10-23 (P1-06)._
 
 ## Phase
 
@@ -45,6 +45,10 @@ are decided (`DECISIONS.md`).
   stronger Austin cleanup and the approved areas budget of 30/day. Synthetic fixtures only;
   `make test` passes (318 pipeline + 19 web tests and build). Awaiting Claude's live check.
 
+- **P1-06** (Codex): schools adapter, checked finder links, synthetic fixtures/tests and
+  district/campus manifests; budget 10/day and live gate. `make test` passes (381 pipeline
+  + 19 web tests and build). Awaiting Claude's live counts and finder-link checks.
+
 ## Next
 
 1. Claude: re-run the `acs` live check after 00:00 UTC on 2026-10-24 (26 of 30 calls),
@@ -56,7 +60,8 @@ are decided (`DECISIONS.md`).
 ## Open issues
 
 - APD block-group code vintage (2010 vs 2020) is unverified (P1-05).
-- District finder-link list is incomplete for about 11 districts (P1-06).
+- Schools have four checked finder overrides; other districts use AskTED district websites
+  or show Not available. Claude checks links and live join counts before ungating P1-06.
 
 ## Waiting on the owner
 

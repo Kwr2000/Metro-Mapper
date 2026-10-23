@@ -3,6 +3,35 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-06 schools budget and implementation choices (Codex)
+
+- **Owner approval:** schools may make 10 calls a day, confirmed in writing in the owner's
+  P1-06 build request. Added `schools: {per_day: 10, min_interval_seconds: 1}` and the first
+  live-check gate; the normal plan has five calls. Existing adapter budgets are unchanged.
+- Use synthetic fixtures large enough to meet the real production guards: 500 campuses,
+  20 kept districts, 480 AskTED matches and 450 rating rows. No fixture-mode exception to
+  the 500/20/90%/80% checks. District overlap uses unsimplified projected block-group area,
+  with 1e-9 tolerance for floating-point error at exactly 0.5%.
+- Socrata omits null-valued cells: require the selected column vocabulary across a response,
+  require identifiers per row, and treat missing nullable cells as null. Identical duplicates
+  collapse; conflicting identifiers or NCES/TEA district mappings fail. Unknown rating text
+  fails; absent or non-numeric scores stay null. A Not Rated domain never gets a fake zero.
+- Finder overrides use exact unshortened TIGER names. Fallback websites may come from any
+  AskTED row with that TEA district number; choose HTTPS first, then alphabetical URL when
+  several are provided. Reject unsafe protocols and credential-bearing URLs. The finder
+  label appears as the link's popup annotation. No nearest-campus or attendance assignment.
+- Report both rating-row coverage (the 80% guard) and actual A–F rated campuses separately
+  from explicit Not Rated campuses. The adapter prints count-only run notes; the existing
+  workflow summary tool adds them from successful published layers. The core adapter seam
+  has no hook to add saved IngestionRun notes, so no core changes or raw-response retention.
+- Kept the task's exact district style (fill-opacity 0, dark fill-outline-color) pending
+  the owner's answer to the rendering clarification. Installed MapLibre's style reference
+  says fill-opacity also affects the stroke, so this setting hides outlines. The alternative
+  is a transparent fill color with opacity 1; Claude must check this before publishing.
+- Source vintages are shown as NCES 2024–25 and TEA 2024–25, as verified in the task. Do not
+  invent an exact source date from a school year; source_as_of stays unknown and the registry
+  uses the successful run date. Current TIGER district geometry has no asserted calendar date.
+
 ## 2026-10-23 — P1-02b naming details (Codex)
 
 - Drop nested parenthetical annotations, including an unclosed final parenthesis caused
