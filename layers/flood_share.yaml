@@ -1,0 +1,40 @@
+id: flood_share
+title: FEMA flood shares
+group: Flood
+description: Share of each area inside FEMA's mapped flood zones. Not a prediction of flooding at any address; local and Atlas 14 floodplains may be larger.
+source: fema_nfhl
+geometry: polygon
+join: block_group
+dataset: block_group
+publish: geojson
+style:
+  type: fill
+  paint:
+    fill-opacity: 0.55
+    fill-color:
+      - case
+      - ["==", [get, flood_share_1pct], null]
+      - "#bdbdbd"
+      - ["==", [get, flood_share_1pct], 0]
+      - "#eff3ff"
+      - [step, [get, flood_share_1pct], "#bdd7e7", 0.05, "#6baed6", 0.15, "#3182bd", 0.30, "#08519c"]
+popup:
+  - {field: flood_share_1pct, label: 1% annual-chance share, format: percent}
+  - {field: flood_share_02pct, label: 0.2% annual-chance share, format: percent}
+  - {field: mapped_share, label: FEMA mapped share, format: percent}
+  - {field: flood_note, label: Coverage note}
+  - {field: fema_map_link, label: FEMA map, format: link}
+  - {field: geoid, label: GEOID}
+legend:
+  - {label: None, color: "#eff3ff"}
+  - {label: Under 5%, color: "#bdd7e7"}
+  - {label: 5–15%, color: "#6baed6"}
+  - {label: 15–30%, color: "#3182bd"}
+  - {label: 30% or more, color: "#08519c"}
+  - {label: Not available, color: "#bdbdbd"}
+coverage: study_area
+refresh: monthly
+attribution: FEMA National Flood Hazard Layer
+license: Public domain
+default_visible: false
+order: 50

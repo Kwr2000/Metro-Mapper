@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-02 live)._
+_Last updated 2026-10-23 (P1-04)._
 
 ## Phase
 
@@ -32,10 +32,13 @@ are decided (`DECISIONS.md`).
   basemap working).
 - `Live run` workflow (PR #12) and the test-data labeling fix (PR #14).
 
+- **P1-04** (Codex): FEMA flood-share adapter, native-field two-page fixtures/tests and
+  monthly layer; live gated for Claude's check. `make setup` and `make test` pass
+  (182 pipeline + 18 web tests, production build). No live source calls.
+
 ## Next
 
-1. Codex: P1-03 (ACS demographics) and P1-04 (flood shares); prompts given 2026-10-23. They
-   touch different files and can run at the same time.
+1. Claude: review P1-03 (PR #16) and P1-04, then do their first live checks before merging.
 2. Owner: approve raising the `areas` budget from 20 to 30 calls a day for P1-02b (better
    names). Then Codex: P1-02b.
 3. Claude: review each PR, run `make test`, do the first live check with the Live run
