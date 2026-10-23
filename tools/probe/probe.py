@@ -105,6 +105,9 @@ def zip_members(url: str) -> tuple[int, str, list[ZipMember], str]:
     """List a remote zip's members by reading only its central directory."""
     status, hdrs, final = head(url)
     size = size_of(hdrs)
+    if not size:  # e.g. a redirect to a chunked response: ask the final URL for one byte
+        status, hdrs, _, final = _req(final, headers={"Range": "bytes=0-0"}, max_bytes=1)
+        size = size_of(hdrs)
     if not size:
         raise RuntimeError(f"HTTP {status}, no size reported")
     tail_len = min(size, 1 << 20)
@@ -237,6 +240,8 @@ def _():
            "IQBJmdRcyJKnQI28Z7qxxJYrASLIJSlpY0tHdOPHi9DZc3c?e=MbvQlH&download=1")
     status, hdrs, body, final = _req(url, headers={"Range": "bytes=0-3"}, max_bytes=4)
     kind = "zip" if body[:2] == b"PK" else hdrs.get("content-type", "?")
+    if status not in (200, 206):
+        raise RuntimeError(f"HTTP {status} (not downloadable unattended); content-type {kind}")
     return f"HTTP {status}; first bytes look like: {kind}; size {mb(size_of(hdrs))}; final host {urllib.parse.urlparse(final).netloc}"
 
 
