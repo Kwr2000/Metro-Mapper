@@ -3,6 +3,16 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — Owner approval: `schools` budget 10 calls a day
+
+- **Approved by the owner (2026-10-23):** `schools: {per_day: 10, min_interval_seconds: 1}`,
+  refreshed yearly. A normal run is 5 calls (TIGERweb districts, TIGER block groups, NCES
+  points, AskTED IDs, TEA ratings). The owner started P1-06 with the prompt stating this
+  approval.
+- P1-06 style correction (Codex's question, Claude agreed): district outlines use a
+  transparent fill colour at opacity 1 with `fill-outline-color`, because `fill-opacity: 0`
+  also hides the outline in MapLibre.
+
 ## 2026-10-23 — P1-02b naming details (Codex)
 
 - Drop nested parenthetical annotations, including an unclosed final parenthesis caused
