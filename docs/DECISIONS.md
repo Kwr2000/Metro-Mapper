@@ -59,6 +59,30 @@ why, and (for approvals) that the owner approved it in writing.
   geometry using the areas adapter's 5 m tolerance and six-decimal WGS84 coordinates.
   Hazard polygons are never published. No pipeline core or web application changes.
 
+## 2026-10-23 — P1-03 ACS implementation choices (Codex)
+
+- The adapter queues a single HTTP 5xx retry through `follow_up()`, rather than making an
+  uncounted call inside `fetch()`. Retries obey the runner's budget and one-second pacing;
+  the normal plan is 26 calls, leaving four retry calls inside the approved daily cap of 30.
+  All transport errors discard URLs and response text so Census credentials cannot enter
+  the run log. Only `fetch()` reads and adds the environment key.
+- Keep unrounded numeric estimates and MOEs in canonical data. For a sum, any missing
+  estimate makes the sum unavailable; any missing component MOE makes its uncertainty
+  unknown. Missing numerator or denominator MOE preserves an otherwise valid share with
+  unknown reliability. Shares outside 0–1 fail instead of silently clamping.
+- Preserve EA and MA strings together, with MOE/numerator/denominator labels where needed.
+  Raw Census cell names and intermediate cells never reach published properties.
+- Use fixed legend breaks, identical at both scales: shares 20/40/60/80%; population
+  500/1,000/2,000/4,000; income $50k/75k/100k/150k; home value $200k/350k/500k/750k;
+  rent $1k/1.5k/2k/2.5k; year built 1960/1980/2000/2010; age 25/35/45/55. These are neutral
+  display bins, not scores. Every measure uses the same five blue colors, with grey for null.
+- Use the existing `data_bundle` seam: all metrics share one loaded map source/file per
+  scale. The current core publisher still writes identical files under each layer id;
+  removing those redundant disk copies would require a separate core change. No core or
+  web application code is changed for this task.
+- Simplify only display polygons, using the areas adapter's 5 m equal-area tolerance and
+  six-decimal WGS84 coordinates. All ACS estimates describe the whole area without prorating.
+
 ## 2026-10-23 — P1-02 area naming choices (Codex)
 
 - Union polygons in each cleaned WCAD name group before measuring coverage, so overlapping

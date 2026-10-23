@@ -36,6 +36,9 @@ are decided (`DECISIONS.md`).
   40012121921 published 1,206 block groups (PR #22); 12 "not available" at county-map
   seams. Ungated. Runner now retries a failed request once; FEMA pages go 15 s apart.
 
+- **P1-03** (Codex, PR #16): ACS adapter, native-variable fixtures/tests and 42 generated
+  demographic manifests. Live gated for Claude's first check.
+
 ## Next
 
 1. Claude: review P1-03 (PR #16), then its first live check.
