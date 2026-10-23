@@ -1,0 +1,24 @@
+id: tracts
+title: Tracts
+group: Areas
+description: 2020 Census boundaries.
+source: areas
+geometry: polygon
+join: tract
+dataset: tract
+publish: geojson
+style:
+  type: line
+  paint:
+    line-color: "#929292"
+    line-width: 1.6
+popup:
+  - {field: geoid, label: GEOID}
+  - {field: county, label: County}
+  - {field: area_sq_mi, label: Area (sq mi), format: number}
+coverage: study_area
+refresh: annual
+attribution: U.S. Census Bureau, 2020 TIGER/Line via TIGERweb
+license: Public domain
+default_visible: false
+order: 11

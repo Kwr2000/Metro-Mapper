@@ -3,6 +3,24 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-02 area naming choices (Codex)
+
+- Union polygons in each cleaned WCAD name group before measuring coverage, so overlapping
+  sections and replats never count the same land twice. Austin planning areas and Census
+  places are compared individually. Choose the largest share, then alphabetical name for
+  exact ties, independent of response order.
+- Compare unrounded EPSG:5070 shares to the thresholds; allow only 1e-9 of floating-point
+  projection error at exact edges. Round stored shares and square miles to three decimals.
+- Reject invalid, missing or non-polygon geometry rather than repair it or silently drop
+  rows. Enforce the requested native property sets; WCAD's selected `geometry` is the
+  GeoJSON geometry, not an extra property. Claude must confirm this in the first live run.
+- Add `boundary_note` to block-group properties and attach it to the Name popup through
+  the existing manifest annotation field: "2020 Census boundaries; names as of <run date>".
+  The run date comes from the runner; geometry `source_as_of` stays 2020-01-01.
+- Fixtures include a full 2,000-row WCAD page, mostly identical synthetic polygons outside
+  the study area, followed by one row completing a 45% naming group. This tests the real
+  paging limit without any test-only behavior. The regeneration script makes no calls.
+
 ## 2026-10-23 — Owner decisions: no permission requests; stay public (Q1, Q2)
 
 **Approved by the owner in writing (2026-10-23).** The owner prefers not to request written
