@@ -3,6 +3,19 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — ACS first live check; Census notes in plain words (Claude)
+
+- Live run 40015773545: 26 calls in 38 s, no retries. 1,206 block groups and 471 tracts,
+  each joined to exactly one ACS row. Population: Travis 1,330,015, Williamson 672,688,
+  Hays 268,638; block-group and tract totals match exactly. No credential text in any output.
+- Census annotation codes reached the popups raw ("-; MOE: **", "250,000+; MOE: ***"). They
+  are now plain words ("Census: too few survey responses to estimate"), and capped medians
+  show their range ("$250,000 or more", "1939 or earlier") instead of the stored number
+  (250,001), which only sets the colour. New optional popup setting `display_field`.
+- That run's data is not published; only its run log is merged, so its calls count. A fresh
+  run (next UTC day, within the 30-call budget) publishes the cleaned version, then `acs`
+  is ungated.
+
 ## 2026-10-23 — P1-04 merged; first live check of `fema_nfhl` passed (Claude)
 
 - Live run 40012121921 (PR #22): 24 calls in about 7 minutes, no retries. 1,206 block
