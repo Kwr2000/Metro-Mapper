@@ -1,0 +1,48 @@
+id: school_campuses
+title: Public school campuses
+group: Schools
+description: Public campuses (NCES 2024–25) with TEA 2024–25 ratings. A campus's rating is not a promise about the school that serves a given address.
+source: schools
+geometry: point
+join: point
+dataset: campus
+publish: geojson
+popup_title: TEA accountability ratings, 2024–25
+style:
+  type: circle
+  paint:
+    circle-radius: 5
+    circle-stroke-color: "#ffffff"
+    circle-stroke-width: 1
+    circle-color: [match, [get, overall_rating], A, "#3f007d", B, "#6a51a3", C, "#9e9ac8", D, "#cbc9e2", F, "#f2f0f7", "#bdbdbd"]
+popup:
+  - {field: name, label: Campus}
+  - {field: district, label: District}
+  - {field: grades_served, label: Grades}
+  - {field: school_type, label: School type}
+  - {field: enrollment_note, label: Charter note}
+  - {field: academic_growth_rating, label: Academic Growth rating}
+  - {field: academic_growth_score, label: Academic Growth score, format: number}
+  - {field: school_progress_rating, label: School Progress rating}
+  - {field: school_progress_score, label: School Progress score, format: number}
+  - {field: overall_rating, label: Overall rating}
+  - {field: overall_score, label: Overall score, format: number}
+  - {field: student_achievement_rating, label: Student Achievement rating}
+  - {field: student_achievement_score, label: Student Achievement score, format: number}
+  - {field: closing_the_gaps_rating, label: Closing the Gaps rating}
+  - {field: closing_the_gaps_score, label: Closing the Gaps score, format: number}
+  - {field: ratings_year, label: Ratings year}
+  - {field: rating_note, label: Rating note}
+legend:
+  - {label: A, color: "#3f007d"}
+  - {label: B, color: "#6a51a3"}
+  - {label: C, color: "#9e9ac8"}
+  - {label: D, color: "#cbc9e2"}
+  - {label: F, color: "#f2f0f7"}
+  - {label: Not rated / not available, color: "#bdbdbd"}
+coverage: study_area
+refresh: annual
+attribution: NCES EDGE; Texas Education Agency via data.texas.gov
+license: Public domain (NCES); no license stated (TEA on data.texas.gov)
+default_visible: false
+order: 301

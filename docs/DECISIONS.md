@@ -3,6 +3,28 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-06 schools implementation choices (Codex)
+
+- Use synthetic fixtures large enough to meet the real production guards: 500 campuses,
+  20 kept districts, 480 AskTED matches and 450 rating rows. No fixture-mode exception to
+  the 500/20/90%/80% checks. District overlap uses unsimplified projected block-group area,
+  with 1e-9 tolerance for floating-point error at exactly 0.5%.
+- Socrata omits null-valued cells: require the selected column vocabulary across a response,
+  require identifiers per row, and treat missing nullable cells as null. Identical duplicates
+  collapse; conflicting identifiers or NCES/TEA district mappings fail. Unknown rating text
+  fails; absent or non-numeric scores stay null. A Not Rated domain never gets a fake zero.
+- Finder overrides use exact unshortened TIGER names. Fallback websites may come from any
+  AskTED row with that TEA district number; choose HTTPS first, then alphabetical URL when
+  several are provided. Reject unsafe protocols and credential-bearing URLs. The finder
+  label appears as the link's popup annotation. No nearest-campus or attendance assignment.
+- Report both rating-row coverage (the 80% guard) and actual A–F rated campuses separately
+  from explicit Not Rated campuses. The adapter prints count-only run notes; the existing
+  workflow summary tool adds them from successful published layers. The core adapter seam
+  has no hook to add saved IngestionRun notes, so no core changes or raw-response retention.
+- Source vintages are shown as NCES 2024–25 and TEA 2024–25, as verified in the task. Do not
+  invent an exact source date from a school year; source_as_of stays unknown and the registry
+  uses the successful run date. Current TIGER district geometry has no asserted calendar date.
+
 ## 2026-10-23 — Owner approval: `schools` budget 10 calls a day
 
 - **Approved by the owner (2026-10-23):** `schools: {per_day: 10, min_interval_seconds: 1}`,
