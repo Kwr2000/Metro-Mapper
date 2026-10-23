@@ -3,6 +3,18 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-04 merged; first live check of `fema_nfhl` passed (Claude)
+
+- Live run 40012121921 (PR #22): 24 calls in about 7 minutes, no retries. 1,206 block
+  groups (Travis 766, Williamson 324, Hays 116), one row each.
+- 1% (SFHA) share: none 268, under 5% 306, 5–15% 410, 15–30% 143, 30% or more 67. The
+  highest shares are along the San Marcos River, Onion Creek and the Colorado, as expected.
+- 12 block groups read "not available" (FEMA coverage 95–99%), near the Travis–Williamson
+  line. Checked one (484530341002) at full detail in a browser: about 5% of it has no FEMA
+  polygon, a strip about 25 m wide where the two county flood maps don't meet. The 0.99
+  rule stays; the label is accurate.
+- `fema_nfhl` ungated. Today's spend: 34 of 40 calls.
+
 ## 2026-10-23 — FEMA paging: slower and gentler (Claude)
 
 - Both first live checks of `fema_nfhl` from GitHub Actions ended with "connection reset" on
