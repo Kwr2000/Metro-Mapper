@@ -366,3 +366,11 @@ def test_zero_report_period_has_real_zeroes_without_division_by_zero(context):
     for rec in result:
         if rec.dataset == "block_group" and rec.properties["safety_note"] is None:
             assert all(rec.properties[f] == 0 for f in (*apd.COUNT_FIELDS, *apd.RATE_FIELDS))
+
+
+def test_self_intersecting_city_polygon_is_repaired():
+    # A bow-tie like the one in TIGER's Austin city limits (live run 40041187416).
+    bowtie = {"type": "Polygon", "coordinates": [[[-97.8, 30.2], [-97.7, 30.3], [-97.7, 30.2],
+                                                  [-97.8, 30.3], [-97.8, 30.2]]]}
+    geom = apd.projected(bowtie)
+    assert geom.is_valid and geom.area > 0
