@@ -148,7 +148,11 @@ def run(adapter_id: str, mode: Literal["live", "fixture"] = "fixture",
             for rec in ad.normalize(raw):
                 if not isinstance(rec, model):
                     raise TypeError(f"{adapter_id} emitted {type(rec).__name__}, expected {model.__name__}")
-                records.append(model.model_validate(rec.model_dump()))  # re-validate
+                records.append(rec)
+        records = [model.model_validate(r.model_dump()) for r in ad.finalize(records)]  # re-validate
+        for r in records:
+            if not isinstance(r, model):
+                raise TypeError(f"{adapter_id}.finalize emitted {type(r).__name__}, expected {model.__name__}")
 
         source_as_of = ad.source_as_of(raws)
         if planned and not raws:

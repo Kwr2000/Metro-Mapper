@@ -89,6 +89,12 @@ class SourceAdapter(ABC):
     def source_as_of(self, raws: list[RawPayload]) -> date | None:
         return None
 
+    def finalize(self, records: list[BaseModel]) -> list[BaseModel]:
+        """Combine records from all of a run's responses (e.g. name block groups from
+        several sources' polygons). Called once, after every response is normalized.
+        Must emit this adapter's entity; the runner validates the result."""
+        return records
+
     def follow_up(self, raw: RawPayload, ctx: RunContext) -> list[Request]:
         """Extra requests prompted by a response (e.g. the next page).
         The runner queues them right after the current request, within budget."""
