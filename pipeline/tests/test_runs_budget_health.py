@@ -120,3 +120,14 @@ ADAPTER = FakeLive""".replace("\n    def", "\n    def")))
     assert run.status == "success", run.errors
     doc = json.loads((fake_live / "web/public/data/layers/fake_layer.geojson").read_text())
     assert {f["properties"]["of"] for f in doc["features"]} == {3}
+
+
+def test_fixture_files_are_labeled_test_data_even_after_live_runs(fake_live):
+    """A fixture build must never inherit 'Current' from a committed live run."""
+    assert runner.run("fake_live", mode="live").status == "success"
+    assert runner.run("fake_live", mode="fixture").status == "success"
+    layer = next(l for l in registry.compile_registry().layers if l.id == "fake_layer")
+    assert layer.freshness == "fixture_only"
+    assert cli.main(["publish"]) == 0  # republish stored live data
+    layer = next(l for l in registry.compile_registry().layers if l.id == "fake_layer")
+    assert layer.freshness == "fresh"
