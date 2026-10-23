@@ -202,8 +202,10 @@ published in 2027.
   attribution "City of Austin, Texas - data.austintexas.gov". Rows updated 2026-10-19 (newest
   report date 2026-10-18), weekly, 2003 to present. Only the highest offense per report is included.
   `census_block_group` is 10-digit text (county+tract+group, e.g. `4530011011`), present on
-  92,104 of 92,613 reports since 2025-10-01 (7,412 of 7,437 in Sept 2026). The block-group
-  vintage isn't declared; check 2010 vs 2020 codes in Phase 1 before joining to 2020 polygons.
+  92,104 of 92,613 reports since 2025-10-01 (7,412 of 7,437 in Sept 2026). **Vintage: 2020**
+  (checked 2026-10-23): all 712 distinct codes reported 2025-10-01..2026-09-30 match 2020 TIGER
+  block groups. `category_description` is null for non-Part I offenses (56,461 of 88,424 in
+  that period).
 - **Other agencies**: no open incident feed found for Round Rock, Cedar Park, Georgetown,
   Pflugerville, Leander, San Marcos or Kyle (only third-party aggregators). Use agency-level data:
   **Texas DPS Crime in Texas 2025** (PDF, 2.6 MB, Last-Modified 2026-06-02;
