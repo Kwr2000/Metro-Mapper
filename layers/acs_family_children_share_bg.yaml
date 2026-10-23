@@ -46,6 +46,7 @@ popup:
   moe_field: family_children_share_moe
   reliability_field: family_children_share_reliability
   annotation_field: family_children_share_annotation
+  display_field: family_children_share_display
 - field: geoid
   label: GEOID
 - field: geography

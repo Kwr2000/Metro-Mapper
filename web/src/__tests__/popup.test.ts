@@ -31,11 +31,19 @@ describe("popups", () => {
 
   it("shows margins of error and flags unreliable estimates", () => {
     const field = { field: "share", label: "Share estimate", format: "percent" as const, moe_field: "moe",
-      reliability_field: "reliability", annotation_field: "annotation" };
+      reliability_field: "reliability", annotation_field: "annotation", display_field: null };
     const html = popupFieldHtml(field, { share: 0.25, moe: 0.1, reliability: "low reliability", annotation: "<script>" });
     expect(html).toContain("25.0%"); expect(html).toContain("10.0 pp");
     expect(html).toContain('class="reliability-low"'); expect(html).toContain("&lt;script&gt;");
     const missing = popupFieldHtml(field, { share: null, moe: null, reliability: "estimate unavailable" });
     expect(missing).toContain("MOE unavailable"); expect(missing).toContain("Not available"); expect(missing).not.toContain("0.0%");
+  });
+
+  it("shows a Census range in place of a capped median", () => {
+    const field = { field: "income", label: "Income estimate", format: "currency" as const, moe_field: "moe",
+      reliability_field: null, annotation_field: null, display_field: "income_display" };
+    const html = popupFieldHtml(field, { income: 250001, moe: null, income_display: "$250,000 or more" });
+    expect(html).toContain("$250,000 or more"); expect(html).not.toContain("250,001");
+    expect(popupFieldHtml(field, { income: 90000, moe: 5000 })).toContain("$90,000");
   });
 });

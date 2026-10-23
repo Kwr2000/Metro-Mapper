@@ -36,7 +36,7 @@ def manifests():
                     "fill-color": ["case", ["==", ["get", metric], None], MISSING, step]}},
                 "popup": [{"field": metric, "label": title + " estimate", "format": fmt,
                     "moe_field": metric + "_moe", "reliability_field": metric + "_reliability",
-                    "annotation_field": metric + "_annotation"},
+                    "annotation_field": metric + "_annotation", "display_field": metric + "_display"},
                     {"field": "geoid", "label": "GEOID"}, {"field": "geography", "label": "Geography"},
                     {"field": "vintage", "label": "Vintage"}],
                 "legend": [{"label": text, "color": color} for text, color in zip(labels, BLUE)]

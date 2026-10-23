@@ -53,7 +53,8 @@ def cells(**overrides):
         "B11003_001": {"estimate": 200, "moe": 10, "estimate_annotation": None, "moe_annotation": None},
     }
     for key, values in overrides.items():
-        source[key].update(values)
+        source.setdefault(key, {"estimate": None, "moe": None, "estimate_annotation": None,
+                                "moe_annotation": None}).update(values)
     return {acs.CELL_IDS[base]: value for base, value in source.items()}
 
 
@@ -126,7 +127,28 @@ def test_native_annotations_survive_derived_shares():
     values = cells(B25003_002={"estimate_annotation": "(X)", "moe_annotation": "***"},
                    B25003_001={"estimate_annotation": "250,000+", "moe_annotation": "**"})
     result = acs.measure(values, ("B25003_002",), "B25003_001")
-    assert result[3] == "Numerator estimate: (X); Numerator MOE: ***; Denominator estimate: 250,000+; Denominator MOE: **"
+    assert result[3] == ("Numerator: Census: not applicable; "
+                         "Numerator: Census: no margin of error for an open-ended range; "
+                         "Denominator: Census reports a range: 250,000 or more; "
+                         "Denominator: Census: margin of error not computed (too few responses)")
+    assert result[4] is None  # only a direct median shows a range in place of its value
+
+
+@pytest.mark.parametrize("ea, ma, fmt, display, note", [
+    ("250,000+", "***", "currency", "$250,000 or more", None),
+    ("10,000-", "***", "currency", "$10,000 or less", None),
+    ("3,500+", "***", "currency", "$3,500 or more", None),
+    ("2020+", "***", "number", "2020 or later", None),
+    ("1939-", "***", "number", "1939 or earlier", None),
+    ("-", "**", "currency", None, "Census: too few survey responses to estimate"),
+    ("N", None, "number", None, "Census: not shown (too few cases)"),
+    (None, "*****", "number", None, "Census: controlled estimate, no sampling margin of error"),
+    ("odd", None, "number", None, "Census note: odd"),
+])
+def test_census_codes_in_plain_words(ea, ma, fmt, display, note):
+    values = cells(B19013_001={"estimate": 250001, "moe": None, "estimate_annotation": ea, "moe_annotation": ma})
+    result = acs.measure(values, ("B19013_001",), None, fmt)
+    assert result[4] == display and result[3] == note
 
 
 def test_plan_has_26_calls_and_complete_quartets_without_key(context, monkeypatch):
@@ -192,7 +214,9 @@ def test_fixture_values_and_native_annotations(context):
     assert second["owner_occupied_share"] is None and second["family_children_share"] is None
     assert second["population"] == 0 and second["population_reliability"] == "low reliability"
     assert second["median_household_income"] is None
-    assert second["median_household_income_annotation"] == "250,000+; MOE: **"
+    assert second["median_household_income_annotation"] == (
+        "Census reports a range: 250,000 or more; "
+        "Census: margin of error not computed (too few responses)")
     assert second["median_household_income_reliability"] == "estimate unavailable"
     third = next(rec for rec in records if rec.feature_id == "484530108043").properties
     assert third["median_gross_rent"] is None and third["population"] is None
@@ -378,7 +402,7 @@ def test_generated_manifests_are_current_and_neutral(context, tmp_path):
 
 
 def test_demographics_guard_sees_every_new_field(context):
-    fields = {metric + suffix for metric in acs.metrics.METRICS for suffix in ("", "_moe", "_reliability", "_annotation")}
+    fields = {metric + suffix for metric in acs.metrics.METRICS for suffix in ("", "_moe", "_reliability", "_annotation", "_display")}
     assert fields <= inputs.demographic_fields()
     with pytest.raises(inputs.DemographicInputError) as exc:
         inputs.assert_no_demographics("test_value_model", fields)

@@ -46,6 +46,7 @@ popup:
   moe_field: age_18_34_share_moe
   reliability_field: age_18_34_share_reliability
   annotation_field: age_18_34_share_annotation
+  display_field: age_18_34_share_display
 - field: geoid
   label: GEOID
 - field: geography

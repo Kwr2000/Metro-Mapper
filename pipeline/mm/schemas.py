@@ -61,6 +61,9 @@ class PopupField(Strict):
     moe_field: str | None = None
     reliability_field: str | None = None
     annotation_field: str | None = None
+    # A text property shown instead of the formatted value when set (e.g. "$250,000 or
+    # more" for a Census top-coded median, whose stored number is only used for colour).
+    display_field: str | None = None
 
 
 class LayerVariant(Strict):
@@ -129,7 +132,8 @@ class LayerManifest(Strict):
         """Every feature property this layer shows."""
         out: set[str] = set()
         for f in [*self.popup, *self.hover]:
-            out.update(x for x in (f.field, f.moe_field, f.reliability_field, f.annotation_field) if x)
+            out.update(x for x in (f.field, f.moe_field, f.reliability_field, f.annotation_field,
+                                   f.display_field) if x)
         if self.as_of_field:
             out.add(self.as_of_field)
         return out

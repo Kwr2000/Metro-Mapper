@@ -46,6 +46,7 @@ popup:
   moe_field: owner_occupied_share_moe
   reliability_field: owner_occupied_share_reliability
   annotation_field: owner_occupied_share_annotation
+  display_field: owner_occupied_share_display
 - field: geoid
   label: GEOID
 - field: geography

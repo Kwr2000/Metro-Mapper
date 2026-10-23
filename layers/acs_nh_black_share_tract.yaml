@@ -46,6 +46,7 @@ popup:
   moe_field: nh_black_share_moe
   reliability_field: nh_black_share_reliability
   annotation_field: nh_black_share_annotation
+  display_field: nh_black_share_display
 - field: geoid
   label: GEOID
 - field: geography

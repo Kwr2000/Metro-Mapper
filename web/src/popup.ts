@@ -20,7 +20,8 @@ export function popupValueHtml(value: unknown, format: string): string {
 
 /** Manifest-defined estimates keep their uncertainty, including missing MOEs. */
 export function popupFieldHtml(field: PopupField, properties: Record<string, unknown> | null): string {
-  let value = popupValueHtml(properties?.[field.field], field.format ?? "text");
+  const display = field.display_field ? properties?.[field.display_field] : undefined;
+  let value = typeof display === "string" && display ? escapeHtml(display) : popupValueHtml(properties?.[field.field], field.format ?? "text");
   if (field.moe_field) {
     const moe = properties?.[field.moe_field];
     value += `<small>${typeof moe === "number" ? `± ${escapeHtml(field.format === "percent" ? `${(moe * 100).toFixed(1)} pp` : formatValue(moe, field.format))} (90% MOE)` : "MOE unavailable (90%)"}</small>`;

@@ -461,6 +461,18 @@
           "default": null,
           "title": "Annotation Field"
         },
+        "display_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Field"
+        },
         "field": {
           "title": "Field",
           "type": "string"
@@ -513,7 +525,8 @@
         "format",
         "moe_field",
         "reliability_field",
-        "annotation_field"
+        "annotation_field",
+        "display_field"
       ],
       "title": "PopupField",
       "type": "object"
