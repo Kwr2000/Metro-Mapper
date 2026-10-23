@@ -3,11 +3,8 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
-## 2026-10-23 — P1-06 schools budget and implementation choices (Codex)
+## 2026-10-23 — P1-06 schools implementation choices (Codex)
 
-- **Owner approval:** schools may make 10 calls a day, confirmed in writing in the owner's
-  P1-06 build request. Added `schools: {per_day: 10, min_interval_seconds: 1}` and the first
-  live-check gate; the normal plan has five calls. Existing adapter budgets are unchanged.
 - Use synthetic fixtures large enough to meet the real production guards: 500 campuses,
   20 kept districts, 480 AskTED matches and 450 rating rows. No fixture-mode exception to
   the 500/20/90%/80% checks. District overlap uses unsimplified projected block-group area,
@@ -24,13 +21,19 @@ why, and (for approvals) that the owner approved it in writing.
   from explicit Not Rated campuses. The adapter prints count-only run notes; the existing
   workflow summary tool adds them from successful published layers. The core adapter seam
   has no hook to add saved IngestionRun notes, so no core changes or raw-response retention.
-- **Owner approval (2026-10-23):** use visible district outlines with a transparent fill
-  color and fill-opacity 1. This overrides the task's opacity-zero setting: MapLibre's
-  installed style reference confirms that fill-opacity also hides the outline. The dark
-  outline now remains visible while the district interior stays transparent.
 - Source vintages are shown as NCES 2024–25 and TEA 2024–25, as verified in the task. Do not
   invent an exact source date from a school year; source_as_of stays unknown and the registry
   uses the successful run date. Current TIGER district geometry has no asserted calendar date.
+
+## 2026-10-23 — Owner approval: `schools` budget 10 calls a day
+
+- **Approved by the owner (2026-10-23):** `schools: {per_day: 10, min_interval_seconds: 1}`,
+  refreshed yearly. A normal run is 5 calls (TIGERweb districts, TIGER block groups, NCES
+  points, AskTED IDs, TEA ratings). The owner started P1-06 with the prompt stating this
+  approval.
+- P1-06 style correction (Codex's question, Claude agreed): district outlines use a
+  transparent fill colour at opacity 1 with `fill-outline-color`, because `fill-opacity: 0`
+  also hides the outline in MapLibre.
 
 ## 2026-10-23 — P1-02b naming details (Codex)
 
