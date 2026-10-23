@@ -14,8 +14,10 @@ from mm import config
 from mm.adapter import RawPayload, Request, RunContext, SourceAdapter
 from mm.schemas import AreaFeature
 from pyproj import Transformer
-from shapely import STRtree, transform, union_all
-from shapely.geometry import mapping, shape
+import sys
+
+from shapely import STRtree, make_valid, transform, union_all
+from shapely.geometry import MultiPolygon, mapping, shape
 
 TIGER = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer"
 AUSTIN = "https://services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/PLANNINGCADASTRE_neighborhood_planning_areas/FeatureServer/0/query"
@@ -58,6 +60,31 @@ def polygon(geometry):
     west, south, east, north = geom.bounds
     if west < -180 or east > 180 or south < -90 or north > 90:
         raise ValueError("expected WGS84 coordinates")
+    return geom
+
+
+NAMING_KINDS = {"austin", "wcad", "place"}
+
+
+def naming_polygon(geometry):
+    """Naming polygons come from city and appraisal-district layers, which often carry small
+    self-intersections. Repair them; return None for rows with no usable polygon (counted
+    and skipped: a missing name falls through to the next rule, it never invents one)."""
+    if not isinstance(geometry, dict) or not geometry.get("coordinates"):
+        return None
+    try:
+        geom = shape(geometry)
+    except (ValueError, TypeError, AttributeError):
+        return None
+    if not geom.is_valid:
+        geom = make_valid(geom)
+    parts = [g for g in getattr(geom, "geoms", [geom]) if g.geom_type in {"Polygon", "MultiPolygon"}]
+    polys = [p for g in parts for p in getattr(g, "geoms", [g]) if not p.is_empty]
+    if not polys:
+        return None
+    geom = polys[0] if len(polys) == 1 else MultiPolygon(polys)
+    if not all(math.isfinite(v) for v in geom.bounds):
+        return None
     return geom
 
 
@@ -175,14 +202,19 @@ class Areas(SourceAdapter):
         features = body.get("features")
         if not isinstance(features, list):
             raise ValueError("expected GeoJSON features list")
-        expected = set(FIELDS[raw.request.params["kind"]].split(","))
+        kind = raw.request.params["kind"]
+        expected = set(FIELDS[kind].split(","))
         for feature in features:
             if not isinstance(feature, dict) or feature.get("type") != "Feature":
                 raise ValueError("expected GeoJSON Feature")
             props = feature.get("properties")
-            if not isinstance(props, dict) or set(props) != expected:
-                raise ValueError(f"{raw.request.key}: unexpected field set; expected {sorted(expected)}")
-            polygon(feature.get("geometry"))
+            # Every requested field must be present. Extra fields some services add (e.g. an
+            # object id) are ignored: normalize() copies only the named fields, so nothing
+            # else can reach a published file.
+            if not isinstance(props, dict) or not expected <= set(props):
+                raise ValueError(f"{raw.request.key}: missing fields; expected {sorted(expected)}")
+            if kind not in NAMING_KINDS:
+                polygon(feature.get("geometry"))  # Census boundaries stay strict
         return features
 
     def follow_up(self, raw, ctx):
@@ -196,8 +228,16 @@ class Areas(SourceAdapter):
 
     def normalize(self, raw):
         kind = raw.request.params["kind"]
+        skipped = 0
         for index, feature in enumerate(self.features(raw)):
             row = feature["properties"]
+            geometry = feature["geometry"]
+            if kind in NAMING_KINDS:
+                geom = naming_polygon(geometry)
+                if geom is None:
+                    skipped += 1
+                    continue
+                geometry = mapping(geom)
             props = {"kind": kind}
             if kind in {"block_group", "tract"}:
                 geoid = row["GEOID"]
@@ -217,7 +257,10 @@ class Areas(SourceAdapter):
                     raise ValueError("expected text name")
                 props["name"] = clean_subdivision_name(name) if kind == "wcad" and name else name
             yield AreaFeature(dataset="area_input", feature_id=f"{raw.request.key}_{index}",
-                              geometry=feature["geometry"], properties=props)
+                              geometry=geometry, properties=props)
+        if skipped:
+            print(f"areas: {raw.request.key}: skipped {skipped} naming rows without a usable polygon",
+                  file=sys.stderr)
 
     def finalize(self, records):
         names = {kind: [] for kind in ("austin", "wcad", "place")}

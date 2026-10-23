@@ -224,9 +224,10 @@ def test_plan_exact_endpoints_fields_and_paging(ad):
 
 
 @pytest.mark.parametrize("failure", ["status", "not_geojson", "missing_features", "transfer",
-    "nested_transfer", "missing_field", "extra_field", "point", "null_geometry", "invalid_polygon"])
+    "nested_transfer", "missing_field", "point", "null_geometry", "invalid_polygon"])
 def test_bad_responses_fail_closed(ad, failure):
-    raw = payload("austin", [feature("austin")])
+    """Census boundaries are strict: any bad response or geometry fails the run."""
+    raw = payload("block_group", [feature("block_group")])
     body = copy.deepcopy(raw.body)
     status = 200
     if failure == "status":
@@ -338,3 +339,22 @@ def test_budget_and_repo_live_gate(repo):
     run = runner.run("areas", mode="live", now=NOW)
     assert run.status == "skipped" and run.calls_made == 0
     assert "awaiting Claude's first live check" in " ".join(run.notes)
+
+
+def test_extra_fields_are_ignored_and_never_published(ad):
+    raw = payload("austin", [feature("austin")])
+    raw.body["features"][0]["properties"]["OBJECTID"] = 7
+    raw.body["features"][0]["properties"]["OWNER_NAME"] = "Never publish"
+    [rec] = list(ad.normalize(raw))
+    assert set(rec.properties) == {"kind", "name"}
+
+
+def test_naming_polygons_are_repaired_or_skipped(ad):
+    bowtie = {"type": "Polygon", "coordinates": [[[-97, 30], [-96, 31], [-96, 30], [-97, 31], [-97, 30]]]}
+    good, bad, null, point = (feature("austin") for _ in range(4))
+    bad["geometry"], null["geometry"] = bowtie, None
+    point["geometry"] = {"type": "Point", "coordinates": [-97, 30]}
+    rows = list(ad.normalize(payload("austin", [good, bad, null, point])))
+    assert len(rows) == 2  # the good one and the repaired bow-tie
+    from shapely.geometry import shape
+    assert all(shape(r.geometry).is_valid and shape(r.geometry).area > 0 for r in rows)
