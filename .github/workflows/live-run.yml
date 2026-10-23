@@ -1,0 +1,74 @@
+# Runs ONE adapter against its real source, within its call budget (config/budgets.yaml),
+# and pushes the run log and stored data to a new branch `data/<adapter>-<run id>` for
+# Claude to review and merge as a pull request. It never publishes to the site directly.
+# Manual only. `first_check` bypasses the live gate for Claude's first check of a new source.
+name: Live run
+on:
+  workflow_dispatch:
+    inputs:
+      adapter:
+        description: "Adapter id (folder name in adapters/)"
+        required: true
+      first_check:
+        description: "First live check of a gated adapter"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-${{ inputs.adapter }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ADAPTER: ${{ inputs.adapter }}
+    steps:
+      - name: Check adapter id
+        run: |
+          [[ "$ADAPTER" =~ ^[a-z][a-z0-9_]{1,63}$ ]] || { echo "::error::bad adapter id"; exit 1; }
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: pip install -e pipeline
+      - name: Live run (budgeted)
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          MM_LIVE_CHECK: ${{ inputs.first_check && inputs.adapter || '' }}
+        run: mm run --adapter "$ADAPTER" --mode live || true
+      - name: Summary (run page and annotations)
+        run: |
+          mkdir -p probe-out
+          python tools/live_summary.py "$ADAPTER" | tee probe-out/summary.md >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY'
+          text = open("probe-out/summary.md", encoding="utf-8").read()
+          parts, cur = [], ""
+          for line in text.splitlines(keepends=True):
+              if len(cur) + len(line) > 3000:
+                  parts.append(cur); cur = ""
+              cur += line[:3000]
+          parts.append(cur)
+          parts = [p for p in parts if p.strip()][:10]
+          esc = lambda s: s.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+          for i, part in enumerate(parts, 1):
+              print(f"::notice title=Live run summary {i}/{len(parts)}::{esc(part)}")
+          PY
+      - name: Push run log and stored data to a review branch
+        # The run log is always pushed, so the calls count against the budget once merged.
+        run: |
+          branch="data/${ADAPTER}-${GITHUB_RUN_ID}"
+          git config user.name "metro-mapper-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add data/runs/ingestion_runs.jsonl
+          [ -d data/canonical ] && git add data/canonical
+          git commit -m "Live run: $ADAPTER (run $GITHUB_RUN_ID)"
+          git push origin "$branch"
+          echo "Pushed $branch" >> "$GITHUB_STEP_SUMMARY"

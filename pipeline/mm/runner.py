@@ -7,6 +7,7 @@ plan -> fetch (or fixture) -> normalize -> validate -> empty-layer guard
 from __future__ import annotations
 
 import gzip
+import os
 import hashlib
 import json
 import sys
@@ -26,6 +27,8 @@ from .paths import paths
 from .schemas import ENTITY_MODELS, IngestionRun
 
 MAX_FAIL_STREAK = 3
+# Claude's first live check of a gated adapter (the Live run workflow's first_check input).
+LIVE_CHECK_ENV = "MM_LIVE_CHECK"
 
 
 class Terminated(BaseException):
@@ -82,7 +85,10 @@ def run(adapter_id: str, mode: Literal["live", "fixture"] = "fixture",
     source_as_of = None
     interrupted: BaseException | None = None
 
-    if mode == "live" and adapter_id in config.live_gates():
+    live_check = mode == "live" and os.environ.get(LIVE_CHECK_ENV) == adapter_id
+    if live_check:
+        notes.append(f"first live check: live gate bypassed by {LIVE_CHECK_ENV}")
+    if mode == "live" and adapter_id in config.live_gates() and not live_check:
         reason = config.live_gates()[adapter_id]
         run_ = IngestionRun(run_id=run_id, adapter=adapter_id, mode="live", started_at=now,
                             finished_at=now, status="skipped",
