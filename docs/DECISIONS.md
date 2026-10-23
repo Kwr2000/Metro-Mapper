@@ -53,6 +53,31 @@ Details and citations in `docs/SOURCES.md`.
 - **Census API:** a key is required even for county-level requests. With the `CENSUS_API_KEY`
   secret it works from GitHub (run 39891997771). Two earlier 503s were transient.
 
+## 2026-10-23 — P1-01 skeleton: design choices (Claude)
+
+Ported from Austin Watch piece by piece (package `aw` → `mm`), keeping only area layers.
+Differences from Austin Watch, and why:
+
+- **Canonical store is gzipped NDJSON**, written deterministically (no git churn when
+  unchanged). DuckDB/Parquet are dropped until a task needs them, so the DuckDB 2.0
+  breakage can't recur and CI installs less.
+- **Partial live runs publish nothing** (Austin Watch published them). An incomplete area
+  layer would show missing areas as gaps, so the last complete layer stays live.
+- **No budget line means no live calls** (fails closed). Fixture runs are unaffected.
+- **Raw live responses are gitignored** and kept only if an adapter opts in; **`mm record`
+  is opt-in** per adapter. Public repo, and CAD files carry personal data.
+- **Two guards from the ground rules:** `privacy.py` refuses to publish personal-looking
+  property names (owner, mailing address, exemptions, agents, buyers/sellers…; property
+  `situs_*` and ACS `owner_occupied*` allowed). `inputs.py` plus tests stop any field of a
+  `demographic: true` layer from becoming a score or model input.
+- **Missing values display as "Not available"**, never "—" or zero.
+- **Site:** Map / Sources / Health / About pages, a footer on every page, a "Test data"
+  banner whenever a visible layer shows fixtures, and layer choices and the map view
+  remembered in the browser only. Basemap: OpenFreeMap (free, no key).
+- **Pages deploy** runs `mm publish` (stored live data, fixtures elsewhere) and never calls
+  a source. Turning Pages on (Settings → Pages → Source: GitHub Actions) is a one-time owner
+  click; the API path is blocked for Claude here.
+
 ## 2026-10-23 — Owner approval: Phase 1 starts; Q3 decided
 
 **Approved by the owner in writing (2026-10-23).**

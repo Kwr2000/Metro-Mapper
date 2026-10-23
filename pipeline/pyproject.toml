@@ -1,0 +1,27 @@
+[project]
+name = "metro-mapper-pipeline"
+version = "0.1.0"
+description = "Ingestion, registry compiler and health for Metro Mapper."
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+  "pydantic>=2.6,<3",
+  "pyyaml>=6.0,<7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-xdist>=3"]
+
+[project.scripts]
+mm = "mm.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mm*"]
+
+[tool.pytest.ini_options]
+markers = ["slow: rebuilds the full fixture set; skipped in CI, run by make test"]
+testpaths = ["tests"]

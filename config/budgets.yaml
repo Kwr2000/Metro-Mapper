@@ -1,0 +1,6 @@
+# Hard call budgets for live sources. The pipeline fails closed at the limit, and an
+# adapter with no entry here cannot run live at all. Spend is computed from
+# data/runs/ingestion_runs.jsonl (live runs only), in UTC days and months.
+# Changing a budget needs the owner's written approval in docs/DECISIONS.md.
+adapters:
+  demo_points: {per_day: 1}   # bundled file, no remote source

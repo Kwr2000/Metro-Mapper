@@ -1,0 +1,565 @@
+{
+  "$defs": {
+    "BasemapConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "attribution": {
+          "title": "Attribution",
+          "type": "string"
+        },
+        "center": {
+          "description": "[lon, lat]",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Center",
+          "type": "array"
+        },
+        "style_url": {
+          "title": "Style Url",
+          "type": "string"
+        },
+        "zoom": {
+          "title": "Zoom",
+          "type": "number"
+        }
+      },
+      "required": [
+        "style_url",
+        "attribution",
+        "center",
+        "zoom"
+      ],
+      "title": "BasemapConfig",
+      "type": "object"
+    },
+    "CompiledLayer": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ISO date the data describes, or the last successful run",
+          "title": "As Of"
+        },
+        "as_of_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of Field"
+        },
+        "attribution": {
+          "title": "Attribution",
+          "type": "string"
+        },
+        "coverage": {
+          "title": "Coverage",
+          "type": "string"
+        },
+        "data_bundle": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{1,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Layers that share one published data file",
+          "title": "Data Bundle"
+        },
+        "data_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data Url"
+        },
+        "dataset": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Which of the source's datasets; None = all",
+          "title": "Dataset"
+        },
+        "default_visible": {
+          "default": false,
+          "title": "Default Visible",
+          "type": "boolean"
+        },
+        "demographic": {
+          "default": false,
+          "description": "Census demographics: map layer and filter only, never a score or model input (AGENTS.md rule 4). Every field of a demographic layer is a demographic field.",
+          "title": "Demographic",
+          "type": "boolean"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "disclaimer": {
+          "default": "",
+          "description": "The publisher's own disclaimer, shown with the layer",
+          "title": "Disclaimer",
+          "type": "string"
+        },
+        "freshness": {
+          "enum": [
+            "fresh",
+            "stale",
+            "never_run",
+            "failing",
+            "not_scheduled",
+            "fixture_only"
+          ],
+          "title": "Freshness",
+          "type": "string"
+        },
+        "geometry": {
+          "enum": [
+            "point",
+            "line",
+            "polygon",
+            "raster",
+            "none"
+          ],
+          "title": "Geometry",
+          "type": "string"
+        },
+        "group": {
+          "title": "Group",
+          "type": "string"
+        },
+        "hover": {
+          "items": {
+            "$ref": "#/$defs/PopupField"
+          },
+          "title": "Hover",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{1,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "join": {
+          "enum": [
+            "parcel",
+            "point",
+            "block_group",
+            "tract",
+            "zip",
+            "jurisdiction",
+            "none"
+          ],
+          "title": "Join",
+          "type": "string"
+        },
+        "last_success": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Success"
+        },
+        "legend": {
+          "items": {
+            "$ref": "#/$defs/LegendItem"
+          },
+          "title": "Legend",
+          "type": "array"
+        },
+        "license": {
+          "default": "",
+          "title": "License",
+          "type": "string"
+        },
+        "order": {
+          "default": 100,
+          "title": "Order",
+          "type": "integer"
+        },
+        "popup": {
+          "items": {
+            "$ref": "#/$defs/PopupField"
+          },
+          "title": "Popup",
+          "type": "array"
+        },
+        "popup_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Popup Title"
+        },
+        "publish": {
+          "enum": [
+            "geojson",
+            "pmtiles",
+            "none"
+          ],
+          "title": "Publish",
+          "type": "string"
+        },
+        "refresh": {
+          "enum": [
+            "daily",
+            "weekly",
+            "monthly",
+            "annual",
+            "as_revised",
+            "manual"
+          ],
+          "title": "Refresh",
+          "type": "string"
+        },
+        "source": {
+          "description": "Adapter id that produces this layer",
+          "pattern": "^[a-z][a-z0-9_]{1,63}$",
+          "title": "Source",
+          "type": "string"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LayerStyle"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "variant": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LayerVariant"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "where": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "description": "Equality filters on feature properties",
+          "title": "Where",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "group",
+        "description",
+        "source",
+        "geometry",
+        "join",
+        "publish",
+        "style",
+        "popup",
+        "popup_title",
+        "hover",
+        "variant",
+        "data_bundle",
+        "legend",
+        "dataset",
+        "where",
+        "as_of_field",
+        "coverage",
+        "refresh",
+        "attribution",
+        "license",
+        "disclaimer",
+        "demographic",
+        "default_visible",
+        "order",
+        "data_url",
+        "as_of",
+        "last_success",
+        "freshness"
+      ],
+      "title": "CompiledLayer",
+      "type": "object"
+    },
+    "LayerStyle": {
+      "additionalProperties": false,
+      "description": "A MapLibre layer style. `paint`/`layout` are passed to MapLibre as-is.",
+      "properties": {
+        "layout": {
+          "additionalProperties": true,
+          "title": "Layout",
+          "type": "object"
+        },
+        "maxzoom": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxzoom"
+        },
+        "minzoom": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minzoom"
+        },
+        "paint": {
+          "additionalProperties": true,
+          "title": "Paint",
+          "type": "object"
+        },
+        "type": {
+          "enum": [
+            "circle",
+            "line",
+            "fill",
+            "fill-extrusion",
+            "symbol",
+            "heatmap",
+            "raster"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "paint",
+        "layout",
+        "minzoom",
+        "maxzoom"
+      ],
+      "title": "LayerStyle",
+      "type": "object"
+    },
+    "LayerVariant": {
+      "additionalProperties": false,
+      "description": "Layers sharing a family are one choice in the panel with a scale toggle.",
+      "properties": {
+        "family": {
+          "pattern": "^[a-z][a-z0-9_]{1,63}$",
+          "title": "Family",
+          "type": "string"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "family",
+        "key",
+        "label"
+      ],
+      "title": "LayerVariant",
+      "type": "object"
+    },
+    "LegendItem": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "title": "Color",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "color"
+      ],
+      "title": "LegendItem",
+      "type": "object"
+    },
+    "PopupField": {
+      "additionalProperties": false,
+      "properties": {
+        "annotation_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Annotation Field"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "format": {
+          "default": "text",
+          "enum": [
+            "text",
+            "number",
+            "currency",
+            "date",
+            "percent",
+            "link"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "moe_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Moe Field"
+        },
+        "reliability_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reliability Field"
+        }
+      },
+      "required": [
+        "field",
+        "label",
+        "format",
+        "moe_field",
+        "reliability_field",
+        "annotation_field"
+      ],
+      "title": "PopupField",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "basemap": {
+      "$ref": "#/$defs/BasemapConfig"
+    },
+    "compiled_at": {
+      "title": "Compiled At",
+      "type": "string"
+    },
+    "groups": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Groups",
+      "type": "array"
+    },
+    "layers": {
+      "items": {
+        "$ref": "#/$defs/CompiledLayer"
+      },
+      "title": "Layers",
+      "type": "array"
+    },
+    "site_title": {
+      "title": "Site Title",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "site_title",
+    "compiled_at",
+    "basemap",
+    "groups",
+    "layers"
+  ],
+  "title": "Registry",
+  "type": "object"
+}

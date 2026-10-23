@@ -77,14 +77,46 @@ Record the owner's approvals in `docs/DECISIONS.md` ("Owner approval: …").
   cite it in `docs/SOURCES.md` or `docs/DECISIONS.md` with the date checked.
 - **Scope.** Keep phases and tasks small. Scope creep sank the previous project.
 
-## Seams (from Phase 1)
+## Seams — how to extend without touching core code
 
-- One adapter per source with recorded fixtures and a contract test.
-- One manifest per map layer; app code never names a specific layer id (a test enforces this).
-- Pipeline in Python; front end MapLibre GL with PMTiles/static files on GitHub Pages.
-- Personal notes, weights and saved areas live only in the browser.
+- **New data source:** `adapters/<id>/adapter.py` defining `ADAPTER = <SourceAdapter subclass>`
+  (contract in `pipeline/mm/adapter.py`: `plan → fetch → normalize`, plus `source_as_of`).
+  Emit canonical records only (`pipeline/mm/schemas.py`); never leak source field names.
+  Fixtures in `adapters/<id>/fixtures/<request key>.json` are **synthetic, with native field
+  names** (real responses may hold personal data; `mm record` is opt-in per adapter via
+  `recordable = True`). Add a budget line in `config/budgets.yaml`: an adapter without one
+  cannot run live. New sources start in `config/live_gates.yaml` until the probe confirms them.
+- **New map layer:** one YAML file in `layers/` (schema: `LayerManifest`); file name = `id`.
+  Set `attribution`, `license` (or leave empty = "No license stated") and the publisher's
+  `disclaimer`. Census demographics set `demographic: true`. No changes to `web/src`: a test
+  fails if site code names a layer id.
+- **Scores and models** (Phase 2+) declare their input fields in `pipeline/mm/inputs.py`;
+  a test fails if any is a field of a demographic layer.
+- **Personal data:** adapters strip it at ingest; `pipeline/mm/privacy.py` also refuses to
+  publish personal-looking property names. Raw live responses (`data/raw/`) are gitignored.
+- **Schema change:** edit `pipeline/mm/schemas.py`, run `mm schema` and
+  `cd web && npm run gen:types`, commit both outputs.
+- Personal notes, weights and saved areas live only in the browser (`web/src/store.ts`).
 
-Details (paths, commands) are added here when Phase 1 creates them.
+## Layout and commands
+
+```
+pipeline/mm/      Python package (CLI: mm)        adapters/<id>/  one folder per source
+layers/*.yaml     one manifest per map layer      config/         app, budgets, live gates
+data/canonical/   last good live records (committed)   data/runs/  run log (live: committed)
+web/              Vite + React + MapLibre site    schemas/        exported JSON Schemas
+tools/probe/      source probe (manual workflow)
+
+make setup        # pip install -e pipeline[dev]; npm ci in web/
+make test         # full suite: run before every merge
+make test-fast    # the CI subset
+make build        # fixtures -> layers, registry.json, health.json (labeled Test data)
+make dev          # publish (stored live data, else fixtures) and serve on 127.0.0.1:5173
+mm run --adapter <id> --mode live    # budgeted live run (normally only in workflows)
+```
+
+Workflows: `ci.yml` (once per PR, fast subset), `pages.yml` (deploys the site on push to
+main from committed data; no source calls), `probe.yml` (manual source probe).
 
 ## Reference material
 
