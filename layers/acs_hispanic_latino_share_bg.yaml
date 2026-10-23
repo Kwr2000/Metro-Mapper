@@ -46,6 +46,7 @@ popup:
   moe_field: hispanic_latino_share_moe
   reliability_field: hispanic_latino_share_reliability
   annotation_field: hispanic_latino_share_annotation
+  display_field: hispanic_latino_share_display
 - field: geoid
   label: GEOID
 - field: geography

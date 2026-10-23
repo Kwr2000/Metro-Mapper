@@ -46,6 +46,7 @@ popup:
   moe_field: under_18_share_moe
   reliability_field: under_18_share_reliability
   annotation_field: under_18_share_annotation
+  display_field: under_18_share_display
 - field: geoid
   label: GEOID
 - field: geography

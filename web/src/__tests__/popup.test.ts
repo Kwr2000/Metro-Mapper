@@ -38,4 +38,12 @@ describe("popups", () => {
     const missing = popupFieldHtml(field, { share: null, moe: null, reliability: "estimate unavailable" });
     expect(missing).toContain("MOE unavailable"); expect(missing).toContain("Not available"); expect(missing).not.toContain("0.0%");
   });
+
+  it("shows a Census range in place of a capped median", () => {
+    const field = { field: "income", label: "Income estimate", format: "currency" as const, moe_field: "moe",
+      display_field: "income_display" };
+    const html = popupFieldHtml(field, { income: 250001, moe: null, income_display: "$250,000 or more" });
+    expect(html).toContain("$250,000 or more"); expect(html).not.toContain("250,001");
+    expect(popupFieldHtml(field, { income: 90000, moe: 5000 })).toContain("$90,000");
+  });
 });

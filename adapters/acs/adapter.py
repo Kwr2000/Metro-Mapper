@@ -48,6 +48,46 @@ def annotation(value):
     return value.strip() if isinstance(value, str) and value.strip() else None
 
 
+# Census annotation codes (EA/MA columns), in plain words.
+# https://www.census.gov/data/developers/data-sets/acs-1year/notes-on-acs-estimate-and-annotation-values.html
+ESTIMATE_NOTES = {
+    "-": "Census: too few survey responses to estimate",
+    "N": "Census: not shown (too few cases)",
+    "(X)": "Census: not applicable",
+}
+MOE_NOTES = {
+    "**": "Census: margin of error not computed (too few responses)",
+    "***": "Census: no margin of error for an open-ended range",
+    "*****": "Census: controlled estimate, no sampling margin of error",
+    "N": "Census: margin of error not shown (too few cases)",
+    "(X)": "Census: margin of error not applicable",
+}
+OPEN_ENDED = re.compile(r"^(\d[\d,]*)([+-])$")
+
+
+def open_ended(text, fmt):
+    """'250,000+' -> '$250,000 or more'; '1939-' -> '1939 or earlier'. None if not a range code."""
+    match = OPEN_ENDED.fullmatch(text or "")
+    if not match:
+        return None
+    value, sign = match.groups()
+    if fmt == "currency":
+        return f"${value} or {'more' if sign == '+' else 'less'}"
+    if len(value) == 4 and "," not in value:  # a year
+        return f"{value} or {'later' if sign == '+' else 'earlier'}"
+    return f"{value} or {'more' if sign == '+' else 'less'}"
+
+
+def plain_note(text, kind):
+    """A Census code in plain words; unknown codes are kept as given."""
+    table = ESTIMATE_NOTES if kind == "estimate" else MOE_NOTES
+    if text in table:
+        return table[text]
+    if kind == "estimate" and OPEN_ENDED.fullmatch(text):
+        return f"Census reports a range: {open_ended(text, None)}"
+    return f"Census note: {text}"
+
+
 def reliability(estimate, moe):
     if estimate is None:
         return "estimate unavailable"
@@ -56,19 +96,27 @@ def reliability(estimate, moe):
     return "low reliability" if moe > .3 * estimate else "MOE ≤30% of estimate"
 
 
-def measure(cells, numerator, denominator=None):
+def measure(cells, numerator, denominator=None, fmt=None):
     selected = [cells[CELL_IDS[base]] for base in numerator]
     estimates = [cell["estimate"] for cell in selected]
     moes = [cell["moe"] for cell in selected]
     estimate = sum(estimates) if all(value is not None for value in estimates) else None
     moe = math.sqrt(sum(value ** 2 for value in moes)) if all(value is not None for value in moes) else None
     annotations = []
+    display = None
     for role, base in [("Numerator", base) for base in numerator] + ([("Denominator", denominator)] if denominator else []):
         cell = cells[CELL_IDS[base]]
-        for field, label in (("estimate_annotation", "estimate"), ("moe_annotation", "MOE")):
-            text = cell[field]
+        ea, ma = cell["estimate_annotation"], cell["moe_annotation"]
+        if not denominator and ea and cell["estimate"] is not None and open_ended(ea, fmt):
+            # A capped median: show the range; its stored number only sets the colour.
+            display, ea = open_ended(ea, fmt), None
+            ma = None if ma == "***" else ma
+        if ea == "-" and ma == "**":
+            ma = None  # the estimate note already says why
+        for kind, text in (("estimate", ea), ("moe", ma)):
             if text:
-                text = f"{role} {label}: {text}" if denominator else (f"MOE: {text}" if label == "MOE" else text)
+                text = plain_note(text, kind)
+                text = f"{role}: {text}" if denominator else text
                 if text not in annotations:
                     annotations.append(text)
     if denominator:
@@ -87,7 +135,7 @@ def measure(cells, numerator, denominator=None):
                 if radicand < 0:
                     radicand = moe ** 2 + estimate ** 2 * md ** 2
                 moe = math.sqrt(radicand) / d
-    return estimate, moe, reliability(estimate, moe), "; ".join(annotations) or None
+    return estimate, moe, reliability(estimate, moe), "; ".join(annotations) or None, display
 
 
 def valid_geoid(value, scale, county=None):
@@ -249,10 +297,12 @@ class ACS(SourceAdapter):
                 for rows in parts[scale].values():
                     cells.update(rows[geoid].properties["cells"])
                 props = {"geoid": geoid, "geography": metrics.SCALES[scale], "vintage": metrics.VINTAGE}
-                for metric, (_, _, numerator, denominator, _) in metrics.METRICS.items():
-                    value, moe, flag, note = measure(cells, numerator, denominator)
+                for metric, (_, fmt, numerator, denominator, _) in metrics.METRICS.items():
+                    value, moe, flag, note, display = measure(cells, numerator, denominator, fmt)
                     props.update({metric: value, metric + "_moe": moe, metric + "_reliability": flag,
                                   metric + "_annotation": note})
+                    if display:
+                        props[metric + "_display"] = display  # only capped medians carry it
                 output.append(AreaFeature(dataset=scale, feature_id=geoid, geometry=polygon.geometry,
                                           properties=props, source_as_of=AS_OF))
         return output

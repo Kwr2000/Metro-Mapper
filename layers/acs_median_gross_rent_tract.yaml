@@ -46,6 +46,7 @@ popup:
   moe_field: median_gross_rent_moe
   reliability_field: median_gross_rent_reliability
   annotation_field: median_gross_rent_annotation
+  display_field: median_gross_rent_display
 - field: geoid
   label: GEOID
 - field: geography

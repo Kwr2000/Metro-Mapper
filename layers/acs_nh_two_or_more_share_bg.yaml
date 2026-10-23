@@ -46,6 +46,7 @@ popup:
   moe_field: nh_two_or_more_share_moe
   reliability_field: nh_two_or_more_share_reliability
   annotation_field: nh_two_or_more_share_annotation
+  display_field: nh_two_or_more_share_display
 - field: geoid
   label: GEOID
 - field: geography
