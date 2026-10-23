@@ -1,0 +1,168 @@
+{
+  "status": 200,
+  "body": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "FLD_ZONE": "A",
+          "ZONE_SUBTY": null,
+          "SFHA_TF": "T",
+          "DFIRM_ID": "SYNTHETIC",
+          "VERSION_ID": "2.0"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -97.74531657789022,
+                30.270074524401135
+              ],
+              [
+                -97.74550775964217,
+                30.27907886148404
+              ],
+              [
+                -97.74810994674601,
+                30.279037479973297
+              ],
+              [
+                -97.74791848011053,
+                30.27003314661063
+              ],
+              [
+                -97.74531657789022,
+                30.270074524401135
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "FLD_ZONE": "X",
+          "ZONE_SUBTY": "0.2 PCT ANNUAL CHANCE FLOOD HAZARD CONTAINED IN CHANNEL",
+          "SFHA_TF": "F",
+          "DFIRM_ID": "SYNTHETIC",
+          "VERSION_ID": "4.0"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -97.74271467305303,
+                30.27011584055511
+              ],
+              [
+                -97.74290556992058,
+                30.279120181352734
+              ],
+              [
+                -97.74602819727248,
+                30.279070590113257
+              ],
+              [
+                -97.74583695854376,
+                30.270066253773944
+              ],
+              [
+                -97.74271467305303,
+                30.27011584055511
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "FLD_ZONE": "X",
+          "ZONE_SUBTY": "0.2 PCT ANNUAL CHANCE FLOOD HAZARD WITH LEVEE",
+          "SFHA_TF": "F",
+          "DFIRM_ID": "SYNTHETIC",
+          "VERSION_ID": "4.0"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -97.7416739103863,
+                30.27013234975845
+              ],
+              [
+                -97.74186469329983,
+                30.279136692040417
+              ],
+              [
+                -97.74342600807412,
+                30.27911192231036
+              ],
+              [
+                -97.74323505422963,
+                30.27010758225525
+              ],
+              [
+                -97.7416739103863,
+                30.27013234975845
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "FLD_ZONE": "X",
+          "ZONE_SUBTY": null,
+          "SFHA_TF": "F",
+          "DFIRM_ID": "SYNTHETIC",
+          "VERSION_ID": "2.0"
+        },
+        "geometry": null
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "FLD_ZONE": "X",
+          "ZONE_SUBTY": null,
+          "SFHA_TF": "F",
+          "DFIRM_ID": "SYNTHETIC",
+          "VERSION_ID": "7.0"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -98.2,
+                30.7
+              ],
+              [
+                -98.19,
+                30.71
+              ],
+              [
+                -98.19,
+                30.7
+              ],
+              [
+                -98.2,
+                30.71
+              ],
+              [
+                -98.2,
+                30.7
+              ]
+            ]
+          ]
+        }
+      }
+    ],
+    "exceededTransferLimit": false
+  }
+}

@@ -3,6 +3,38 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — Owner approval: `areas` budget 20 → 30 calls a day; wider study area
+
+- **Approved by the owner in writing (2026-10-23):** raise `areas` from 20 to 30 calls a day
+  for P1-02b (two more subdivision sources, about 24 calls per run). P1-02b makes the change.
+- `study_bbox` widened to [-98.35, 29.70, -97.10, 30.95] (Claude, during P1-04 review): three
+  eastern Williamson block groups (484910209001/003/004) reach -97.155, past the old east edge
+  of -97.25, so FEMA zones beyond it were not fetched and those areas would have read "not
+  available". Checked against the stored live block groups (extent -98.298, 29.752, -97.155, 30.904).
+
+## 2026-10-23 — P1-04 flood-share choices (Codex)
+
+- Use a spatial index to clip the intersecting FEMA polygons per block group, then union
+  each category. Subtract the SFHA union from the 0.2% union, including overlaps across
+  separate source features. This keeps the categories disjoint and avoids double counting.
+- Compare unrounded mapped coverage to 0.99, with only 1e-9 tolerance for projection
+  round-trip error at the exact boundary. A coverage value that merely rounds up to 0.990
+  still makes both hazard shares null. Fully mapped areas with no hazards get actual zeros.
+- A promised continuation page must contain features even if its own transfer-limit flag
+  is false. An initially empty, complete NFHL response is allowed and yields zero mapped
+  coverage with unavailable flood shares. Support transfer flags at the GeoJSON top level
+  and in its collection properties. Paging always advances by the requested 1,000 rows.
+- Require the requested attributes, nonempty zone text, T/F SFHA flags and text version
+  identifiers; ignore extra service fields. Repair FEMA geometry, recursively retain all
+  polygonal parts and print skipped-row counts per page. TIGER geometry remains strict.
+- Collect distinct nonempty VERSION_ID strings from all usable NFHL polygons intersecting
+  the block group, including boundary-only touches and AREA NOT INCLUDED. Sort them as text.
+  VERSION_ID does not establish an effective date: leave `source_as_of` unknown, so the
+  existing registry uses the successful run date without inventing a FEMA map vintage.
+- Compute shares on unsimplified Census polygons in EPSG:5070. Simplify only their display
+  geometry using the areas adapter's 5 m tolerance and six-decimal WGS84 coordinates.
+  Hazard polygons are never published. No pipeline core or web application changes.
+
 ## 2026-10-23 — P1-02 area naming choices (Codex)
 
 - Union polygons in each cleaned WCAD name group before measuring coverage, so overlapping
