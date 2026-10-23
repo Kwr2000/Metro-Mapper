@@ -248,6 +248,11 @@ published in 2027.
 - WCAD subdivisions (8,859), TCAD `ABS_SUBD.TXT` subdivision descriptions, Hays County GIS
   "Active Subdivisions" (modified 2026-10-22) and "Hays County Subdivisions" (2024-04-10).
 - Census places (TIGER, public domain) and OSM `place=neighbourhood` (ODbL).
+- Checked 2026-10-23 for P1-02b: **City of Austin subdivisions**
+  (`PLANNINGCADASTRE_subdivision_boundaries/FeatureServer/0`, 16,726 features, field
+  `SUBDIVISION_NAME`, names truncated at 50 characters, extent covers Travis and edges of W/H)
+  and **Hays County subdivisions** (`services5.arcgis.com/bVphnK8rPe5MHUSr/.../Subdivisions/FeatureServer/4`,
+  1,519 features, field `SUB_NAME`). No license stated (published under the 2026-10-23 decision).
 
 ## Gaps
 

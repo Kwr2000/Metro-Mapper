@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-02)._
+_Last updated 2026-10-23 (P1-02 live)._
 
 ## Phase
 
@@ -26,17 +26,20 @@ are decided (`DECISIONS.md`).
   site shell (Map/Sources/Health/About, Test data banner), CI, Pages deploy workflow.
   58 pipeline + 18 web tests; checked in Chromium at 1440×900 and 390×844.
 
-- **P1-02** (Codex): areas adapter, synthetic naming/paging fixtures and tests, block-group
-  and tract manifests, budget and live gate; demo removed. `make setup` and `make test`
-  pass. Awaiting Claude's review and first live check (expect 1,206 block groups).
+- **P1-02** (Codex, PR #11; Claude review fixes): areas adapter. First live run 40001981957:
+  1,206 block groups and 471 tracts, published on the live site (PR #13). Ungated.
+- **Site live** on GitHub Pages: https://kwr2000.github.io/Metro-Mapper/ (real boundaries,
+  basemap working).
+- `Live run` workflow (PR #12) and the test-data labeling fix (PR #14).
 
 ## Next
 
-1. Owner: turn on GitHub Pages once (Settings → Pages → Source: GitHub Actions).
-2. Claude: review P1-02 and run its first budgeted live check before merging. After it merges,
-   refine P1-03 (ACS) and P1-04 (flood) against its code and give their prompts.
-   Claude reviews each PR, runs `make test`, and does the live run before merging.
-3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
+1. Codex: P1-03 (ACS demographics) and P1-04 (flood shares); prompts given 2026-10-23. They
+   touch different files and can run at the same time.
+2. Owner: approve raising the `areas` budget from 20 to 30 calls a day for P1-02b (better
+   names). Then Codex: P1-02b.
+3. Claude: review each PR, run `make test`, do the first live check with the Live run
+   workflow, review the data PR, merge.
 
 ## Open issues
 
@@ -45,8 +48,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Turn on GitHub Pages: Settings → Pages → Build and deployment → Source: GitHub Actions.
-  The first deploy (after PR #7) failed only because Pages is off; re-run "Deploy site" after.
+- Approve the `areas` budget change (20 → 30 calls a day) for P1-02b.
 
 ## Working notes for agents
 

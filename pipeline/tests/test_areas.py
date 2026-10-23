@@ -9,6 +9,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
+import yaml
 from pyproj import Transformer
 from shapely.geometry import MultiPolygon, box, mapping, shape
 
@@ -332,13 +333,9 @@ def test_bad_later_page_preserves_last_published_layers(repo):
 def test_budget_and_repo_live_gate(repo):
     b = config.budgets().adapters["areas"]
     assert b.per_day == 20 and b.min_interval_seconds == 1
-    # Core fixture clears gates; restore the actual repository gate for this check.
+    # Ungated after Claude's first live check (run 40001981957, DECISIONS 2026-10-23).
     gate_path = MODULE_PATH.parents[2] / "config/live_gates.yaml"
-    (repo / "config/live_gates.yaml").write_text(gate_path.read_text())
-    config.clear_cache()
-    run = runner.run("areas", mode="live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
-    assert "awaiting Claude's first live check" in " ".join(run.notes)
+    assert "areas" not in (yaml.safe_load(gate_path.read_text()).get("gated") or {})
 
 
 def test_extra_fields_are_ignored_and_never_published(ad):

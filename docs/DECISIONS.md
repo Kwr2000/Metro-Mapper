@@ -71,6 +71,29 @@ Details and citations in `docs/SOURCES.md`.
 - **Census API:** a key is required even for county-level requests. With the `CENSUS_API_KEY`
   secret it works from GitHub (run 39891997771). Two earlier 503s were transient.
 
+## 2026-10-23 — P1-02 merged; first live check of `areas` passed (Claude)
+
+- Review changes before merging (on the PR): extra service fields are ignored (only named
+  fields are copied, so nothing extra can be published); naming polygons from the City,
+  WCAD and Census places are repaired with `make_valid` or skipped and counted; Census
+  boundaries stay strict.
+- **Live run 40001981957** (Live run workflow, first check): success, 14/14 calls, 28 s.
+  **1,206 block groups** (Travis 766, Williamson 324, Hays 116) and **471 tracts**, matching
+  the Phase 0 count. Names: Census place 764, City of Austin planning area 343, WCAD
+  subdivision 68, fallback 31. Stored data has boundary and name fields only. Merged as
+  PR #13; the live site shows real boundaries. `areas` is ungated.
+- CI on that data PR found that a fixture build labeled layers "Current" once the run log had
+  a live run. Fixed in PR #14: the registry labels each layer from the file it publishes.
+- **Naming is weak in Austin** (256 block groups named "Austin city"). Follow-up task P1-02b
+  adds City of Austin and Hays County subdivisions and uses place base names. It needs the
+  `areas` budget raised from 20 to 30 calls a day: **pending owner approval**.
+- `Live run` workflow (PR #12): manual, budgeted, one adapter; pushes the run log and stored
+  data to a `data/<adapter>-<run id>` branch for review; `first_check` bypasses the live gate
+  for Claude's first check only.
+- P1-03 trimmed to the measures in the brief (no commute, vehicle, language or moving
+  measures), which fits its approved 30 calls a day. P1-04 publishes the per-area flood
+  shares only; flood-zone outlines wait for a PMTiles publisher (too large as GeoJSON).
+
 ## 2026-10-23 — P1-01 skeleton: design choices (Claude)
 
 Ported from Austin Watch piece by piece (package `aw` → `mm`), keeping only area layers.
