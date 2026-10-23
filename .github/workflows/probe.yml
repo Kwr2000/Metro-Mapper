@@ -1,0 +1,60 @@
+# Source probe: checks from GitHub's runners that each candidate source can be reached
+# unattended. Small requests only (HEAD, byte ranges, counts). Manual only.
+# Owner-approved for Phase 0 (docs/DECISIONS.md, 2026-10-22).
+name: Source probe
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Comma-separated check ids (blank = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe (summary appears on the run page)
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          mkdir -p probe-out
+          python tools/probe/probe.py --only "$ONLY" > probe-out/summary.md
+          cat probe-out/summary.md >> "$GITHUB_STEP_SUMMARY"
+      # The summary again as notice annotations (~3 KB each, at most 10), readable over REST:
+      # gh api repos/{owner}/{repo}/check-runs/{job_id}/annotations
+      - name: Summary as annotations
+        if: ${{ always() && hashFiles('probe-out/summary.md') != '' }}
+        run: |
+          python3 - <<'PY'
+          text = open("probe-out/summary.md", encoding="utf-8").read()
+          parts, cur = [], ""
+          for line in text.splitlines(keepends=True):
+              if len(cur) + len(line) > 3000:
+                  parts.append(cur); cur = ""
+              cur += line[:3000]
+          parts.append(cur)
+          parts = [p for p in parts if p.strip()][:10]
+          esc = lambda s: s.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+          for i, part in enumerate(parts, 1):
+              print(f"::notice title=Probe summary {i}/{len(parts)}::{esc(part)}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-summary
+          path: probe-out
+          retention-days: 7

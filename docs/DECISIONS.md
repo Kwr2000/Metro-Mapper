@@ -3,6 +3,17 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-22 — Source probe workflow (Phase 0)
+
+- `tools/probe/probe.py` + `.github/workflows/probe.yml` (manual only). About 30 checks, one
+  small request each: HEAD, byte ranges, count queries or a page fetch. Zip archives are
+  inspected by reading only their directory, plus at most one small member (GTFS
+  `feed_info.txt`). Output is counts, sizes, dates and status only — no personal data, since
+  Actions logs in a public repo are public.
+- Merged without CI: CI doesn't exist until Phase 1, and `workflow_dispatch` only works for
+  workflows on the default branch. The script was syntax-checked and its zip reader was
+  tested locally.
+
 ## 2026-10-22 — Owner approvals to start Phase 0
 
 - **Phase 0 started** (owner: "Go", 2026-10-22). Phase 0 is discovery and verification, no
