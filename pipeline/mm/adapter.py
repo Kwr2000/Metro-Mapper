@@ -73,6 +73,9 @@ class SourceAdapter(ABC):
     # Keep raw live responses under data/raw (gitignored). Off by default: raw files from
     # appraisal districts carry owner names and addresses.
     retain_raw: ClassVar[bool] = False
+    # Seconds to wait before the one retry of a failed live request (None = runner default).
+    # Some servers drop connections when asked again too soon; give those a longer pause.
+    retry_wait_seconds: ClassVar[float | None] = None
     # `mm record` may save live responses as fixtures only when the response holds no
     # personal data. Off by default: write synthetic fixtures with native field names.
     recordable: ClassVar[bool] = False
