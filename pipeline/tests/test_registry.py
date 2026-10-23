@@ -65,6 +65,23 @@ def test_rejects_unknown_fields(repo):
         registry.compile_registry()
 
 
+def test_shared_bundle_is_one_file(repo):
+    _write_layer(repo, "demo_a", **{"id: demo_landmarks": "id: demo_a", "order: 900": "order: 900\ndata_bundle: demo_bundle"})
+    _write_layer(repo, "demo_b", **{"id: demo_landmarks": "id: demo_b", "order: 900": "order: 900\ndata_bundle: demo_bundle"})
+    runner.run("demo_points", mode="fixture")
+    reg = registry.compile_registry()
+    urls = {l.id: l.data_url for l in reg.layers if l.id in ("demo_a", "demo_b")}
+    assert urls == {"demo_a": "data/layers/demo_bundle.geojson", "demo_b": "data/layers/demo_bundle.geojson"}
+    files = {p.name for p in (repo / "web/public/data/layers").iterdir()}
+    assert "demo_bundle.geojson" in files and not {"demo_a.geojson", "demo_b.geojson"} & files
+
+
+def test_rejects_bundle_named_like_a_layer(repo):
+    _write_layer(repo, "demo_a", **{"id: demo_landmarks": "id: demo_a", "order: 900": "order: 900\ndata_bundle: demo_landmarks"})
+    with pytest.raises(ManifestError, match="same name as a layer id"):
+        registry.compile_registry()
+
+
 def test_schema_export(repo):
     written = registry.export_schemas()
     assert "schemas/registry.schema.json" in written

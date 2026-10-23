@@ -401,6 +401,11 @@ def test_fixture_publication_and_shared_sources(context):
         if layer.dataset in documents:
             assert doc == documents[layer.dataset]  # Same complete metric bundle at a scale.
         documents[layer.dataset] = doc
+    # One file per scale, shared by every metric (no per-layer copies).
+    assert {layer.data_url for layer in layers} == {
+        "data/layers/acs_block_group.geojson", "data/layers/acs_tract.geojson"}
+    published = sorted(p.name for p in (context.adapter_dir.parents[1] / "web/public/data/layers").glob("acs*"))
+    assert published == ["acs_block_group.geojson", "acs_tract.geojson"]
 
 
 def test_budget_and_live_gate(context, monkeypatch):

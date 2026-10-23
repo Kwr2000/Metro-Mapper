@@ -77,9 +77,9 @@ why, and (for approvals) that the owner approved it in writing.
   rent $1k/1.5k/2k/2.5k; year built 1960/1980/2000/2010; age 25/35/45/55. These are neutral
   display bins, not scores. Every measure uses the same five blue colors, with grey for null.
 - Use the existing `data_bundle` seam: all metrics share one loaded map source/file per
-  scale. The current core publisher still writes identical files under each layer id;
-  removing those redundant disk copies would require a separate core change. No core or
-  web application code is changed for this task.
+  scale. (Claude, in review: the core publisher now writes one file per bundle, e.g.
+  `data/layers/acs_block_group.geojson`, instead of an identical copy per layer, which
+  would have been about 21 copies per scale. A bundle may not share a name with a layer id.)
 - Simplify only display polygons, using the areas adapter's 5 m equal-area tolerance and
   six-decimal WGS84 coordinates. All ACS estimates describe the whole area without prorating.
 

@@ -16,7 +16,7 @@ from . import adapter as adapter_mod
 from . import config, layer_guard, runlog
 from .manifests import ManifestError, load_layers
 from .paths import paths
-from .publish import data_url, published_exists
+from .publish import data_url, file_id, published_exists
 from .schemas import (
     FRESHNESS_HOURS,
     BasemapConfig,
@@ -95,12 +95,13 @@ def compile_registry(now: datetime | None = None, write: bool = True) -> Registr
         as_of = None
         if last_ok is not None:
             as_of = (last_ok.source_as_of or last_ok.finished_at.date()).isoformat()
-        url = data_url(layer.id, layer.publish) if published_exists(layer.id, layer.publish) else None
-        if url and _published_test_data(layer.id, layer.publish):
+        fid = file_id(layer)
+        url = data_url(fid, layer.publish) if published_exists(fid, layer.publish) else None
+        if url and _published_test_data(fid, layer.publish):
             # The file on disk is fixture data (e.g. `mm build` in CI or dev): label what is
             # shown, not what the run log says the source last did (AGENTS.md rule 1).
             fresh = "fixture_only"
-            as_of = _published_as_of(layer.id, layer.publish) or as_of
+            as_of = _published_as_of(fid, layer.publish) or as_of
         compiled.append(CompiledLayer(
             **layer.model_dump(),
             data_url=url,

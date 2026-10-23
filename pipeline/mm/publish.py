@@ -25,6 +25,15 @@ def selected(layer: LayerManifest, r: AreaFeature) -> bool:
     return all(r.properties.get(k) == v for k, v in layer.where.items())
 
 
+def file_id(layer: LayerManifest) -> str:
+    """Layers that share a `data_bundle` share one published file, named after the bundle."""
+    return layer.data_bundle or layer.id
+
+
+def published_path(layer: LayerManifest) -> Path:
+    return paths().published_layers / f"{file_id(layer)}.geojson"
+
+
 def _geojson(layer: LayerManifest, records: list[BaseModel]) -> dict:
     feats = []
     dates: list[date] = []
@@ -57,14 +66,18 @@ def publish_for_adapter(adapter_id: str, entity: str, records: list[BaseModel],
                         keep_stale_flag: bool = True) -> list[str]:
     """`keep_stale_flag=False` is for a fresh live run publishing its own new data."""
     written: list[str] = []
+    done: set[str] = set()
     for layer in load_layers():
         if layer.source != adapter_id or layer.publish == "none":
             continue
+        if file_id(layer) in done:
+            continue  # a shared bundle file is written once
+        done.add(file_id(layer))
         if layer.publish != "geojson":
             raise NotImplementedError(f"layer {layer.id}: publisher '{layer.publish}' is not built yet")
         if entity != "area_feature":
             raise ValueError(f"layer {layer.id}: geojson publishing needs area_feature records")
-        out = paths().published_layers / f"{layer.id}.geojson"
+        out = published_path(layer)
         out.parent.mkdir(parents=True, exist_ok=True)
         doc = _geojson(layer, records)
         doc["test_data"] = mode == "fixture"

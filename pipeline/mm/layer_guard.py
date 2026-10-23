@@ -40,8 +40,10 @@ class Drop:
         return f"{self.layer_id} {self.previous} -> {self.new} features"
 
 
-def _published(layer_id: str) -> dict | None:
-    p = paths().published_layers / f"{layer_id}.geojson"
+def _published(layer) -> dict | None:
+    from .publish import published_path
+
+    p = published_path(layer)
     if not p.is_file():
         return None
     try:
@@ -60,7 +62,7 @@ def drops(adapter_id: str, records: list[BaseModel]) -> list[Drop]:
     for layer in load_layers():
         if layer.source != adapter_id or layer.publish != "geojson":
             continue
-        prev_doc = _published(layer.id)
+        prev_doc = _published(layer)
         if not prev_doc or prev_doc.get("test_data"):
             continue  # nothing live to protect (missing or fixture data)
         prev = len(prev_doc.get("features") or [])
@@ -100,8 +102,10 @@ def mark_stale(adapter_id: str, info: dict) -> None:
     for layer in load_layers():
         if layer.source != adapter_id or layer.publish != "geojson":
             continue
-        doc = _published(layer.id)
+        from .publish import published_path
+
+        doc = _published(layer)
         if doc is None:
             continue
         doc.update(info)
-        (paths().published_layers / f"{layer.id}.geojson").write_text(json.dumps(doc, separators=(",", ":")))
+        published_path(layer).write_text(json.dumps(doc, separators=(",", ":")))

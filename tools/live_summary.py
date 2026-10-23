@@ -17,7 +17,7 @@ from collections import Counter
 
 from mm import runlog
 from mm.manifests import load_layers
-from mm.paths import paths
+from mm.publish import published_path
 
 
 def main(adapter_id: str) -> int:
@@ -35,7 +35,7 @@ def main(adapter_id: str) -> int:
     for layer in load_layers():
         if layer.source != adapter_id:
             continue
-        p = paths().published_layers / f"{layer.id}.geojson"
+        p = published_path(layer)
         out += ["", f"## Layer `{layer.id}`"]
         if not p.is_file():
             out.append("Not published.")
