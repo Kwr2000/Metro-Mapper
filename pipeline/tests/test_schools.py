@@ -372,9 +372,6 @@ def test_live_summary_reports_counts_without_saving_private_raws(school_context,
 def test_budget_and_live_gate(school_context, monkeypatch):
     budget = config.budgets().adapters["schools"]
     assert budget.per_day == 10 and budget.min_interval_seconds == 1
-    (school_context.adapter_dir.parents[1] / "config/live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
-    config.clear_cache()
-    monkeypatch.delenv("MM_LIVE_CHECK", raising=False)
-    run = runner.run("schools", mode="live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
-    assert "awaiting Claude's first live check" in " ".join(run.notes)
+    # Ungated after Claude's first live check (run 40039008305, DECISIONS 2026-10-23).
+    gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}
+    assert "schools" not in gates

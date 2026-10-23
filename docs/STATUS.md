@@ -49,6 +49,9 @@ are decided (`DECISIONS.md`).
   district/campus manifests; budget 10/day and live gate. `make test` passes (381 pipeline
   + 19 web tests and build). Awaiting Claude's live counts and finder-link checks.
 
+- **P1-06** (Codex, PR #30; Claude fix PR #31): schools. Live (31 districts, 596 campuses
+  with TEA 2024–25 ratings). Ungated.
+
 ## Next
 
 1. Claude: re-run the `acs` live check after 00:00 UTC on 2026-10-24 (26 of 30 calls),

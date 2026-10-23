@@ -3,6 +3,17 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-06 merged; schools live check passed (Claude)
+
+- First run 40038602598 failed (nothing published): one malformed NCES id somewhere in the
+  statewide AskTED file. Statewide TEA rows that don't parse are now skipped and counted, and an
+  NCES id claimed by two TEA campuses is dropped rather than guessed (PR #31).
+- Run 40039008305: 5 calls. 31 districts kept, 596 campuses, 582 matched to a TEA campus
+  number, 534 with a 2024–25 rating row (46 of them "Not Rated"), 62 with no rating found
+  (mostly charters and special programs). 4 districts link to a school finder, 20 to their
+  website, 7 fringe districts have no link. No personal columns requested or stored.
+- `schools` ungated.
+
 ## 2026-10-23 — P1-06 schools implementation choices (Codex)
 
 - Use synthetic fixtures large enough to meet the real production guards: 500 campuses,
