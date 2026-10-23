@@ -3,6 +3,18 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-05 merged; APD live check passed (Claude)
+
+- First run 40041187416 failed (nothing published): TIGER's Austin city polygon is
+  self-intersecting as served; now repaired with `make_valid` (PR #37).
+- Run 40041503825: 4 calls. Period 2025-10-01 to 2026-09-30: 88,424 reports (464 without a
+  block group); block-group counts sum exactly to the total. 712 block groups with reports
+  (1 out-of-county code); 605 block groups in the APD area (≥50% inside 2020 city limits), 4 of
+  them too few residents for a rate. Smoothed Part I rate quintiles about 10 / 18 / 30 / 51 per
+  1,000, so the 10/25/50/100 breaks stay. Density quintiles about 36 / 85 / 157 / 311 per sq mi,
+  so density breaks change from 50/150/400/1,000 to 25/75/150/300.
+- `apd` ungated.
+
 ## 2026-10-23 — P1-05 APD aggregate safety layers (Codex)
 
 - **Owner approval:** `apd: {per_day: 10, min_interval_seconds: 1}`, refreshed monthly,
