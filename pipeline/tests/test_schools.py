@@ -15,7 +15,7 @@ from shapely import transform
 from shapely.geometry import box, mapping
 
 from mm import adapter, canonical, config, privacy, registry, runner
-from mm.adapter import RawPayload, RunContext
+from mm.adapter import RawPayload, Request, RunContext
 from mm.budget import CallBudget
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -210,12 +210,25 @@ def test_exact_match_and_rating_coverage_edges_pass(school_context):
     assert counts["matched"] == 450 and counts["rating rows"] == 360
 
 
-def test_duplicate_conflicting_join_fails(school_context):
+def test_ambiguous_directory_id_is_dropped_not_guessed(school_context):
     ad, records = inputs(school_context)
     rec = next(rec for rec in records if rec.dataset == "school_directory_input")
     conflict = rec.model_copy(update={"properties": {**rec.properties, "campus_number": "999901001"}})
-    with pytest.raises(ValueError, match="conflicting duplicate"):
-        ad.finalize([*records, conflict])
+    out = ad.finalize([*records, conflict])
+    campus = next(r for r in out if r.dataset == "campus" and r.feature_id == rec.feature_id)
+    assert campus.properties["campus_number"] is None
+    assert campus.properties["rating_note"] == "No TEA rating found for this campus"
+
+
+def test_malformed_statewide_rows_are_skipped(school_context, capsys):
+    ad = schools.Schools()
+    good = {"school_number": "'001902001", "nces_school_id": "'481320000821", "district_number": "'001902",
+            "district_name": "X ISD", "district_web_page_address": "x.example"}
+    bad = {**good, "nces_school_id": "'4813200008"}  # 10 digits: elsewhere in Texas
+    raw = RawPayload(Request("directory", {"kind": "directory"}), [good, bad], status=200)
+    out = list(ad.normalize(raw))
+    assert [r.feature_id for r in out] == ["481320000821"]
+    assert "skipped 1 malformed statewide rows" in capsys.readouterr().err
 
 
 def test_synthetic_personal_column_never_enters_canonical_or_published(school_context):
