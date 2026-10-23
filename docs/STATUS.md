@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-04)._
+_Last updated 2026-10-23 (P1-04 live)._
 
 ## Phase
 
@@ -32,15 +32,14 @@ are decided (`DECISIONS.md`).
   basemap working).
 - `Live run` workflow (PR #12) and the test-data labeling fix (PR #14).
 
-- **P1-04** (Codex): FEMA flood-share adapter, native-field two-page fixtures/tests and
-  monthly layer; live gated for Claude's check. `make setup` and `make test` pass
-  (182 pipeline + 18 web tests, production build). No live source calls.
+- **P1-04** (Codex, PR #17; Claude fixes PRs #18, #21): FEMA flood shares. First live run
+  40012121921 published 1,206 block groups (PR #22); 12 "not available" at county-map
+  seams. Ungated. Runner now retries a failed request once; FEMA pages go 15 s apart.
 
 ## Next
 
-1. Claude: review P1-03 (PR #16) and P1-04, then do their first live checks before merging.
-2. Owner: approve raising the `areas` budget from 20 to 30 calls a day for P1-02b (better
-   names). Then Codex: P1-02b.
+1. Claude: review P1-03 (PR #16), then its first live check.
+2. Codex: P1-02b (budget 20 → 30 approved; prompt given to the owner).
 3. Claude: review each PR, run `make test`, do the first live check with the Live run
    workflow, review the data PR, merge.
 
@@ -51,7 +50,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Approve the `areas` budget change (20 → 30 calls a day) for P1-02b.
+- Nothing right now.
 
 ## Working notes for agents
 

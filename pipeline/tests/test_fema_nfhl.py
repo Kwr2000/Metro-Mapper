@@ -11,6 +11,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
+import yaml
 from shapely.geometry import GeometryCollection, LineString, MultiPolygon, Polygon, box, mapping, shape
 
 from mm import adapter, config, registry, runner
@@ -354,12 +355,9 @@ def test_budget_and_live_gate(context, monkeypatch):
     limits = config.budgets().adapters["fema_nfhl"]
     assert limits.per_day == 40 and limits.min_interval_seconds == 15 and limits.max_minutes == 20
     assert flood.FemaNFHL.retry_wait_seconds == 60
-    (context.adapter_dir.parents[1] / "config/live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
-    config.clear_cache()
-    monkeypatch.delenv("MM_LIVE_CHECK", raising=False)
-    run = runner.run("fema_nfhl", mode="live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
-    assert "awaiting Claude's first live check" in " ".join(run.notes)
+    # Ungated after Claude's first live check (run 40012121921, DECISIONS 2026-10-23).
+    gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}
+    assert "fema_nfhl" not in gates
 
 
 def test_hazard_slivers_are_repaired_or_skipped():
