@@ -15,7 +15,7 @@ import statistics
 import sys
 from collections import Counter
 
-from mm import runlog
+from mm import canonical, runlog
 from mm.manifests import load_layers
 from mm.publish import published_path
 
@@ -32,6 +32,10 @@ def main(adapter_id: str) -> int:
             f"source as of {r.source_as_of or '—'}, {int((r.finished_at - r.started_at).total_seconds())} s"]
     out += [f"- note: {n}" for n in r.notes]
     out += [f"- error: {e.splitlines()[0][:300]}" for e in r.errors if e.strip()]
+    if adapter_id == "apd" and r.status == "success":
+        for record in canonical.read("area_feature", "apd") or []:
+            if record.dataset == "run_summary" and record.source_as_of == r.source_as_of:
+                out += [f"- note: {key}={value}" for key, value in record.properties.items()]
     for layer in load_layers():
         if layer.source != adapter_id:
             continue

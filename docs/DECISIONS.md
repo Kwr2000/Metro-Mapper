@@ -3,6 +3,36 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-05 APD aggregate safety layers (Codex)
+
+- **Owner approval:** `apd: {per_day: 10, min_interval_seconds: 1}`, refreshed monthly,
+  confirmed in the owner's P1-05 build request. Normal plan: four calls. Other adapters'
+  budgets and gates stay unchanged; APD awaits Claude's first live check.
+- Only grouped counts and an independent aggregate total are requested from APD. Reject
+  unexpected response columns and duplicate group rows; never retain raw responses or
+  enable recording. Socrata omits null-valued keys, so missing group/category cells mean
+  unlocated/other; `n` is always required. Unknown non-null categories fail closed.
+- The 99% vintage check uses distinct non-null codes, including out-of-county codes in
+  its denominator. Every aggregate row still counts in reconciliation, including reports
+  outside the city, outside the three counties and without a block group.
+- Use unsimplified EPSG:5070 polygons for total area and city overlap; tolerate 1e-9
+  floating-point error at exactly one-half. Leave population, area, share and period as
+  context outside APD, but null every safety count, rate and density there. Inside APD,
+  a missing group means a real zero; an independently verified zero-report period is valid.
+- Apply the specified global empirical Bayes prior separately for Part I and violent
+  reports, using only inside-area block groups with at least 100 residents. Zero mean or
+  nonpositive between-area variance returns the common mean without division by zero.
+  Round only final rates (one decimal) and densities (whole numbers), using Python's
+  nearest-even rounding; retain full precision for area, overlap and the prior.
+- The adapter seam cannot add saved IngestionRun notes without changing core. Emit count-only
+  run notes to the job log and retain one non-spatial `run_summary` canonical audit record,
+  separate from the block-group dataset. `tools/live_summary.py` displays its totals and
+  period for a successful matching live run. Neither map layer publishes this audit record;
+  both share the single `apd_block_group` file. No incident records or fields are stored.
+- Use the source facts and 2020-code verification already recorded by Claude in the task
+  and `SOURCES.md`; no source requests were made during development. Agency-wide safety
+  layers remain deferred to P1-05b, as specified.
+
 ## 2026-10-23 — P1-06 merged; schools live check passed (Claude)
 
 - First run 40038602598 failed (nothing published): one malformed NCES id somewhere in the

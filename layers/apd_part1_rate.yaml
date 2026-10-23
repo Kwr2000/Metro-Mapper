@@ -1,0 +1,95 @@
+id: apd_part1_rate
+title: Reported Part I incidents per 1,000 residents (smoothed)
+group: Safety
+description: 'Reports to Austin PD over the last 12 full months, by the block group
+  APD assigns. Reports are not convictions; only the highest offense per report is
+  counted. Rates for small populations are pulled toward the Austin-wide rate. Not
+  specific to any street. Outside Austin PD''s area: not available.'
+source: apd
+geometry: polygon
+join: block_group
+dataset: block_group
+data_bundle: apd_block_group
+publish: geojson
+style:
+  type: fill
+  paint:
+    fill-opacity: 0.55
+    fill-color:
+    - case
+    - - ==
+      - - get
+        - rate_part1
+      - null
+    - '#bdbdbd'
+    - - step
+      - - get
+        - rate_part1
+      - '#feedde'
+      - 10
+      - '#fdbe85'
+      - 25
+      - '#fd8d3c'
+      - 50
+      - '#e6550d'
+      - 100
+      - '#a63603'
+popup:
+- field: rate_part1
+  label: Reported Part I incidents per 1,000 residents (smoothed)
+  format: number
+- field: rate_part1_raw
+  label: Part I rate (raw)
+  format: number
+- field: rate_violent
+  label: Violent rate (smoothed)
+  format: number
+- field: rate_violent_raw
+  label: Violent rate (raw)
+  format: number
+- field: density_part1
+  label: Reported Part I incidents per square mile
+  format: number
+- field: violent
+  label: Violent reports
+  format: number
+- field: property
+  label: Property reports
+  format: number
+- field: other
+  label: Other reports
+  format: number
+- field: total
+  label: Total reports
+  format: number
+- field: population_2020
+  label: 2020 Census population
+  format: number
+- field: period
+  label: Report period
+- field: safety_note
+  label: Note
+- field: geoid
+  label: GEOID
+popup_title: Reported Part I incidents per 1,000 residents (smoothed)
+legend:
+- label: Below 10
+  color: '#feedde'
+- label: 10 to below 25
+  color: '#fdbe85'
+- label: 25 to below 50
+  color: '#fd8d3c'
+- label: 50 to below 100
+  color: '#e6550d'
+- label: 100 or more
+  color: '#a63603'
+- label: Not available
+  color: '#bdbdbd'
+as_of_field: as_of
+coverage: study_area
+refresh: monthly
+attribution: City of Austin, Texas - data.austintexas.gov (APD Crime Reports); U.S.
+  Census Bureau
+license: Public domain
+default_visible: false
+order: 60

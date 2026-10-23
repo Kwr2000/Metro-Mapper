@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-06)._
+_Last updated 2026-10-23 (P1-05)._
 
 ## Phase
 
@@ -52,6 +52,11 @@ are decided (`DECISIONS.md`).
 - **P1-06** (Codex, PR #30; Claude fix PR #31): schools. Live (31 districts, 596 campuses
   with TEA 2024–25 ratings). Ungated.
 
+- **P1-05** (Codex): aggregate-only APD adapter, synthetic fixtures/tests, shared rate/density
+  layers, budget 10/day and live gate. Checks totals, 2020 codes, city coverage and empirical
+  Bayes rates. `make test` passes (434 pipeline + 19 web tests and build). Awaiting Claude's
+  first live totals and APD-area count check.
+
 ## Next
 
 1. Claude: re-run the `acs` live check after 00:00 UTC on 2026-10-24 (26 of 30 calls),
@@ -62,7 +67,8 @@ are decided (`DECISIONS.md`).
 
 ## Open issues
 
-- APD block-group code vintage (2010 vs 2020) is unverified (P1-05).
+- APD codes verified as 2020 by Claude in P1-05's spec; the adapter enforces a 99% match.
+  Agency-level safety elsewhere is deferred to P1-05b pending the DPS table-format check.
 - Schools have four checked finder overrides; other districts use AskTED district websites
   or show Not available. Claude checks links and live join counts before ungating P1-06.
 
