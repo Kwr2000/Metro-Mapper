@@ -15,8 +15,8 @@ from datetime import date, datetime, timedelta, timezone
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.schemas import AreaFeature
 from pyproj import Transformer
-from shapely import transform, union_all
-from shapely.geometry import mapping, shape
+from shapely import make_valid, transform, union_all
+from shapely.geometry import MultiPolygon, mapping, shape
 
 APD = "https://data.austintexas.gov/resource/fdj4-gpfu.json"
 TIGER = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer"
@@ -44,9 +44,19 @@ def integer(value):
     return int(value)
 
 
+def polygonal(geom):
+    parts = [g for g in getattr(geom, "geoms", [geom]) if g.geom_type in {"Polygon", "MultiPolygon"}]
+    flat = [p for g in parts for p in getattr(g, "geoms", [g])]
+    return MultiPolygon(flat) if len(flat) > 1 else (flat[0] if flat else geom)
+
+
 def projected(doc):
     try:
         geom = shape(doc)
+        if geom.geom_type in {"Polygon", "MultiPolygon"} and not geom.is_valid:
+            # TIGER's Austin city limits are self-intersecting as served (2026-10-23 live run).
+            # Repair and keep only the polygonal parts, as the areas and flood adapters do.
+            geom = polygonal(make_valid(geom))
         if (geom.geom_type not in {"Polygon", "MultiPolygon"} or not geom.is_valid or geom.is_empty
                 or not all(math.isfinite(v) for v in geom.bounds)
                 or not -180 <= geom.bounds[0] <= geom.bounds[2] <= 180
