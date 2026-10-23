@@ -51,6 +51,25 @@ def freshness(refresh: str, runs: list[IngestionRun], now: datetime) -> tuple[Fr
     return "fresh", last_ok
 
 
+def _published_doc(layer_id: str, publish_kind: str) -> dict | None:
+    if publish_kind != "geojson":
+        return None
+    try:
+        return json.loads((paths().published_layers / f"{layer_id}.geojson").read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def _published_test_data(layer_id: str, publish_kind: str) -> bool:
+    doc = _published_doc(layer_id, publish_kind)
+    return bool(doc and doc.get("test_data"))
+
+
+def _published_as_of(layer_id: str, publish_kind: str) -> str | None:
+    doc = _published_doc(layer_id, publish_kind)
+    return doc.get("source_as_of") if doc else None
+
+
 def compile_registry(now: datetime | None = None, write: bool = True) -> Registry:
     now = now or runlog.utcnow()
     layers = load_layers()
@@ -77,6 +96,11 @@ def compile_registry(now: datetime | None = None, write: bool = True) -> Registr
         if last_ok is not None:
             as_of = (last_ok.source_as_of or last_ok.finished_at.date()).isoformat()
         url = data_url(layer.id, layer.publish) if published_exists(layer.id, layer.publish) else None
+        if url and _published_test_data(layer.id, layer.publish):
+            # The file on disk is fixture data (e.g. `mm build` in CI or dev): label what is
+            # shown, not what the run log says the source last did (AGENTS.md rule 1).
+            fresh = "fixture_only"
+            as_of = _published_as_of(layer.id, layer.publish) or as_of
         compiled.append(CompiledLayer(
             **layer.model_dump(),
             data_url=url,
