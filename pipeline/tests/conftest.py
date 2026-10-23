@@ -15,6 +15,13 @@ REPO = Path(__file__).resolve().parents[2]
 def repo(tmp_path, monkeypatch):
     for name in ("config", "adapters", "layers"):
         shutil.copytree(REPO / name, tmp_path / name)
+    # Core tests use their own demo adapter, so the repo's real adapters can change freely.
+    demo = Path(__file__).parent / "demo"
+    shutil.copytree(demo / "demo_points", tmp_path / "adapters" / "demo_points", dirs_exist_ok=True)
+    shutil.copy(demo / "demo_landmarks.yaml", tmp_path / "layers" / "demo_landmarks.yaml")
+    budgets = tmp_path / "config" / "budgets.yaml"
+    if "demo_points" not in budgets.read_text():
+        budgets.write_text(budgets.read_text().rstrip() + "\n  demo_points: {per_day: 1}\n")
     (tmp_path / "web" / "public").mkdir(parents=True)
     # The live gate has its own test, so the copied repo starts with nothing gated.
     (tmp_path / "config" / "live_gates.yaml").write_text("gated: {}\n")

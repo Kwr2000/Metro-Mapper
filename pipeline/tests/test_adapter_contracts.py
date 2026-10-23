@@ -39,6 +39,11 @@ def test_adapter_declares_known_entity(adapter_id):
     assert ad.cadence
 
 
+def test_demo_adapter_contract(repo):
+    run = runner.run("demo_points", mode="fixture")
+    assert run.status == "success" and run.rows_out == 3
+
+
 def test_loader_rejects_mismatched_id(repo):
     d = repo / "adapters" / "wrong_name"
     d.mkdir()

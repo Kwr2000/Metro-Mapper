@@ -1,0 +1,30 @@
+# Demo layer. Proves a layer can be added with a manifest alone. Remove with
+# adapters/demo_points once real layers exist.
+id: demo_landmarks
+title: Demo landmarks
+group: Demo
+description: Three public places, one per county, used only to prove the layer seam.
+source: demo_points
+geometry: point
+join: point
+dataset: landmarks
+publish: geojson
+style:
+  type: circle
+  paint:
+    circle-radius: 7
+    circle-color: "#2f6fdb"
+    circle-stroke-color: "#ffffff"
+    circle-stroke-width: 2
+popup:
+  - {field: name, label: Name}
+  - {field: kind, label: Kind}
+  - {field: county, label: County}
+legend:
+  - {label: Landmark or park, color: "#2f6fdb"}
+coverage: study_area
+refresh: manual
+attribution: Hand-entered coordinates
+license: Public facts
+default_visible: true
+order: 900
