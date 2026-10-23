@@ -182,8 +182,19 @@ published in 2027.
 
   The Leander ISD page says its finder isn't for home purchase or rental decisions. Every zone
   layer is the district's (or its demographer's) current answer and can change yearly.
-- **District boundaries and campus points**: Census TIGER school districts and NCES school
-  locations are public domain; to probe in Phase 1. WCAD also publishes ISD boundaries.
+- **District boundaries** (checked 2026-10-23): TIGERweb `TIGERweb/School/MapServer` layer 0,
+  "Unified School Districts" (current vintage; BAS 2026, ACS 2025 and Census 2020 vintages are
+  layers 5, 10, 15). 53 districts intersect the study envelope; secondary and elementary
+  district layers are empty here. Public domain, "Source: U.S. Census Bureau".
+- **Campus points** (checked 2026-10-23): NCES EDGE `K12_School_Locations/EDGE_GEOCODE_PUBLICSCH_2425`
+  layer 0, school year 2024–25, 596 public schools in Travis, Williamson and Hays
+  (`CNTY` 48453/48491/48209), max 2,000 records per request. Fields include `NCESSCH`,
+  `LEAID`, `NAME`, `CITY`, `LAT`/`LON`. No state campus ID; join through AskTED
+  (`hzek-udky`: `school_number` ↔ `nces_school_id`, values prefixed with an apostrophe),
+  which matches 582 of 596. Of those, 534 have a 2024–25 TEA rating row (`nui6-x374`: 572
+  campus rows for districts headquartered in the three counties). AskTED also holds
+  principals' and superintendents' names and contacts: request only the ID and district
+  website columns. Public domain (NCES).
 
 ## Safety
 
