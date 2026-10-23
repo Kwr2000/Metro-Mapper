@@ -1,0 +1,11 @@
+site_title: Metro Mapper
+basemap_style_url: https://tiles.openfreemap.org/styles/positron
+basemap_attribution: "© OpenFreeMap © OpenMapTiles Data from OpenStreetMap"
+center: [-97.78, 30.27]
+zoom: 8.9
+# Travis, Williamson and Hays counties, roughly: [west, south, east, north]
+study_bbox: [-98.30, 29.75, -97.25, 30.91]
+counties:
+  "48453": Travis
+  "48491": Williamson
+  "48209": Hays

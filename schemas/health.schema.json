@@ -1,0 +1,280 @@
+{
+  "$defs": {
+    "AdapterHealth": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter": {
+          "title": "Adapter",
+          "type": "string"
+        },
+        "budget_per_day": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Budget Per Day"
+        },
+        "budget_per_month": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Budget Per Month"
+        },
+        "cadence": {
+          "title": "Cadence",
+          "type": "string"
+        },
+        "calls_this_month": {
+          "title": "Calls This Month",
+          "type": "integer"
+        },
+        "calls_today": {
+          "title": "Calls Today",
+          "type": "integer"
+        },
+        "freshness": {
+          "enum": [
+            "fresh",
+            "stale",
+            "never_run",
+            "failing",
+            "not_scheduled",
+            "fixture_only"
+          ],
+          "title": "Freshness",
+          "type": "string"
+        },
+        "last_errors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Last Errors",
+          "type": "array"
+        },
+        "last_run": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Run"
+        },
+        "last_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "success",
+                "partial",
+                "failed",
+                "skipped"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Status"
+        },
+        "last_success": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Success"
+        },
+        "schema_changed": {
+          "title": "Schema Changed",
+          "type": "boolean"
+        },
+        "schema_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Schema Hash"
+        }
+      },
+      "required": [
+        "adapter",
+        "cadence",
+        "last_run",
+        "last_status",
+        "last_success",
+        "freshness",
+        "calls_today",
+        "calls_this_month",
+        "budget_per_day",
+        "budget_per_month",
+        "last_errors",
+        "schema_hash",
+        "schema_changed"
+      ],
+      "title": "AdapterHealth",
+      "type": "object"
+    },
+    "IngestionRun": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter": {
+          "title": "Adapter",
+          "type": "string"
+        },
+        "calls_made": {
+          "default": 0,
+          "title": "Calls Made",
+          "type": "integer"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "finished_at": {
+          "format": "date-time",
+          "title": "Finished At",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "live",
+            "fixture"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "planned_calls": {
+          "default": 0,
+          "title": "Planned Calls",
+          "type": "integer"
+        },
+        "rows_out": {
+          "default": 0,
+          "title": "Rows Out",
+          "type": "integer"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "schema_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schema Hash"
+        },
+        "source_as_of": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source As Of"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "success",
+            "partial",
+            "failed",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "adapter",
+        "mode",
+        "started_at",
+        "finished_at",
+        "status",
+        "planned_calls",
+        "calls_made",
+        "rows_out",
+        "schema_hash",
+        "source_as_of",
+        "errors",
+        "notes"
+      ],
+      "title": "IngestionRun",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "adapters": {
+      "items": {
+        "$ref": "#/$defs/AdapterHealth"
+      },
+      "title": "Adapters",
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "recent_runs": {
+      "items": {
+        "$ref": "#/$defs/IngestionRun"
+      },
+      "title": "Recent Runs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "generated_at",
+    "adapters",
+    "recent_runs"
+  ],
+  "title": "HealthReport",
+  "type": "object"
+}

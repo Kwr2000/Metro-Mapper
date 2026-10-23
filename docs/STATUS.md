@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (Phase 1 approved)._
+_Last updated 2026-10-23 (P1-01 skeleton)._
 
 ## Phase
 
@@ -21,10 +21,17 @@ are decided (`DECISIONS.md`).
 - Decided: Hays is in v1; StratMap 2026 (CC0) as baseline parcel shapes; WCAD via its open-data
   portal; GTFS from data.texas.gov (current); APD block groups + DPS agency-level crime.
 
+- **P1-01 skeleton** (`claude/p1-01-skeleton`): pipeline `mm` (adapters, budgets, run log,
+  canonical store, empty-layer guard, registry/health, privacy and demographics guards),
+  site shell (Map/Sources/Health/About, Test data banner), CI, Pages deploy workflow.
+  58 pipeline + 18 web tests; checked in Chromium at 1440×900 and 390×844.
+
 ## Next
 
-1. Claude: P1-01 skeleton (ports Austin Watch seams). Then Codex prompts for P1-02, P1-03, P1-04.
-2. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
+1. Owner: turn on GitHub Pages once (Settings → Pages → Source: GitHub Actions).
+2. Codex: P1-02 (block groups and names), then P1-03 (ACS) and P1-04 (flood); prompts
+   in the chat. Claude reviews each, runs `make test`, and does the live run before merging.
+3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
 
 ## Open issues
 
@@ -33,7 +40,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Nothing.
+- Turn on GitHub Pages: Settings → Pages → Build and deployment → Source: GitHub Actions.
 
 ## Working notes for agents
 

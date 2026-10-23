@@ -1,0 +1,55 @@
+name: Deploy site
+# Builds the public site from committed data (stored live data where it exists,
+# fixtures labeled "Test data" elsewhere) and deploys it to GitHub Pages.
+# No network calls to data sources: `mm publish` reads data/canonical only.
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "layers/**", "adapters/**", "pipeline/**", "config/**", "data/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - run: pip install -e pipeline
+      - name: Publish layers, registry and health (no network)
+        run: mm publish
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build site
+        working-directory: web
+        run: |
+          npm ci
+          npx vite build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

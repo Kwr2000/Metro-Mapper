@@ -1,0 +1,41 @@
+import { fireEvent } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { bindPopupClose, popupContent, popupFieldHtml, popupValueHtml } from "../popup";
+
+describe("popups", () => {
+  it("renders a source link without allowing HTML injection", () => {
+    const html = popupValueHtml('https://example.gov/case?id=1&label="hello"', "link");
+    expect(html).toContain('href="https://example.gov/case?id=1&amp;label=%22hello%22"');
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+
+  it("escapes text and rejects executable, relative and credential URLs", () => {
+    for (const value of ["javascript:alert(1)", "data:text/html,<script>", "/case/1", "https://user:pass@example.gov/"]) {
+      expect(popupValueHtml(value, "link")).not.toContain("<a ");
+    }
+    expect(popupValueHtml('<img onerror="alert(1)">', "text")).toBe("&lt;img onerror=&quot;alert(1)&quot;&gt;");
+    expect(popupValueHtml(null, "link")).toBe("Not available");
+  });
+
+  it("keeps the close button outside the scroll body and cleans up listeners", () => {
+    const element = document.createElement("div");
+    element.innerHTML = popupContent("<p>Long content</p>"); document.body.append(element);
+    const close = vi.fn(), dispose = bindPopupClose(element, close);
+    const button = element.querySelector<HTMLButtonElement>('[aria-label="Close popup"]')!;
+    expect(element.querySelector(".popup-scroll")?.contains(button)).toBe(false);
+    fireEvent.click(button); expect(close).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(document, { key: "Escape" }); expect(close).toHaveBeenCalledTimes(2);
+    dispose(); fireEvent.keyDown(document, { key: "Escape" }); expect(close).toHaveBeenCalledTimes(2);
+    element.remove();
+  });
+
+  it("shows margins of error and flags unreliable estimates", () => {
+    const field = { field: "share", label: "Share estimate", format: "percent" as const, moe_field: "moe",
+      reliability_field: "reliability", annotation_field: "annotation" };
+    const html = popupFieldHtml(field, { share: 0.25, moe: 0.1, reliability: "low reliability", annotation: "<script>" });
+    expect(html).toContain("25.0%"); expect(html).toContain("10.0 pp");
+    expect(html).toContain('class="reliability-low"'); expect(html).toContain("&lt;script&gt;");
+    const missing = popupFieldHtml(field, { share: null, moe: null, reliability: "estimate unavailable" });
+    expect(missing).toContain("MOE unavailable"); expect(missing).toContain("Not available"); expect(missing).not.toContain("0.0%");
+  });
+});
