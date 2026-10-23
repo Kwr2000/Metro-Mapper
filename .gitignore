@@ -1,0 +1,23 @@
+# Secrets
+.env
+.env.*
+
+# Never commit the Austin Watch reference snapshot
+austin-watch-reference*
+awref/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+
+# Probe output and local scratch
+probe-out/
+scratch/
+.DS_Store
