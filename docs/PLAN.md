@@ -95,7 +95,7 @@ refined after Q1–Q3 are answered.
 |---|---|---|---|---|
 | P1-01 | Pipeline skeleton, CI, site shell on Pages (ported from Austin Watch) | Claude | 1a | — |
 | P1-02 | Block groups, tracts and area names | Codex | 1a | P1-01 |
-| P1-03 | ACS demographics layers (3 counties) | Codex | 1a | P1-01; ACS access |
+| P1-03 | ACS demographics layers (3 counties) | Codex | 1a | P1-01, P1-02 |
 | P1-04 | FEMA flood shares | Codex | 1a | P1-01 |
 | P1-05 | Safety layers (APD + agency-level) | Claude verifies, Codex builds | 1b | P1-02 |
 | P1-06 | Schools (boundaries, campuses, ratings, zones) | Claude verifies, Codex builds | 1b | P1-02, Q1, Q2 |
@@ -105,7 +105,7 @@ refined after Q1–Q3 are answered.
 
 ## Risks
 
-- **ACS API from GitHub** answered 503 on 2026-10-23. Fallback: Census bulk summary files.
+- **ACS API** had transient 503s from GitHub on 2026-10-23. Retry once; the fallback is the bulk summary files.
 - **Terms** for CAD, county, city and district data are unstated (Q1). TEA restricts (Q2).
 - **APD block-group vintage** is undeclared and must be checked before joining to 2020 polygons.
 - **Scope creep**: Phase 1 is the largest phase. Hold to the list above; new ideas go to "Later".

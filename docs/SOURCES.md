@@ -30,7 +30,7 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 | Hays County GIS parcels | Parcel polygons (fresher than StratMap) | Parcel | H | Irregular (last 2026-03-12) | Yes | Owner decision |
 | Comptroller Property Value Study 2024 | Appraisal accuracy by district | CAD | T W H | Every 2 years | Yes (page) | Yes (state facts, cited) |
 | Census TIGERweb 2020 block groups | Base map unit | Block group | T W H | Fixed (2020) | Yes | Yes (public domain) |
-| Census ACS 5-year 2020–2024 | Demographics with margins of error | Block group / tract | T W H | Yearly (Dec) | **Unclear** (HTTP 503 twice) | Yes (public domain) |
+| Census ACS 5-year 2020–2024 | Demographics with margins of error | Block group / tract | T W H | Yearly (Dec) | Yes, with key (503s on first runs were transient) | Yes (public domain) |
 | APD Crime Reports (`fdj4-gpfu`) | Reported incidents by block group | Block group | Austin PD area only | Weekly | Yes (Socrata API) | **Yes** (Public Domain) |
 | Texas DPS, Crime in Texas 2025 | Agency-level offense counts | Agency | T W H | Yearly | Yes (PDF) | Yes (state facts, cited) — format to check |
 | TEA 2026 accountability (campus CSV) | Ratings, School Progress / growth | Campus | T W H | Yearly (Aug; final Dec) | Yes | **Owner decision** (terms restrict; see Q2) |
@@ -214,8 +214,8 @@ published in 2027.
 - **TIGERweb Census2020 layer 8**: 1,206 block groups in T+W+H (public domain).
 - **ACS 5-year 2020–2024** is the newest. The 2025 ACS releases are delayed, with no date announced.
   **Key required:** from a browser, even a keyless county-level request now redirects to
-  `missing_key.html`. From GitHub the API answered **HTTP 503** twice on 2026-10-23 (with the
-  key set). Re-probe; if this persists, use the Census bulk summary files instead of the API.
+  `missing_key.html`. From GitHub, two early runs on 2026-10-23 got HTTP 503; the re-run (39891997771) with the key
+  returned JSON for all 116 Hays block groups, and the keyless request got the "Missing Key" page.
   Austin Watch's request split still applies (`group(B01001)` alone; ≤ 50 variables otherwise; 60 s timeout).
 
 ## Validation and trends
@@ -243,7 +243,6 @@ published in 2027.
 - No sale prices anywhere, except WCAD's per-sale ratios (Q3).
 - Crime outside Austin PD's area is agency-level only.
 - Attendance zones: machine-readable for about 4–7 districts; the rest are lookup tools or PDFs.
-- ACS API access from GitHub is unconfirmed (503).
 - Transit outside CapMetro is unverified.
 
 ## Open questions for the owner

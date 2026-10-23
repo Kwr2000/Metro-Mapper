@@ -37,9 +37,8 @@ type, owner-occupancy, housing age, and race and ethnicity.
   by race, B11001/B11003 household type, B15003 education, B08301 commute, B25044 vehicles,
   B16001 language, B07003 moved. Use the `_E`/`_M` pairs.
 - As-of = survey period end, 2024-12-31. Label "ACS 2020–2024 5-year".
-- **Risk:** on 2026-10-23 the API answered HTTP 503 to GitHub's runners. Build the adapter so
-  the request layer can be swapped for the Census bulk summary-file download later. Don't build
-  the fallback in this task.
+- Works from GitHub with the key (probe run 39891997771). Two earlier runs that day got
+  transient HTTP 503s, so retry once on 5xx, then fail closed.
 
 ## Requirements
 

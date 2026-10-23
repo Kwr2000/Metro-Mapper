@@ -25,8 +25,8 @@ Details and citations in `docs/SOURCES.md`.
 - **Actions billing:** standard runners are free for public repos (GitHub docs, checked
   2026-10-22). The light-usage rules stay.
 - **Validation targets** are set in `docs/PLAN.md` before any building.
-- **Census API:** a key is required even for county-level requests. From GitHub it answered 503
-  twice (with the key). Re-probe; fallback is the bulk summary files.
+- **Census API:** a key is required even for county-level requests. With the `CENSUS_API_KEY`
+  secret it works from GitHub (run 39891997771). Two earlier 503s were transient.
 
 ## Pending owner decisions
 

@@ -25,19 +25,16 @@ and answers to Q1–Q3 (`DECISIONS.md`, "Pending owner decisions").
 
 1. Owner: approve Phase 1 (or adjust) and answer Q1–Q3.
 2. Claude: P1-01 skeleton (ports Austin Watch seams). Then Codex prompts for P1-02, P1-03, P1-04.
-3. Re-run the probe for ACS (`only=acs_keyless,acs_blockgroup_key`) before P1-03's live run.
+3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
 
 ## Open issues
 
-- **Census API from GitHub answered HTTP 503** twice on 2026-10-23 (key set). Keyless requests
-  are refused even at county level. If this persists, use the bulk summary files.
 - APD block-group code vintage (2010 vs 2020) is unverified (P1-05).
 - School-zone inventory is incomplete for about 11 districts (P1-06).
 
 ## Waiting on the owner
 
 - Q1 (publishing unlicensed public government data), Q2 (TEA ratings), Q3 (WCAD sales ratios).
-- If the ACS 503 persists: confirm the Census key was activated from the signup email.
 
 ## Working notes for agents
 
