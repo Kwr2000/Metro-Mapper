@@ -18,10 +18,10 @@ that name.
    counties. Public domain.
 3. **City of Austin neighborhood planning areas**: ArcGIS FeatureServer
    `services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/PLANNINGCADASTRE_neighborhood_planning_areas/FeatureServer`
-   (95 areas). Publication gated by owner decision Q1: build it, but keep it behind a
-   `publish: false` gate until DECISIONS records approval.
+   (95 areas). No license stated; publishing approved (DECISIONS 2026-10-23). Credit
+   "City of Austin" and include its disclaimer.
 4. **WCAD subdivisions**: Socrata `data.wcad.org` dataset `em3v-vwsk` (8,859 polygons; select
-   only `name`, `scode`, `filedate`, `geometry`). Also gated by Q1.
+   only `name`, `scode`, `filedate`, `geometry`). Publishing approved; credit WCAD.
 
 ## Naming rule (per block group)
 
@@ -33,8 +33,8 @@ that name.
    if ≥ 50%, source "Census place".
 4. Else "<County> County block group <last 4 of GEOID>".
 
-Store `name`, `name_source`, `name_share` (0–1). Never invent names. Gated sources (Q1)
-are skipped when their gate is closed, and the rule falls through.
+Store `name`, `name_source`, `name_share` (0–1). Never invent names. If a source is
+missing or empty, the rule falls through to the next one.
 
 ## Requirements
 

@@ -3,6 +3,31 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — Owner decisions: no permission requests; stay public (Q1, Q2)
+
+**Approved by the owner in writing (2026-10-23).** The owner prefers not to request written
+permission to republish anything (a basic API-key signup is fine). Where a source would need
+permission, take another route. The repo and site stay public. If the owner later decides to go
+private, that is a separate decision that would revise these choices.
+
+- **Q1 → publish public government data that has no stated license**, with credit to the
+  publisher, its disclaimer, and personal fields stripped at ingest. Covers TCAD, WCAD and Hays
+  CAD exports; Travis County and Hays County GIS; City of Austin GIS; and TEA's datasets on the
+  Texas Open Data Portal. Gates on these sources in P1-02 and later tasks are open.
+- **District attendance zones are not copied.** Each area shows its school district, nearby
+  campuses, and a link to the district's own school finder. Showing zone outlines live in the
+  browser from a district's own map service (with no copy stored) may be considered in P1-06,
+  and would need the owner's approval then.
+- **Q2 → TEA ratings come from TEA's own release on data.texas.gov**: "School Year 2024-2025
+  Statewide Accountability Ratings" (`nui6-x374`, attribution "Performance Reporting Division
+  at Texas Education Agency", updated 2026-06-14). It includes overall, School Progress and
+  Academic Growth ratings and scores. No permission request. Trade-off: published ratings
+  run a year behind TEA's website (2025–26 ratings are there now, final 2026-12-11). Use the
+  newer year when TEA posts it to the portal. Content on tea.texas.gov itself (including the
+  campus CSV broker) is not republished.
+- Not legal advice. "No license stated" is a judgment call, judged low-risk because these are
+  government records the agencies post for public download, and we always credit them.
+
 ## 2026-10-22 — Phase 0 results (Claude; for owner approval)
 
 Details and citations in `docs/SOURCES.md`.
@@ -14,7 +39,7 @@ Details and citations in `docs/SOURCES.md`.
   are the same as Williamson's.
 - **Parcel shapes:** StratMap 2026 (CC0) for all three counties as the baseline. Fresher
   county layers (Travis County's monthly TCAD layer, WCAD's daily parcels, Hays County GIS) are
-  used once Q1 allows.
+  used where they are fresher (Q1 decided 2026-10-23).
 - **Williamson rolls come from WCAD's open-data portal** (Socrata API), not the certified-roll
   SharePoint links, which answered HTTP 401 from GitHub.
 - **CapMetro GTFS from data.texas.gov** (`r4v4-vz24`). CapMetro's developer page points there and
@@ -30,15 +55,6 @@ Details and citations in `docs/SOURCES.md`.
 
 ## Pending owner decisions
 
-- **Q1. Publishing public government data that has no license** (TCAD/WCAD/Hays CAD exports,
-  Travis/Hays County GIS, City of Austin GIS, district zone layers). Texas public records with
-  disclaimers but no stated license. Options: (a) publish with attribution and each
-  publisher's disclaimer, owner fields stripped; (b) ask each publisher first; (c) a mix:
-  (a) for CAD and county/city data, (b) for district zone layers. **Claude recommends (c).**
-- **Q2. TEA accountability ratings.** TEA's site policies require written permission to
-  republish its content. Options: (a) email Copyrights@tea.texas.gov for permission (Claude
-  drafts, owner sends) and link to TEA's pages until then; (b) link only; (c) publish the
-  ratings as facts without asking. **Claude recommends (a).**
 - **Q3. WCAD per-sale "sales ratios".** WCAD's open data includes a sales ratio for many sales,
   which together with the appraised value could reveal individual sale prices that Texas
   otherwise keeps private. Options: (a) don't use; (b) use only as area-level checks

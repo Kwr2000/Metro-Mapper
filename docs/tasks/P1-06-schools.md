@@ -1,18 +1,19 @@
-# P1-06 — Schools (outline; refined after Q1 and Q2)
+# P1-06 — Schools (outline; refined before build)
 
-- **Agents:** Claude verifies, Codex builds. Wave 1b. **Depends on:** P1-02, owner decisions Q1, Q2.
+- **Agents:** Claude verifies, Codex builds. Wave 1b. **Depends on:** P1-02.
 
-**Claude first:** finish the district inventory in `docs/SOURCES.md` (Round Rock, Georgetown,
-Manor, Del Valle, Eanes, Lake Travis, San Marcos, Liberty Hill, Lago Vista, Jarrell, Wimberley,
-Pflugerville, Leander, Hutto, Elgin, Taylor, Hays CISD, Dripping Springs, AISD). For each:
-the current school year of the zones, a machine-readable layer (yes/no), and the official
-finder link. Probe NCES school locations and TIGER unified school districts.
+**Claude first:** finish the district list in `docs/SOURCES.md`: for every district touching
+Travis, Williamson or Hays, its official school-finder link and the school year it covers.
+Probe NCES school locations, TIGER unified school districts and TEA's data.texas.gov ratings
+dataset (`nui6-x374`), and check whether TEA has posted 2025–26 ratings there.
 
 **Build:**
 - District boundaries (TIGER) and campus points (NCES), always.
-- TEA 2026 ratings and the School Progress / Academic Growth domains per campus if Q2 allows,
-  marked preliminary until the 2026-12-11 final release; otherwise a link to the campus's TEA
-  page.
-- Attendance zones only for districts with a current, machine-readable layer and Q1 approval.
-  Elsewhere the area shows "Zones not available — use <district>'s finder" with the link.
-  Never draw zones around campuses or assign the nearest campus.
+- TEA ratings per campus from data.texas.gov (overall, Student Achievement, **School Progress**,
+  **Academic Growth**, Closing the Gaps), labeled with their school year and "Source: Texas
+  Education Agency via data.texas.gov". Growth is shown ahead of raw achievement.
+- **No attendance zones are copied.** Each area shows "Assigned schools: check <district>'s
+  school finder" with the link (owner decision 2026-10-23). Never draw zones around campuses or
+  assign the nearest campus. Showing district zone layers live from the district's service is
+  out of scope unless the owner approves it later.
+- Content from tea.texas.gov itself is not republished.

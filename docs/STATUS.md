@@ -3,12 +3,13 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (end of Phase 0 session)._
+_Last updated 2026-10-23 (owner decisions Q1, Q2)._
 
 ## Phase
 
 **Phase 0 — discovery and verification: done; waiting for the owner's approval of Phase 1**
-and answers to Q1–Q3 (`DECISIONS.md`, "Pending owner decisions").
+and the answer to Q3 (`DECISIONS.md`). Q1 and Q2 were decided 2026-10-23: no permission requests,
+stay public, TEA ratings from data.texas.gov, district finder links instead of zone maps.
 
 ## Done
 
@@ -23,18 +24,18 @@ and answers to Q1–Q3 (`DECISIONS.md`, "Pending owner decisions").
 
 ## Next
 
-1. Owner: approve Phase 1 (or adjust) and answer Q1–Q3.
+1. Owner: approve Phase 1 (or adjust) and answer Q3.
 2. Claude: P1-01 skeleton (ports Austin Watch seams). Then Codex prompts for P1-02, P1-03, P1-04.
 3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
 
 ## Open issues
 
 - APD block-group code vintage (2010 vs 2020) is unverified (P1-05).
-- School-zone inventory is incomplete for about 11 districts (P1-06).
+- District finder-link list is incomplete for about 11 districts (P1-06).
 
 ## Waiting on the owner
 
-- Q1 (publishing unlicensed public government data), Q2 (TEA ratings), Q3 (WCAD sales ratios).
+- Q3 (WCAD sales ratios).
 
 ## Working notes for agents
 
