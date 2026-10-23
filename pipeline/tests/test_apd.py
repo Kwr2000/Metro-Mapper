@@ -305,7 +305,7 @@ def test_shared_bundle_manifests_and_test_data(context):
         assert [r.color for r in layer.legend] == ["#feedde", "#fdbe85", "#fd8d3c", "#e6550d", "#a63603", "#bdbdbd"]
         assert layer.legend[-1].label == "Not available"
         steps = layer.style.paint["fill-color"][-1]
-        assert steps[3::2] == ([10,25,50,100] if layer.id.endswith("rate") else [50,150,400,1000])
+        assert steps[3::2] == ([10,25,50,100] if layer.id.endswith("rate") else [25,75,150,300])
         assert [r.field for r in layer.popup] == ["rate_part1", "rate_part1_raw", "rate_violent", "rate_violent_raw", "density_part1",
                                                 "violent", "property", "other", "total", "population_2020", "period", "safety_note", "geoid"]
         doc = json.loads(publish.published_path(layer).read_text())
@@ -350,12 +350,10 @@ def test_mocked_live_summary_only_aggregate_canonical_no_raws(context, monkeypat
 def test_budget_and_live_gate(context, monkeypatch):
     budget = config.budgets().adapters["apd"]
     assert budget.per_day == 10 and budget.min_interval_seconds == 1
-    (context.adapter_dir.parents[1] / "config/live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
-    config.clear_cache()
-    monkeypatch.delenv("MM_LIVE_CHECK", raising=False)
-    run = runner.run("apd", mode="live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
-    assert "awaiting Claude's first live check" in " ".join(run.notes)
+    # Ungated after Claude's first live check (run 40041503825, DECISIONS 2026-10-23).
+    import yaml
+    gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}
+    assert "apd" not in gates
 
 
 def test_zero_report_period_has_real_zeroes_without_division_by_zero(context):

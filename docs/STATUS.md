@@ -57,6 +57,9 @@ are decided (`DECISIONS.md`).
   Bayes rates. `make test` passes (434 pipeline + 19 web tests and build). Awaiting Claude's
   first live totals and APD-area count check.
 
+- **P1-05** (Codex, PR #36; Claude fix PR #37): APD safety layers. Live (605 block groups in
+  Austin PD's area; 12 months of reports). Ungated. P1-05b (other agencies) is next for safety.
+
 ## Next
 
 1. Claude: re-run the `acs` live check after 00:00 UTC on 2026-10-24 (26 of 30 calls),

@@ -26,13 +26,13 @@ style:
       - - get
         - density_part1
       - '#feedde'
-      - 50
+      - 25
       - '#fdbe85'
-      - 150
+      - 75
       - '#fd8d3c'
-      - 400
+      - 150
       - '#e6550d'
-      - 1000
+      - 300
       - '#a63603'
 popup:
 - field: rate_part1
@@ -73,15 +73,15 @@ popup:
   label: GEOID
 popup_title: Reported Part I incidents per square mile
 legend:
-- label: Below 50
+- label: Below 25
   color: '#feedde'
-- label: 50 to below 150
+- label: 25 to below 75
   color: '#fdbe85'
-- label: 150 to below 400
+- label: 75 to below 150
   color: '#fd8d3c'
-- label: 400 to below 1,000
+- label: 150 to below 300
   color: '#e6550d'
-- label: 1,000 or more
+- label: 300 or more
   color: '#a63603'
 - label: Not available
   color: '#bdbdbd'
