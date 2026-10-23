@@ -26,3 +26,4 @@ data/runs/fixture_runs.jsonl
 web/public/data/
 web/public/registry.json
 web/public/health.json
+*.tsbuildinfo
