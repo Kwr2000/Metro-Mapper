@@ -10,7 +10,8 @@ publish: geojson
 style:
   type: fill
   paint:
-    fill-opacity: 0
+    fill-opacity: 1
+    fill-color: "rgba(0,0,0,0)"
     fill-outline-color: "#454545"
 popup:
   - {field: name, label: District}

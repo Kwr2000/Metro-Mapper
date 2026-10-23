@@ -307,7 +307,8 @@ def test_layer_manifests_and_fixture_labeling(school_context):
         assert doc["test_data"] is True
         assert len(doc["features"]) == (20 if layer.dataset == "district" else 500)
     district, campus = layers["school_districts"], layers["school_campuses"]
-    assert district.style.type == "fill" and district.style.paint["fill-opacity"] == 0
+    assert district.style.type == "fill" and district.style.paint["fill-opacity"] == 1
+    assert district.style.paint["fill-color"] == "rgba(0,0,0,0)"
     assert district.style.paint["fill-outline-color"] == "#454545"
     assert district.popup[2].format == "link" and district.popup[2].annotation_field == "finder_label"
     assert campus.style.paint["circle-radius"] == 5 and campus.style.paint["circle-stroke-color"] == "#ffffff"

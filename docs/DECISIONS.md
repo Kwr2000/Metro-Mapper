@@ -24,10 +24,10 @@ why, and (for approvals) that the owner approved it in writing.
   from explicit Not Rated campuses. The adapter prints count-only run notes; the existing
   workflow summary tool adds them from successful published layers. The core adapter seam
   has no hook to add saved IngestionRun notes, so no core changes or raw-response retention.
-- Kept the task's exact district style (fill-opacity 0, dark fill-outline-color) pending
-  the owner's answer to the rendering clarification. Installed MapLibre's style reference
-  says fill-opacity also affects the stroke, so this setting hides outlines. The alternative
-  is a transparent fill color with opacity 1; Claude must check this before publishing.
+- **Owner approval (2026-10-23):** use visible district outlines with a transparent fill
+  color and fill-opacity 1. This overrides the task's opacity-zero setting: MapLibre's
+  installed style reference confirms that fill-opacity also hides the outline. The dark
+  outline now remains visible while the district interior stays transparent.
 - Source vintages are shown as NCES 2024–25 and TEA 2024–25, as verified in the task. Do not
   invent an exact source date from a school year; source_as_of stays unknown and the registry
   uses the successful run date. Current TIGER district geometry has no asserted calendar date.
