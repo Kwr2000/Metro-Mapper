@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-01 skeleton)._
+_Last updated 2026-10-23 (P1-02)._
 
 ## Phase
 
@@ -26,11 +26,15 @@ are decided (`DECISIONS.md`).
   site shell (Map/Sources/Health/About, Test data banner), CI, Pages deploy workflow.
   58 pipeline + 18 web tests; checked in Chromium at 1440×900 and 390×844.
 
+- **P1-02** (Codex): areas adapter, synthetic naming/paging fixtures and tests, block-group
+  and tract manifests, budget and live gate; demo removed. `make setup` and `make test`
+  pass. Awaiting Claude's review and first live check (expect 1,206 block groups).
+
 ## Next
 
 1. Owner: turn on GitHub Pages once (Settings → Pages → Source: GitHub Actions).
-2. Codex: P1-02 (block groups and names; prompt given 2026-10-23). After it merges, Claude
-   refines P1-03 (ACS) and P1-04 (flood) against its code and gives their prompts.
+2. Claude: review P1-02 and run its first budgeted live check before merging. After it merges,
+   refine P1-03 (ACS) and P1-04 (flood) against its code and give their prompts.
    Claude reviews each PR, runs `make test`, and does the live run before merging.
 3. ACS works from GitHub with the key (run 39891997771). Early 503s were transient.
 

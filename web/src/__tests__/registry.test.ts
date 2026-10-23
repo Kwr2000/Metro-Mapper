@@ -33,7 +33,8 @@ describe("registry → map", () => {
   });
 
   it("keeps points above polygons without changing order within a kind", () => {
-    const base = registry.layers[0];
+    const base = { ...registry.layers[0], id: "point_marker", geometry: "point" as const,
+      style: { type: "circle" as const, paint: {}, layout: {}, minzoom: null, maxzoom: null } };
     const poly = { ...base, id: "area_fill", geometry: "polygon" as const, style: { ...base.style!, type: "fill" as const } };
     const reg: Registry = { ...registry, layers: [base, poly] };
     expect(buildMapLayers(reg, new Set()).layers.map((l) => l.metadata.mmLayer)).toEqual(["area_fill", base.id]);
