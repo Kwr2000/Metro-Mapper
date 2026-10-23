@@ -7,3 +7,4 @@ adapters:
   fema_nfhl: {per_day: 40, min_interval_seconds: 15, max_minutes: 20}
   acs: {per_day: 30, min_interval_seconds: 1}
   schools: {per_day: 10, min_interval_seconds: 1}
+  apd: {per_day: 10, min_interval_seconds: 1}
