@@ -93,3 +93,18 @@ def test_publish_uses_stored_live_data_without_network(fake_live):
     assert doc["test_data"] is False and len(doc["features"]) == 3
     demo = json.loads((fake_live / "web/public/data/layers/demo_landmarks.geojson").read_text())
     assert demo["test_data"] is True  # never ran live: fixtures, labeled
+
+
+def test_finalize_combines_records_across_responses(fake_live):
+    p = fake_live / "adapters/fake_live/adapter.py"
+    p.write_text(p.read_text().replace("ADAPTER = FakeLive", """
+    def finalize(self, records):
+        n = len(records)
+        return [r.model_copy(update={"properties": {**r.properties, "of": n}}) for r in records]
+
+ADAPTER = FakeLive""".replace("\n    def", "\n    def")))
+    import json
+    run = runner.run("fake_live", mode="fixture")
+    assert run.status == "success", run.errors
+    doc = json.loads((fake_live / "web/public/data/layers/fake_layer.geojson").read_text())
+    assert {f["properties"]["of"] for f in doc["features"]} == {3}

@@ -419,6 +419,46 @@ def _():
     return f"{int(socrata('data.wcad.org', 'em3v-vwsk', 'SELECT count(*) AS n')[0]['n']):,} subdivisions"
 
 
+# --- Service metadata for task specs (layer ids and field names only)
+
+def _fields(layer_url: str) -> str:
+    j = get_json(layer_url + "?f=json")
+    if "error" in j:
+        raise RuntimeError(str(j["error"])[:150])
+    return (f"'{j.get('name')}' max {j.get('maxRecordCount')}; fields: "
+            + ", ".join(f"{f['name']}:{f['type'].replace('esriFieldType', '')}" for f in j.get("fields", [])))
+
+
+@check("meta_tigerweb_layers", "TIGERweb Census2020 layer list")
+def _():
+    j = get_json("https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer?f=json")
+    return "; ".join(f"{l['id']}={l['name']}" for l in j.get("layers", []))
+
+
+@check("meta_tigerweb_bg_fields", "TIGERweb Census2020 block-group fields")
+def _():
+    return _fields("https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/8")
+
+
+@check("meta_austin_npa_fields", "City of Austin neighborhood planning areas: fields")
+def _():
+    base = "https://services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/PLANNINGCADASTRE_neighborhood_planning_areas/FeatureServer"
+    lid = get_json(base + "?f=json")["layers"][0]["id"]
+    return _fields(f"{base}/{lid}")
+
+
+@check("meta_wcad_subdivision_cols", "WCAD subdivisions: columns")
+def _():
+    status, _, body, _ = _req("https://data.wcad.org/api/views/em3v-vwsk.json")
+    v = json.loads(body)
+    return ", ".join(f"{c['fieldName']}:{c['dataTypeName']}" for c in v.get("columns", []))
+
+
+@check("meta_nfhl_zone_fields", "FEMA NFHL flood hazard zones: fields")
+def _():
+    return _fields("https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28")
+
+
 # ---------------------------------------------------------------- main
 
 def main() -> int:
