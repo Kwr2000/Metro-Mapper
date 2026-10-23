@@ -57,9 +57,9 @@ Layers, each with source, as-of date and a "not available" state:
    category, small-count shrinkage toward neighbors, per-area density and per-resident rate);
    elsewhere the agency-level rate from DPS Crime in Texas, labeled as agency-level. Never
    spread onto streets.
-5. **Schools**: district boundaries and campus points; TEA ratings and growth if Q2 allows,
-   otherwise links; real attendance zones only where a current district layer exists and Q1
-   allows; otherwise "zones not available — check the district's finder" with the link.
+5. **Schools**: district boundaries and campus points; TEA ratings including School Progress
+   and Academic Growth from TEA's data.texas.gov release (2024–25, labeled with its year); no
+   copied attendance zones, each area links to its district's school finder.
 6. **Access**: walking and biking minutes on the OSM street network from each block group to
    the nearest grocery, park, school and a "daily needs" basket; CapMetro scheduled frequency
    (weekday 7–9 am) within a 10-minute walk, with "no fixed-route service" where none exists.
@@ -89,7 +89,7 @@ Context, not a check: the Comptroller's 2024 study (median level 1.00 / 0.96 / 1
 
 Specs in `docs/tasks/`. Call budgets and refresh cadences in the specs are proposals: approving
 Phase 1 approves them, and any later change needs the owner again. Wave 1a is ready to build. Waves 1b and 1c are outlined and get
-refined after Q1–Q3 are answered.
+refined before they are built.
 
 | ID | Task | Agent | Wave | Depends on |
 |---|---|---|---|---|
@@ -98,7 +98,7 @@ refined after Q1–Q3 are answered.
 | P1-03 | ACS demographics layers (3 counties) | Codex | 1a | P1-01, P1-02 |
 | P1-04 | FEMA flood shares | Codex | 1a | P1-01 |
 | P1-05 | Safety layers (APD + agency-level) | Claude verifies, Codex builds | 1b | P1-02 |
-| P1-06 | Schools (boundaries, campuses, ratings, zones) | Claude verifies, Codex builds | 1b | P1-02, Q1, Q2 |
+| P1-06 | Schools (boundaries, campuses, ratings, zones) | Claude verifies, Codex builds | 1b | P1-02 |
 | P1-07 | Access (OSM walk/bike minutes, GTFS frequency) | Codex | 1b | P1-02 |
 | P1-08 | Filters, comparison, shortlist, methodology page | Codex | 1c | P1-02..07 |
 | P1-09 | Monthly refresh workflow and validation report | Claude | 1c | P1-02..07 |
@@ -106,6 +106,7 @@ refined after Q1–Q3 are answered.
 ## Risks
 
 - **ACS API** had transient 503s from GitHub on 2026-10-23. Retry once; the fallback is the bulk summary files.
-- **Terms** for CAD, county, city and district data are unstated (Q1). TEA restricts (Q2).
+- **Terms**: CAD, county, city and TEA portal data are published with no stated license (owner
+  decision 2026-10-23). If the owner later decides to go private, these choices get revisited.
 - **APD block-group vintage** is undeclared and must be checked before joining to 2020 polygons.
 - **Scope creep**: Phase 1 is the largest phase. Hold to the list above; new ideas go to "Later".

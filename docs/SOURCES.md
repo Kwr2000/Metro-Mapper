@@ -10,7 +10,8 @@ re-verify anything older than a year before relying on it.
 **Publish?** column:
 - **Yes**: public domain, CC0, or an open license; attribution as noted.
 - **Yes, conditions**: allowed with stated conditions (e.g. attribution, share-alike, no logos).
-- **Owner decision**: public government data with **no license stated**. See "Open questions".
+- **Yes, no license stated**: public government data with no stated license. Published with credit,
+  the publisher's disclaimer and personal fields stripped (owner decision, DECISIONS 2026-10-23).
 - **Checks only**: not published; used to validate our numbers, at most as summary statistics.
 - **No**: terms forbid it, or we chose not to use it.
 
@@ -20,28 +21,29 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 
 | Source | What we use | Grain | Counties | Refresh | Unattended from Actions | Publish? |
 |---|---|---|---|---|---|---|
-| TCAD certified appraisal export | Market value, deed date, situs, improvements, land, subdivision | Parcel | T | Yearly (July) + supplements | Yes (direct zip, byte ranges OK) | Owner decision |
-| WCAD open data portal (data.wcad.org) | Property, values, improvement segments, parcels, subdivisions, permits | Parcel | W | Daily–monthly | Yes (Socrata API) | Owner decision |
+| TCAD certified appraisal export | Market value, deed date, situs, improvements, land, subdivision | Parcel | T | Yearly (July) + supplements | Yes (direct zip, byte ranges OK) | Yes, no license stated |
+| WCAD open data portal (data.wcad.org) | Property, values, improvement segments, parcels, subdivisions, permits | Parcel | W | Daily–monthly | Yes (Socrata API) | Yes, no license stated |
 | WCAD certified roll downloads (SharePoint) | — | Parcel | W | Yearly | **No** (HTTP 401) | — |
 | WCAD sale records (sales ratios) | Possibly area-level checks | Sale | W | Monthly | Yes (Socrata API) | **Owner decision** (see Q3) |
-| Hays CAD property data exports | Market value, living area, segments, neighborhood | Parcel | H | Monthly + certified | Yes (direct zip) | Owner decision |
+| Hays CAD property data exports | Market value, living area, segments, neighborhood | Parcel | H | Monthly + certified | Yes (direct zip) | Yes, no license stated |
 | TxGIO StratMap Land Parcels 2026 | Parcel polygons | Parcel | T W H | Yearly | Yes (public S3) | **Yes** (CC0) |
-| Travis County GIS, TCAD parcels layer | Parcel polygons (fresher than StratMap) | Parcel | T | Monthly | Yes (2,000 per page) | Owner decision |
-| Hays County GIS parcels | Parcel polygons (fresher than StratMap) | Parcel | H | Irregular (last 2026-03-12) | Yes | Owner decision |
+| Travis County GIS, TCAD parcels layer | Parcel polygons (fresher than StratMap) | Parcel | T | Monthly | Yes (2,000 per page) | Yes, no license stated |
+| Hays County GIS parcels | Parcel polygons (fresher than StratMap) | Parcel | H | Irregular (last 2026-03-12) | Yes | Yes, no license stated |
 | Comptroller Property Value Study 2024 | Appraisal accuracy by district | CAD | T W H | Every 2 years | Yes (page) | Yes (state facts, cited) |
 | Census TIGERweb 2020 block groups | Base map unit | Block group | T W H | Fixed (2020) | Yes | Yes (public domain) |
 | Census ACS 5-year 2020–2024 | Demographics with margins of error | Block group / tract | T W H | Yearly (Dec) | Yes, with key (503s on first runs were transient) | Yes (public domain) |
 | APD Crime Reports (`fdj4-gpfu`) | Reported incidents by block group | Block group | Austin PD area only | Weekly | Yes (Socrata API) | **Yes** (Public Domain) |
 | Texas DPS, Crime in Texas 2025 | Agency-level offense counts | Agency | T W H | Yearly | Yes (PDF) | Yes (state facts, cited) — format to check |
-| TEA 2026 accountability (campus CSV) | Ratings, School Progress / growth | Campus | T W H | Yearly (Aug; final Dec) | Yes | **Owner decision** (terms restrict; see Q2) |
-| District attendance-zone layers | Assigned schools | Zone | Partial | Yearly | Yes where a layer exists | Owner decision (see Q1) |
+| TEA ratings on data.texas.gov (`nui6-x374`, 2024–25) | Ratings, School Progress / Academic Growth | Campus | T W H | Yearly (posted ~June) | Yes (Socrata API) | Yes, no license stated |
+| TEA 2026 campus CSV (tea.texas.gov broker) | — | Campus | T W H | Yearly | Yes | No (TEA site terms) |
+| District attendance-zone layers | Assigned schools | Zone | Partial | Yearly | Yes where a layer exists | No — link to each district's finder instead |
 | NCES school locations / TIGER school districts | Campus points, district boundaries | Campus / district | T W H | Yearly | To probe in Phase 1 | Yes (public domain) |
 | CapMetro GTFS (data.texas.gov `r4v4-vz24`) | Stops, routes, scheduled frequency | Stop / route | T, parts of W | Per service change | Yes (zip) | Yes, conditions |
 | OpenStreetMap via Geofabrik Texas extract | Streets, groceries, parks, daily needs | Feature | T W H | Daily (we use ≤ monthly) | Yes (725.6 MB file) | Yes, conditions (ODbL) |
 | FEMA NFHL | Flood hazard zones | Polygon | T W H | Continuous | Yes (ArcGIS service) | Yes (public domain) |
 | HMDA 2025 (FFIEC/CFPB) | Tract property values of mortgaged purchases (validation, trends) | Tract | T W H | Yearly (June) | Yes (data browser API) | Yes (public) |
-| City of Austin neighborhood planning areas | Area names | Polygon | Austin | Irregular | Yes | Owner decision |
-| WCAD subdivisions; TCAD subdivision codes; Hays County subdivisions | Area names | Polygon / code | W, T, H | Monthly / yearly | Yes | Owner decision |
+| City of Austin neighborhood planning areas | Area names | Polygon | Austin | Irregular | Yes | Yes, no license stated |
+| WCAD subdivisions; TCAD subdivision codes; Hays County subdivisions | Area names | Polygon / code | W, T, H | Monthly / yearly | Yes | Yes, no license stated |
 | Census places (TIGER) | Place names | Polygon | T W H | Yearly | Yes | Yes (public domain) |
 | Redfin Data Center | Market checks | ZIP / city / metro | T W H | Was weekly/monthly; ZIP file last modified 2026-06-02 | Yes (1.5 GB file) | Checks only |
 | Zillow Research (ZHVI) | Market checks | ZIP / neighborhood | T W H | Monthly | Yes (124 MB file) | Checks only |
@@ -148,10 +150,19 @@ published in 2027.
   **Terms:** TEA site policies (page dated 2026-07-29): "All content on this site is copyrighted by
   the Texas Education Agency" and "cannot be used without the express written permission of
   TEA", except for districts' educational use and Texas residents' personal use. Contact:
-  Copyrights@tea.texas.gov. See Q2.
+  Copyrights@tea.texas.gov. **Not republished** (owner decision 2026-10-23).
+- **TEA on the Texas Open Data Portal** (checked 2026-10-23): "School Year 2024-2025 Statewide
+  Accountability Ratings", `data.texas.gov` dataset `nui6-x374`, attribution "Performance
+  Reporting Division at Texas Education Agency", rows updated 2026-06-14, update frequency
+  "Annually", no license field. Columns include `campus_number`, `county`, `overall_rating`/
+  `score`, `student_achievement_*`, `school_progress_*`, `academic_growth_*`,
+  `relative_performance_*`, `closing_the_gaps_*`, distinctions. TEA also posts AskTED
+  (campus directory, `hzek-udky`, May 2026). **Published source for ratings** (a year behind
+  TEA's website).
 - **TEA geography** (district boundaries and school points) dates from 2010 and says it "should not
   be used to attempt determination of a school attendance zones". Not used.
-- **Attendance zones**: no district attaches a license. Found on ArcGIS Online on 2026-10-22:
+- **Attendance zones**: no district attaches a license. **We don't copy zone layers**; we link to
+  each district's finder (owner decision 2026-10-23). Found on ArcGIS Online on 2026-10-22:
 
 | District | Counties | What exists | School year | Machine-readable |
 |---|---|---|---|---|
@@ -247,8 +258,4 @@ published in 2027.
 
 ## Open questions for the owner
 
-- **Q1. Public government data with no license** (CAD exports, county/city GIS layers,
-  district zone layers): publish with attribution and the publisher's disclaimer, or ask each
-  publisher first? See `docs/DECISIONS.md` (pending).
-- **Q2. TEA ratings:** TEA's terms require written permission to republish.
-- **Q3. WCAD sales ratios:** use them at all, and how?
+- **Q3. WCAD sales ratios:** use them at all, and how? (Q1 and Q2 decided 2026-10-23.)
