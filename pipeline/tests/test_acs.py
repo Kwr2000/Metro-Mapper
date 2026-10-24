@@ -435,9 +435,7 @@ def test_fixture_publication_and_shared_sources(context):
 def test_budget_and_live_gate(context, monkeypatch):
     budget = config.budgets().adapters["acs"]
     assert budget.per_day == 30 and budget.min_interval_seconds == 1
-    (context.adapter_dir.parents[1] / "config/live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
-    config.clear_cache()
-    monkeypatch.delenv("MM_LIVE_CHECK", raising=False)
-    run = runner.run("acs", mode="live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
-    assert "awaiting Claude's first live check" in " ".join(run.notes)
+    # Ungated after the published re-run (run 40043682058, DECISIONS 2026-10-24).
+    import yaml
+    gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}
+    assert "acs" not in gates

@@ -326,7 +326,7 @@ def test_fixture_publication_is_only_block_groups_and_test_data(context):
     assert [p.name for p in output.parent.glob("*.geojson")] == ["flood_share.geojson"]
     assert not any(field in output.read_text() for field in flood.FIELDS)
     layer = next(layer for layer in registry.compile_registry().layers if layer.source == "fema_nfhl")
-    assert layer.freshness == "fixture_only" and layer.as_of == "2026-10-23"
+    assert layer.freshness == "fixture_only" and layer.as_of == run.finished_at.date().isoformat()  # fixture run date
     assert layer.join == layer.dataset == "block_group" and layer.group == "Flood"
     assert layer.style.type == "fill" and not layer.default_visible and layer.refresh == "monthly"
     assert layer.description == ("Share of each area inside FEMA's mapped flood zones. Not a prediction of "

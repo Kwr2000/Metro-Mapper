@@ -39,7 +39,7 @@ are decided (`DECISIONS.md`).
 - **P1-03** (Codex, PR #16; Claude fixes: one file per data bundle, plain-language Census
   notes PR #24): ACS demographics. First live check (run 40015773545) passed on the numbers;
   its data was held back because of raw Census codes, and only its run log merged (PR #25).
-  Still gated; the live site shows the People layers as "Test data" until the re-run.
+  Re-run 40043682058 published (2026-10-24). Ungated.
 
 - **P1-02b** (Codex): Census base names, county-specific Austin/Hays subdivision names,
   stronger Austin cleanup and the approved areas budget of 30/day. Synthetic fixtures only;
@@ -62,11 +62,9 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Claude: re-run the `acs` live check after 00:00 UTC on 2026-10-24 (26 of 30 calls),
-   merge its data PR, then ungate `acs`.
-2. Claude: review P1-02b and check the new naming-source counts in a budgeted live run.
-3. Claude: review each PR, run `make test`, do the first live check with the Live run
-   workflow, review the data PR, merge.
+1. Claude: live run of `areas` for P1-02b (better names), check name-source counts.
+2. Codex: P1-08 (filters, compare, shortlist, methodology). Claude reviews.
+3. Claude: verify sources and write P1-07 (access) and P1-05b (agency-level safety) specs.
 
 ## Open issues
 
