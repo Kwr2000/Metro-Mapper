@@ -68,9 +68,8 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Claude: live run of `areas` for P1-02b (better names), check name-source counts.
-2. Claude: review P1-08 filters, comparison, privacy and methodology on the live site.
-3. Claude: verify sources and write P1-07 (access) and P1-05b (agency-level safety) specs.
+1. Claude: review P1-08 filters, comparison, privacy and methodology on the live site.
+2. Claude: verify sources and write P1-07 (access) and P1-05b (agency-level safety) specs.
 
 ## Open issues
 
