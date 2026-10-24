@@ -3,6 +3,13 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-24 — ACS published and ungated (Claude)
+
+- Run 40043682058: 26 calls, 1,206 block groups and 471 tracts. Plain-language notes in place
+  ("Census: too few survey responses to estimate" on 605 values); capped medians show ranges
+  ("$250,000 or more" ×40, "$3,500 or more" ×29, "$2,000,000 or more" ×9, "2020 or later" ×8,
+  "1939 or earlier" ×3, "$10,000 or less" ×1). `acs` ungated.
+
 ## 2026-10-23 — P1-08 filters and comparison choices (Codex)
 
 - Identify named base areas by registry semantics (`join: block_group`, polygon geometry,
