@@ -102,7 +102,7 @@ refined before they are built.
 | P1-05 | Safety: APD reported incidents by block group | Claude verified; Codex builds | 1b | P1-02 |
 | P1-05b | Safety: agency-level rates outside Austin PD (DPS) | Claude verifies, Codex builds | 1b | P1-05 |
 | P1-06 | Schools (district outlines, campuses, TEA ratings, finder links) | Claude verified; Codex builds | 1b | P1-02 |
-| P1-07 | Access (OSM walk/bike minutes, GTFS frequency) | Codex | 1b | P1-02 |
+| P1-07 | Access (OSM walk/bike minutes, CapMetro frequency) | Claude verified; Codex builds | 1b | P1-02 |
 | P1-08 | Filters, comparison, shortlist, methodology page | Codex | 1c | P1-02..07 |
 | P1-09 | Monthly refresh workflow and validation report | Claude | 1c | P1-02..07 |
 
