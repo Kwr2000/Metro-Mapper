@@ -96,6 +96,7 @@ refined before they are built.
 | P1-01 | Pipeline skeleton, CI, site shell on Pages (ported from Austin Watch) | Claude | 1a | — |
 | P1-02 | Block groups, tracts and area names | Codex | 1a | P1-01 |
 | P1-02b | Better area names (more subdivision sources) | Codex | 1a | P1-02; owner budget approval |
+| P1-02c | Area-name polish (capitals, abbreviations) | Codex | 1a | P1-02b |
 | P1-03 | ACS demographics layers (3 counties) | Codex | 1a | P1-01, P1-02 |
 | P1-04 | FEMA flood shares | Codex | 1a | P1-01 |
 | P1-05 | Safety: APD reported incidents by block group | Claude verified; Codex builds | 1b | P1-02 |
