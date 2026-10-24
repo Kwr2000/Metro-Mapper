@@ -87,10 +87,10 @@ are decided (`DECISIONS.md`).
 
 - **P1-05b** (Codex): DPS agency-wide safety adapter, native XLSX/TIGER synthetic fixtures,
   strict 28-agency/25-place joins, city/sheriff/split assignment, layer and count-only audit.
-  Owner budget/publication approvals recorded; live use gated. All 47 adapter tests, fixture
-  build, schema/type checks and 34 web tests pass; full `make test` awaits the workspace's
-  missing existing `h3` dependency. Awaiting Claude's live agency/place counts, assignment
-  counts, Austin rate and unmapped-agency totals.
+  Owner budget/publication approvals recorded; live use gated. PR #59: full local
+  `make test` passes after installing declared dependencies (629 pipeline tests, no skips;
+  34 web tests, schema/type checks, fixture and production builds). No live source calls.
+  Awaiting Claude's live agency/place counts, assignment counts, Austin rate and unmapped totals.
 
 ## Next
 
