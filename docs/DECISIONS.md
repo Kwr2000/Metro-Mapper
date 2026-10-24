@@ -3,6 +3,45 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — P1-08 filters and comparison choices (Codex)
+
+- Identify named base areas by registry semantics (`join: block_group`, polygon geometry,
+  a `name` popup field), never a layer id or source id. Filters and comparison use only
+  block-group variants; no tract-to-block-group interpolation. Future eligible layers join
+  automatically. Cache each local publication URL once for map, filters and comparison;
+  load on demand, and never request a data-source API from these controls.
+- Active numeric filters intersect inclusive ranges. A missing/non-finite value excludes
+  the area; each missing count is measured against all loaded base areas independently of
+  other filters. Disabled filters have no effect. Native shared-track range handles have
+  exact numeric inputs; percentage values are converted from shares to percentage units.
+  Observed bounds initialize the controls, and exact inputs may extend those bounds.
+- People (context only) appears last, with the task's neutral wording, in filters, layers,
+  comparison, sources and map inspection. People controls start off and collapsed; an
+  explicitly shared or saved layer choice can restore them. No sorting control, ranking
+  or combined score is added. Comparisons preserve the user's area order and reuse the
+  popup formatter, including MOE, reliability, annotations, capped values and safe links.
+- Jurisdiction context uses a scan-line interior point, avoiding holes and concave-boundary
+  centres; only already-loaded jurisdiction polygons are queried. Show their name and
+  link fields, with source/date, without assigning schools or attendance zones.
+- The shortlist and free-text notes use the existing browser store, with a session-memory
+  fallback for blocked storage and failed writes (including quota errors). Clearing a note
+  preserves its saved area. Shortlist comparison takes the first four in saved order.
+- Share links use versioned JSON in `#/?v=...`, explicitly allowing only camera, visible
+  layer ids, geography choices, numeric filter bounds and up to four comparison GEOIDs.
+  Notes, names and shortlist state are never serialized. Invalid/unknown registry choices
+  are ignored. Existing page routes remain usable, and navigating between pages keeps the
+  workbench mounted so private session state is not lost.
+- At phone widths the tools are a collapsible bottom sheet with four tabs; comparison
+  cells repeat area labels in a two-column grid rather than overflowing the page. Desktop
+  comparison uses a native modal table with one column per selected area.
+- Methodology is a text-only heading/paragraph Markdown subset, with no raw HTML rendering.
+  Two `Claude: check` comments remain in the draft for naming wording and the APD explanation.
+  Access-method text explicitly waits for P1-07 instead of inventing an unbuilt method.
+- Local `npm run e2e` uses Python Playwright and preinstalled Chromium against a fixture
+  `vite preview` build. External browser requests are fulfilled locally with a plain map
+  background; no data sources are contacted. Screenshots cover 1440×900 and 390×844. The
+  smoke runner and browser dependencies are not added to CI.
+
 ## 2026-10-23 — P1-05 merged; APD live check passed (Claude)
 
 - First run 40041187416 failed (nothing published): TIGER's Austin city polygon is

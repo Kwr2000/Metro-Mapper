@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-23 (P1-05)._
+_Last updated 2026-10-23 (P1-08)._
 
 ## Phase
 
@@ -59,6 +59,11 @@ are decided (`DECISIONS.md`).
 
 - **P1-05** (Codex, PR #36; Claude fix PR #37): APD safety layers. Live (605 block groups in
   Austin PD's area; 12 months of reports). Ungated. P1-05b (other agencies) is next for safety.
+
+- **P1-08** (Codex): registry-driven ranges and map highlights, four-area comparison,
+  private shortlist/notes, shareable view links and methodology draft. People stays context
+  only, with no sorting/ranking. Desktop/mobile fixture smoke added locally, outside CI;
+  awaiting Claude's live-site filter and methodology review.
 
 ## Next
 

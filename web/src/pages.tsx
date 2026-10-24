@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { asOfLabel, freshnessLabel, loadJSON, type HealthReport, type Registry } from "./registry";
+import { contextGroups, PEOPLE, PEOPLE_NOTE } from "./areas";
 
 const REPO = "https://github.com/Kwr2000/metro-mapper";
 const when = (iso?: string | null) => (iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago" }) : "—");
@@ -17,8 +18,9 @@ export function SourcesPage({ registry, error }: { registry: Registry | null; er
         Registry compiled {when(registry.compiled_at)}.</p>
       <table className="grid" data-testid="sources-table">
         <thead><tr><th>Layer</th><th>Source</th><th>License / terms</th><th>Refresh</th><th>Data</th></tr></thead>
-        <tbody>
-          {registry.layers.map((l) => (
+        {contextGroups(registry).map(([group, layers]) => <tbody key={group}>
+          <tr><th colSpan={5} scope="rowgroup">{group}{group === PEOPLE && <p className="small muted">{PEOPLE_NOTE}</p>}</th></tr>
+          {layers.map((l) => (
             <tr key={l.id}>
               <th scope="row" data-label="Layer">{l.title}<div className="small muted">{l.group}</div></th>
               <td data-label="Source">{l.attribution}{l.disclaimer && <div className="small muted">{l.disclaimer}</div>}</td>
@@ -27,7 +29,7 @@ export function SourcesPage({ registry, error }: { registry: Registry | null; er
               <td data-label="Data"><span className={`badge badge-${l.freshness}`}>{freshnessLabel(l)}</span> <span className="small">{asOfLabel(l)}</span></td>
             </tr>
           ))}
-        </tbody>
+        </tbody>)}
       </table>
       <p className="small muted">Basemap: {registry.basemap.attribution}.</p>
     </main>
@@ -83,7 +85,7 @@ export function AboutPage() {
         <li><strong>Nothing about people.</strong> Owner names, mailing addresses and exemption details are
           removed before anything is published.</li>
       </ul>
-      <p>Methodology details are added here as each layer is built. Source terms and licenses: see{" "}
+      <p>Read the <a href="#/methodology">methodology</a> for units, coverage and uncertainty. Source terms and licenses: see{" "}
         <a href="#/sources">Data sources and terms</a>.</p>
       <p className="small muted">Code: <a href={REPO} target="_blank" rel="noopener noreferrer">{REPO.replace("https://", "")}</a> (MIT).
         Map data © OpenStreetMap contributors (ODbL).</p>
@@ -94,7 +96,7 @@ export function AboutPage() {
 export function Footer() {
   return (
     <footer className="footer small muted">
-      <a href="#/sources">Data sources and terms</a> · Map data © OpenStreetMap contributors ·{" "}
+      <a href="#/sources">Data sources and terms</a> · <a href="#/methodology">Methodology</a> · Map data © OpenStreetMap contributors ·{" "}
       Values are sourced and dated; Texas home sale prices are not public.
     </footer>
   );

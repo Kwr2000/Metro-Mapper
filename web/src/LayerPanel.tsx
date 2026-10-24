@@ -1,35 +1,37 @@
-import { useState } from "react";
-import { asOfLabel, freshnessLabel, layersByGroup, type Registry } from "./registry";
+import { asOfLabel, freshnessLabel, type Registry } from "./registry";
+import { contextGroups, PEOPLE, PEOPLE_NOTE } from "./areas";
 
 export function LayerPanel({
   registry,
   visible,
   onToggle,
   onSwitchVariant,
+  choices,
 }: {
   registry: Registry;
   visible: ReadonlySet<string>;
   onToggle: (id: string) => void;
   onSwitchVariant: (group: string, key: string) => void;
+  choices: Record<string, string>;
 }) {
-  const [choices, setChoices] = useState<Record<string, string>>({});
   return (
     <aside className="panel" aria-label="Layers">
       <h2 className="panel-title">Layers</h2>
       {registry.layers.length === 0 && <p className="muted">No layers yet.</p>}
-      {layersByGroup(registry).map(([group, allLayers]) => {
+      {contextGroups(registry).map(([group, allLayers]) => {
         const variants = [...new Map(allLayers.filter((l) => l.variant).map((l) => [l.variant!.key, l.variant!])).values()];
-        const active = allLayers.find((l) => l.variant && visible.has(l.id))?.variant?.key ?? choices[group] ?? variants[0]?.key;
+        const registryGroup = allLayers[0].group;
+        const active = allLayers.find((l) => l.variant && visible.has(l.id))?.variant?.key ?? choices[registryGroup] ?? variants[0]?.key;
         const layers = allLayers.filter((l) => !l.variant || l.variant.key === active);
         return (
-          <section key={group} className="group">
-            <h3 className="group-title">{group}</h3>
+          <details key={group} className="group" open={group !== PEOPLE}>
+            <summary className="group-title">{group}</summary>
+            {group === PEOPLE && <p className="small muted">{PEOPLE_NOTE}</p>}
             {variants.length > 1 && (
               <div className="area-scale" role="group" aria-label={`${group} geography`}>
                 {variants.map((v) => (
                   <button key={v.key} aria-pressed={v.key === active} onClick={() => {
-                    setChoices((old) => ({ ...old, [group]: v.key }));
-                    onSwitchVariant(group, v.key);
+                    onSwitchVariant(registryGroup, v.key);
                   }}>{v.label}</button>
                 ))}
               </div>
@@ -63,7 +65,7 @@ export function LayerPanel({
                 );
               })}
             </ul>
-          </section>
+          </details>
         );
       })}
     </aside>

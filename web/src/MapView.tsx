@@ -4,6 +4,10 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { asOfLabel, buildMapLayers, drawable, freshnessLabel, sourceFor, type CompiledLayer, type Registry } from "./registry";
 import { buildPolygonIndexIdle, type PolygonIndex } from "./map-polygons";
 import { bindPopupClose, escapeHtml as esc, popupContent, popupFieldHtml } from "./popup";
+import type { LayerData } from "./areas";
+import { areaLayer, contextGroups, featureId, PEOPLE, PEOPLE_NOTE } from "./areas";
+import type { FeatureCollection } from "geojson";
+import type { PolygonFeature } from "./map-polygons";
 
 // If the basemap can't load, keep the data layers usable on a plain background.
 const FALLBACK_STYLE: StyleSpecification = { version: 8, sources: {},
@@ -28,6 +32,11 @@ export interface MapViewProps {
   visible: ReadonlySet<string>;
   camera: { center: [number, number]; zoom: number } | null;
   onCameraChange?: (camera: { center: [number, number]; zoom: number }) => void;
+  data: LayerData;
+  areas: PolygonFeature[];
+  matches: ReadonlySet<string> | null;
+  onSelectArea: (id: string | null) => void;
+  bottomInset?: number;
 }
 
 export function MapView(props: MapViewProps) {
@@ -39,6 +48,7 @@ export function MapView(props: MapViewProps) {
   useEffect(() => {
     let cancelled = false, map: maplibregl.Map | null = null;
     const indexes = new Map<string, PolygonIndex>(), indexing = new Set<string>(), failed = new Set<string>();
+    const applied = new Map<string, FeatureCollection>();
     const compiled = buildMapLayers(registry, latest.current.visible);
     const metas = new Map(drawable(registry).map((l) => [l.id, l]));
     const polygonMetas = drawable(registry).filter((l) => l.geometry === "polygon");
@@ -54,11 +64,15 @@ export function MapView(props: MapViewProps) {
       const seen = new Set<string>(), point = [inspectPoint.lng, inspectPoint.lat];
       let html = "", pending = 0, unavailable = 0;
       if (clicked && clicked.meta.geometry !== "polygon" && layerIsVisible(clicked.meta)) html += featureHtml(clicked.meta, clicked.properties);
-      for (const meta of polygonMetas.filter(layerIsVisible)) {
-        const id = sourceFor(meta), index = indexes.get(id);
-        if (seen.has(meta.id)) continue; seen.add(meta.id);
-        if (!index) { if (failed.has(id)) unavailable++; else pending++; continue; }
-        for (const feature of index.query(point).features) html += featureHtml(meta, feature.properties as Record<string, unknown>);
+      for (const [group, layers] of contextGroups(registry, polygonMetas.filter(layerIsVisible))) {
+        let section = "";
+        for (const meta of layers) {
+          const id = sourceFor(meta), index = indexes.get(id);
+          if (seen.has(meta.id)) continue; seen.add(meta.id);
+          if (!index) { if (failed.has(id)) unavailable++; else pending++; continue; }
+          for (const feature of index.query(point).features) section += featureHtml(meta, feature.properties as Record<string, unknown>);
+        }
+        html += section && group === PEOPLE ? `<section><h3>${esc(PEOPLE)}</h3><p>${esc(PEOPLE_NOTE)}</p>${section}</section>` : section;
       }
       if (!html) html = `<p>Nothing from the visible layers here.</p>`;
       if (pending) html += `<p class="muted">${pending} visible layer(s) still loading.</p>`;
@@ -71,15 +85,29 @@ export function MapView(props: MapViewProps) {
       if (!map || cancelled) return;
       for (const meta of polygonMetas) {
         const id = sourceFor(meta);
-        if (indexes.has(id) || indexing.has(id) || failed.has(id) || !map.getSource(id) || !map.isSourceLoaded(id)) continue;
+        const data = meta.data_url && latest.current.data[meta.data_url];
+        if (!data || indexes.has(id) || indexing.has(id) || failed.has(id) || !map.getSource(id)) continue;
         indexing.add(id);
-        // getData reads MapLibre's already-loaded GeoJSON; it never fetches the URL again.
-        (map.getSource(id) as GeoJSONSource).getData().then((data) => buildPolygonIndexIdle(data, () => cancelled))
+        buildPolygonIndexIdle(data, () => cancelled)
           .then((index) => { if (!cancelled && index) { indexes.set(id, index); renderInspection(); } })
           .catch(() => { if (!cancelled) { failed.add(id); renderInspection(); } });
       }
     }
-    refresh.current = () => { indexSources(); renderInspection(); };
+    refresh.current = () => {
+      if (!map?.getSource("area-filter")) return;
+      for (const meta of drawable(registry)) {
+        const id = sourceFor(meta), data = meta.data_url && latest.current.data[meta.data_url];
+        if (data && applied.get(id) !== data && map.getSource(id)) {
+          applied.set(id, data); (map.getSource(id) as GeoJSONSource).setData(data);
+        }
+      }
+      const { areas, matches } = latest.current;
+      if (map.getSource("area-filter")) {
+        (map.getSource("area-filter") as GeoJSONSource).setData({ type: "FeatureCollection", features: areas.map((f) => ({ ...f, properties: { matches: matches?.has(featureId(f)) ?? true } })) });
+        for (const id of ["area-filter-dim", "area-filter-outline"]) map.setLayoutProperty(id, "visibility", matches ? "visible" : "none");
+      }
+      indexSources(); renderInspection();
+    };
 
     (async () => {
       const style = await resolveBasemap(registry.basemap.style_url);
@@ -105,14 +133,24 @@ export function MapView(props: MapViewProps) {
       });
       map.on("load", () => {
         if (!map || cancelled) return;
-        for (const [id, src] of Object.entries(compiled.sources)) map.addSource(id, src);
+        // The app cache loads local publications once for map, filters and comparison.
+        for (const id of Object.keys(compiled.sources)) map.addSource(id, { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         for (const layer of compiled.layers) {
           layer.layout.visibility = latest.current.visible.has(layer.metadata.mmLayer) ? "visible" : "none";
           map.addLayer(layer as maplibregl.LayerSpecification);
         }
+        map.addSource("area-filter", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        const before = compiled.layers.find((l) => l.type === "circle" || l.type === "symbol")?.id;
+        map.addLayer({ id: "area-filter-dim", source: "area-filter", type: "fill", filter: ["==", ["get", "matches"], false],
+          paint: { "fill-color": "#f7f8fa", "fill-opacity": .8 }, layout: { visibility: "none" } }, before);
+        map.addLayer({ id: "area-filter-outline", source: "area-filter", type: "line", filter: ["==", ["get", "matches"], true],
+          paint: { "line-color": "#173d63", "line-width": 3 }, layout: { visibility: "none" } }, before);
         map.on("click", (event) => {
           if (!map) return;
-          if (inspection?.isOpen()) { inspection.remove(); return; }
+          inspection?.remove();
+          const base = areaLayer(registry), index = base && indexes.get(sourceFor(base));
+          const area = index?.query([event.lngLat.lng, event.lngLat.lat]).features[0];
+          latest.current.onSelectArea(area ? featureId(area) : null);
           const hits = map.queryRenderedFeatures(event.point, { layers: compiled.layers.map((l) => l.id) });
           const point = hits.find((f) => metas.get((f.layer.metadata as { mmLayer: string }).mmLayer)?.geometry !== "polygon");
           clicked = point ? { meta: metas.get((point.layer.metadata as { mmLayer: string }).mmLayer)!, properties: point.properties } : null;
@@ -122,7 +160,8 @@ export function MapView(props: MapViewProps) {
           renderInspection(); inspection.addTo(map);
           inspection.on("close", () => { unbind?.(); unbind = undefined; inspection = null; inspectPoint = null; clicked = null; });
         });
-        map.on("sourcedata", indexSources); map.on("idle", indexSources); indexSources();
+        map.on("sourcedata", indexSources); map.on("idle", indexSources); refresh.current?.();
+        map.setPadding({ top: 0, left: 0, right: 0, bottom: latest.current.bottomInset ?? 0 });
         el.current?.setAttribute("data-map-ready", "true");
       });
     })();
@@ -140,7 +179,17 @@ export function MapView(props: MapViewProps) {
     for (const layer of buildMapLayers(registry, visible).layers) if (map.getLayer(layer.id))
       map.setLayoutProperty(layer.id, "visibility", visible.has(layer.metadata.mmLayer) ? "visible" : "none");
     refresh.current?.();
-  }, [visible, registry]);
+  }, [visible, registry, props.data, props.areas, props.matches]);
+
+  useEffect(() => {
+    const map = mapRef.current, camera = props.camera;
+    if (!map || !camera) return;
+    const current = map.getCenter();
+    if (Math.abs(current.lng - camera.center[0]) > .0001 || Math.abs(current.lat - camera.center[1]) > .0001 || Math.abs(map.getZoom() - camera.zoom) > .02)
+      map.flyTo({ center: camera.center, zoom: camera.zoom, duration: 500 });
+  }, [props.camera]);
+
+  useEffect(() => { mapRef.current?.setPadding({ top: 0, left: 0, right: 0, bottom: props.bottomInset ?? 0 }); }, [props.bottomInset]);
 
   return <div ref={el} className="map" data-testid="map" role="region" aria-label="Map" />;
 }
