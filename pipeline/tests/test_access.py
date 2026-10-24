@@ -236,6 +236,30 @@ def test_gtfs_zip_selects_only_required_columns(context):
     assert "phone" not in result["files"]["stop_times.txt"] and "PRIVATE" not in str(result)
 
 
+
+def test_gtfs_with_calendar_dates_only(context):
+    # CapMetro's feed has no calendar.txt (live run 40054053666); service days come only
+    # from calendar_dates.txt, which GTFS allows.
+    _, raws = inputs(context)
+    files = dict(raws["gtfs"].body["files"])
+    wed = access.service_day(files, date(2026, 10, 24))[0].strftime("%Y%m%d")
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name, text in files.items():
+            if name == "calendar.txt":
+                continue
+            if name == "calendar_dates.txt":
+                service = next(iter(access.service_day(files, date(2026, 10, 24))[1]))
+                text = f"service_id,date,exception_type\n{service},{wed},1\n"
+            archive.writestr(name, text)
+    result = access.read_gtfs_zip(buffer.getvalue())
+    day, services = access.service_day(result["files"], date(2026, 10, 24))
+    assert day.strftime("%Y%m%d") == wed and services
+    with zipfile.ZipFile(buffer := io.BytesIO(), "w") as archive:
+        archive.writestr("stops.txt", "stop_id\n")
+    with pytest.raises(ValueError, match="neither calendar"):
+        access.read_gtfs_zip(buffer.getvalue())
+
 @pytest.mark.parametrize("failure", [False, True])
 def test_streamed_pbf_is_deleted_before_return_or_exception(context, monkeypatch, failure):
     ad, raws = inputs(context)

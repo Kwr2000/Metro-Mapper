@@ -264,13 +264,23 @@ def selected_csv(text, fields):
 
 def read_gtfs_zip(body):
     with zipfile.ZipFile(io.BytesIO(body)) as archive:
-        files = {name: selected_csv(archive.read(name).decode("utf-8-sig"), fields) for name, fields in CSV_FIELDS.items()}
+        names = set(archive.namelist())
+        # GTFS allows a feed to list service days only in calendar_dates.txt (CapMetro does,
+        # 2026-10-24): either calendar file may be missing, but not both.
+        if not names & {"calendar.txt", "calendar_dates.txt"}:
+            raise ValueError("GTFS has neither calendar.txt nor calendar_dates.txt")
+        files = {name: selected_csv(archive.read(name).decode("utf-8-sig"), fields)
+                 if name in names or name not in OPTIONAL_GTFS else ",".join(fields) + "\n"
+                 for name, fields in CSV_FIELDS.items()}
         version = None
         if "feed_info.txt" in archive.namelist():
             rows = list(csv_rows(archive.read("feed_info.txt").decode("utf-8-sig"), ("feed_version",)))
             if rows:
                 version = rows[0]["feed_version"] or None
     return {"files": files, "gtfs_feed_version": version}
+
+
+OPTIONAL_GTFS = {"calendar.txt", "calendar_dates.txt"}
 
 
 def gtfs_date(text):
