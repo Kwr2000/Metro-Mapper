@@ -178,7 +178,8 @@ def table_rows(body, year):
         row = dict(zip(columns, cells + [""] * (len(columns) - len(cells))))
         if row["ori"].strip():
             ori = row["ori"].strip()
-            if not re.fullmatch(r"TX[0-9]{7}", ori) or not row["agency"].strip():
+            # FBI ORIs are nine characters and may contain letters (TXDPD0000, TX227289E).
+            if not re.fullmatch(r"TX[0-9A-Z]{7}", ori) or not row["agency"].strip():
                 raise ValueError("invalid DPS agency row")
             current = {"ori": ori, "agency": agency_name(row["agency"].strip()),
                        "agency_population": integer(row["population"]) if ori.startswith(PREFIXES) else 0, "years": {}}

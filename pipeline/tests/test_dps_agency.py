@@ -358,3 +358,20 @@ def test_out_of_area_agencies_are_ignored_even_with_unusable_counts(context):
         t.pop(pos + 2)  # Missing current-year row elsewhere must not block the three counties.
     result = output(context, modify)
     assert next(r.properties for r in result if r.dataset == "run_summary")["agencies mapped"] == 28
+
+
+def test_alphanumeric_oris_are_accepted(context):
+    """Real 2025 files hold ORIs such as TXDPD0000 and TX227289E (checked 2026-10-24)."""
+    def modify(raws):
+        t = table(raws, "dps_652")
+        header_width = len(t[1])
+        blank = [""] * (header_width - 3)
+        counts = ["0"] * (header_width - 4) + [""]
+        t.extend([["TXDPD0000", "DALLAS PD", "1331217", *blank],
+                  ["", "Number of Offenses - 2025", "", *counts],
+                  ["TX227289E", "AUSTIN COMMUNITY COLLEGE PD", "0", *blank],
+                  ["", "Number of Offenses - 2025", "", *counts]])
+    result = output(context, modify)
+    summary = next(r.properties for r in result if r.dataset == "run_summary")
+    assert "TX227289E" in summary["unmapped agency totals"]
+    assert "TXDPD0000" not in summary["unmapped agency totals"]
