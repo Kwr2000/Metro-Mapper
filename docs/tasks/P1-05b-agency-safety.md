@@ -42,7 +42,7 @@
      reports say `Assault`; it is NIBRS 13A, aggravated assault), `Burglary`, `Larceny`,
      `AutoTheft` / `Auto Theft`, two human-trafficking columns (headers contain line breaks),
      `Arson`, `Total`, `%Change` / `% Change`. Then, per agency, three rows: an agency row
-     (`ORI` like `TX2460500`, name, population; other cells empty), then
+     (`ORI`: nine characters, usually `TX` and seven digits like `TX2460500`, but letters occur, e.g. `TXDPD0000`, `TX227289E`; name, population; other cells empty), then
      `Number of Offenses - 2024` and `Number of Offenses - 2025` rows (ORI and population empty;
      counts in the offense columns). An agency may lack the previous-year row. Numbers are stored
      as numeric cells or shared strings; parse both. Header labels vary, so map columns by
