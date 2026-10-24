@@ -6,9 +6,7 @@ An area here is a 2020 Census block group, not a neighborhood boundary or a prom
 
 ## Area names
 
-Names describe the largest overlapping named area. First use a City of Austin neighborhood planning area covering at least half the block group. Next use a subdivision covering at least 40%: Austin subdivisions in Travis County, WCAD subdivisions in Williamson County and Hays County subdivisions in Hays County. Next use a Census place, adding “Near” below half coverage. Otherwise use a county and Census block-group label. Tracts use Census identifiers. Names are cleaned source labels, not invented neighborhoods; the name source remains visible.
-
-<!-- Claude: check subdivision precedence and the tract label wording against the first better-names live run. -->
+Names describe the largest overlapping named area. First use a City of Austin neighborhood planning area covering at least half the block group. Next use a subdivision covering at least 40%: Austin subdivisions in Travis County, WCAD subdivisions in Williamson County and Hays County subdivisions in Hays County. Next use a Census place, adding “Near” below half coverage. Otherwise the name is the county plus the Census tract and block-group numbers (for example “Travis County area …”). Tracts are shown by their Census identifiers. Names are cleaned source labels, not invented neighborhoods; the name source remains visible.
 
 ## Flood shares
 
@@ -23,8 +21,6 @@ ACS 2020–2024 five-year estimates include a 90% margin of error (MOE). A margi
 Safety layers describe reports to Austin PD in the last 12 full calendar months, using report date in UTC. Reports are not convictions; only the highest offense on each report is counted. APD's own 2020 block-group assignments are kept. Areas at least 50% inside Austin's 2020 city limits count as the APD area for display. Outside it, values say Not available. This is a city-limits proxy, not a verified service-boundary map.
 
 Rates use exact 2020 Census population, not an ACS estimate. Areas with fewer than 100 residents show counts and density but no resident-based rate. Part I combines violent and property reports. Raw rates are reports per 1,000 residents; density is reports per square mile, including land and water. Empirical Bayes smoothing pulls small-population rates toward the Austin-wide rate, separately for violent and Part I reports. The weight comes from observed between-area variance after accounting for sampling variation. No street-level conclusions or combined safety score are made.
-
-<!-- Claude: check that the city-limits proxy and smoothing explanation are clear enough for live-site users. -->
 
 ## Schools
 
