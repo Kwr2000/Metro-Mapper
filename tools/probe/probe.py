@@ -459,6 +459,33 @@ def _():
     return _fields("https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28")
 
 
+TXUCR_XLSX = ("https://txucr.nibrs.com/Report/DownloadReportExcel?offenses=&startdate=Jan%20-%202025"
+              "&enddate=Dec%20-%202025&reportId={rid}")
+TIGER_CURRENT = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer"
+
+
+@check("dps_txucr_agency_xlsx", "DPS UCR portal: 2025 index crime by agency (XLSX, 3 reports)")
+def _():
+    out = []
+    for rid in (615, 613, 652):  # over 100k, 50k-100k, under 50k jurisdictional population
+        status, hdrs, body, _ = _req(TXUCR_XLSX.format(rid=rid))
+        kind = "xlsx" if body[:4] == b"PK\x03\x04" else "not a zip"
+        out.append(f"{rid}: HTTP {status}, {len(body):,} bytes, {kind}")
+        time.sleep(2)
+    return "; ".join(out)
+
+
+@check("tiger_current_places", "TIGERweb Current: incorporated places in the study area")
+def _():
+    layers = get_json(TIGER_CURRENT + "?f=json")["layers"]
+    hits = [l for l in layers if l["name"].strip().lower() == "incorporated places"]
+    if len(hits) != 1:
+        return "layers named Incorporated Places: " + ", ".join(str(l["id"]) for l in hits)
+    lid = hits[0]["id"]
+    n = arcgis_count(f"{TIGER_CURRENT}/{lid}", bbox=BBOX)
+    return f"layer {lid}; {n} places intersect the study bbox; fields: " + _fields(f"{TIGER_CURRENT}/{lid}")[:300]
+
+
 # ---------------------------------------------------------------- main
 
 def main() -> int:
