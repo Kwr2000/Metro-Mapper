@@ -275,8 +275,8 @@ def test_budget_live_gate_and_manifest(context, monkeypatch):
     config.clear_cache()
     budget = CallBudget.for_adapter("dps_agency", NOW)
     assert budget.per_day == 10 and budget.min_interval_seconds == 2
-    assert config.live_gates()["dps_agency"] == "awaiting Claude's first live check"
-    assert runner.run("dps_agency", "live", now=NOW).status == "skipped"
+    # Ungated after Claude's first live check (run 40108617517, DECISIONS 2026-10-24).
+    assert "dps_agency" not in config.live_gates()
     layer = next(l for l in registry.load_layers() if l.id == "safety_agency_rate")
     assert layer.source == "dps_agency" and layer.refresh == "annual"
     assert layer.dataset == layer.join == "block_group" and not layer.default_visible
