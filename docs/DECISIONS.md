@@ -3,6 +3,22 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-24 — P1-05b: DPS agency data format checked; spec written (Claude)
+
+- The *Crime in Texas 2025* PDF has agency tables for the Top 25 only. Every agency is in the
+  DPS UCR portal's "Index Crime by Agency" reports, which download as XLSX (details in
+  `SOURCES.md`). All 25 city police departments and 3 sheriffs covering Travis, Williamson and
+  Hays are present for 2025; cities without a police department in DPS's data (e.g. Dripping
+  Springs, Wimberley, Webberville, The Hills) fall under the county sheriff.
+- The portal returns HTTP 500 to our standard user agent from GitHub; `Mozilla/5.0
+  (compatible; metro-mapper/0.1 (+…))` works and still names the project. Used for this source only.
+- Design (spec `docs/tasks/P1-05b-agency-safety.md`): one agency-wide rate per agency, shown on
+  every block group it covers (≥ 50% in a city → that city's PD; ≥ 50% outside all PD cities →
+  sheriff; otherwise not available). Never apportioned. Austin PD included on the same basis.
+- **Pending owner approval:** budget `dps_agency: {per_day: 10, min_interval_seconds: 2}`,
+  refresh annual (5 calls a run); and publishing the portal's figures under the Q1 rule
+  (no stated license, credited).
+
 ## 2026-10-24 — P1-09 monthly refresh and validation (Claude)
 
 - `refresh.yml` runs at 09:15 UTC on the 3rd of each month, the schedule proposed in the P1-09

@@ -34,7 +34,7 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 | Census TIGERweb 2020 populated blocks | Access population weights and interior points | Census block | T W H | Fixed (2020) | Yes | Yes (public domain) |
 | Census ACS 5-year 2020–2024 | Demographics with margins of error | Block group / tract | T W H | Yearly (Dec) | Yes, with key (503s on first runs were transient) | Yes (public domain) |
 | APD Crime Reports (`fdj4-gpfu`) | Reported incidents by block group | Block group | Austin PD area only | Weekly | Yes (Socrata API) | **Yes** (Public Domain) |
-| Texas DPS, Crime in Texas 2025 | Agency-level offense counts | Agency | T W H | Yearly | Yes (PDF) | Yes (state facts, cited) — format to check |
+| Texas DPS, Crime in Texas 2025 (UCR portal) | Agency-level offense counts | Agency | T W H | Yearly | Yes (XLSX from txucr.nibrs.com; needs a "compatible" user agent) | Yes, no license stated (state statistics, cited) |
 | TEA ratings on data.texas.gov (`nui6-x374`, 2024–25) | Ratings, School Progress / Academic Growth | Campus | T W H | Yearly (posted ~June) | Yes (Socrata API) | Yes, no license stated |
 | TEA 2026 campus CSV (tea.texas.gov broker) | — | Campus | T W H | Yearly | Yes | No (TEA site terms) |
 | District attendance-zone layers | Assigned schools | Zone | Partial | Yearly | Yes where a layer exists | No — link to each district's finder instead |
@@ -208,10 +208,28 @@ published in 2027.
   block groups. `category_description` is null for non-Part I offenses (56,461 of 88,424 in
   that period).
 - **Other agencies**: no open incident feed found for Round Rock, Cedar Park, Georgetown,
-  Pflugerville, Leander, San Marcos or Kyle (only third-party aggregators). Use agency-level data:
-  **Texas DPS Crime in Texas 2025** (PDF, 2.6 MB, Last-Modified 2026-06-02;
-  `dps.texas.gov/sites/default/files/documents/crimereports/25/2025cit.pdf`). Shown as
-  jurisdiction-level only, labeled. FBI Crime Data Explorer is an alternative (API key needed).
+  Pflugerville, Leander, San Marcos or Kyle (only third-party aggregators). Use agency-level data
+  from **Texas DPS Crime in Texas** (checked by Claude 2026-10-24):
+  - The 2025 PDF (`dps.texas.gov/sites/default/files/documents/crimereports/25/2025cit.pdf`, 2.6 MB)
+    has agency tables for the Top 25 only. DPS's 2025 supplemental reports (20 XLSX files) are
+    statewide breakdowns, not by agency.
+  - DPS's **UCR "Crime in Texas Public Portal"** (<https://txucr.nibrs.com>, linked from
+    DPS's UCR overview page) has "Index Crime by Agency" reports for every agency, in three
+    population bands (report ids 615 over 100k, 613 50k–100k, 652 under 50k), downloadable as
+    XLSX by a plain GET: `Report/DownloadReportExcel?offenses=&startdate=Jan%20-%202025&enddate=Dec%20-%202025&reportId=<id>`.
+    Columns: ORI, agency, DPS jurisdictional population, the 7 Part I offenses, two
+    human-trafficking columns, arson, total; rows for the year and the year before. A legend
+    sheet lists the NIBRS codes. All 28 Travis/Williamson/Hays city police and sheriff agencies
+    are present for 2025, plus 13 zero-population agencies (schools, universities, transit,
+    constables). Figures are live and revisable (Austin PD 2025: portal 35,806, PDF 35,500).
+  - From GitHub's runners the portal answers HTTP 500 to unrecognised user agents; it works with
+    `Mozilla/5.0 (compatible; metro-mapper/0.1 (+…))` (probe 2026-10-24).
+  - Terms: none stated by DPS or on the portal; footer "© 2026 Optimum Technology, Inc. All
+    Rights Reserved" (the vendor). Treated as public government statistics with no stated
+    license, credited (owner's Q1 decision).
+  - City limits for agency areas: TIGERweb **Current** layer 28 "Incorporated Places" (public
+    domain), not 2020, since cities have annexed since 2020.
+  - FBI Crime Data Explorer remains an alternative (API key needed).
 
 ## Access
 
