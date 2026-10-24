@@ -104,6 +104,8 @@ def test_clean_subdivision_names(original, expected):
     ("BOULDIN CREEK", "Bouldin Creek"),
     ("MLK-183", "MLK-183"),
     ("mlk", "MLK"),
+    ("RMMA", "RMMA"),
+    ("UT", "UT"),
     ("MLK-PARK", "MLK-Park"),
     ("PECAN SPRINGS-SPRINGDALE", "Pecan Springs-Springdale"),
     ("MCKINNEY", "McKinney"),

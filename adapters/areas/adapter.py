@@ -57,10 +57,14 @@ def lower_small_words(value: str) -> str:
                   else match.group(), value)
 
 
+# City of Austin planning-area acronyms kept in capitals (RMMA = the Mueller area).
+PLANNING_ACRONYMS = {"MLK", "RMMA", "UT"}
+
+
 def clean_planning_area_name(value: str) -> str:
     def part(word):
-        if word.upper() == "MLK":
-            return "MLK"
+        if word.upper() in PLANNING_ACRONYMS:
+            return word.upper()
         if len(word) > 2 and word[:2].upper() == "MC":
             return "Mc" + word[2:].capitalize()
         return word.title()
