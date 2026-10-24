@@ -19,6 +19,23 @@ why, and (for approvals) that the owner approved it in writing.
   ("$250,000 or more" ×40, "$3,500 or more" ×29, "$2,000,000 or more" ×9, "2020 or later" ×8,
   "1939 or earlier" ×3, "$10,000 or less" ×1). `acs` ungated.
 
+## 2026-10-23 — P1-02c name-polish details (Codex)
+
+- A digit protects its entire whitespace-delimited planning-area token before hyphen
+  casing; otherwise hyphen parts are cased independently, preserving `MLK` and applying
+  `Mc` prefixes. Subdivision small words are lower case after the first lexical word,
+  including within hyphenated names; the first word stays capitalized.
+- WCAD reuses Austin's parenthesis scanner, including nested and truncated annotations.
+  Strip annotations before removing repeated trailing plat qualifiers, using Austin's
+  identifier grammar. Keep an ordinary word after `Sec`, and keep a non-trailing
+  `Sec 1 West`; preserve numbered base names such as `Ranchettes #4`. Abbreviation
+  expansion is limited to whole words in WCAD names. Hays keeps its existing qualifier
+  behavior; all three subdivision sources get the small-word rule.
+- Apply the polish during normalization, before the existing name-group union and share
+  tests. Synthetic native-field fixtures exercise a planning name in capitals and WCAD
+  spellings that combine to 45% only after polishing. No source, budget or coverage-rule
+  changes; Claude checks the live output.
+
 ## 2026-10-23 — P1-08 filters and comparison choices (Codex)
 
 - Identify named base areas by registry semantics (`join: block_group`, polygon geometry,

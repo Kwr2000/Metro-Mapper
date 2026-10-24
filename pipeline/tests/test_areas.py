@@ -99,6 +99,100 @@ def test_clean_subdivision_names(original, expected):
     assert areas.clean_subdivision_name(original) == expected
 
 
+@pytest.mark.parametrize(("original", "expected"), [
+    ("NORTH AUSTIN CIVIC ASSOCIATION", "North Austin Civic Association"),
+    ("BOULDIN CREEK", "Bouldin Creek"),
+    ("MLK-183", "MLK-183"),
+    ("mlk", "MLK"),
+    ("MLK-PARK", "MLK-Park"),
+    ("PECAN SPRINGS-SPRINGDALE", "Pecan Springs-Springdale"),
+    ("MCKINNEY", "McKinney"),
+    ("MCDONALD-MCKINNEY", "McDonald-McKinney"),
+    ("DOWNTOWN", "Downtown"),
+    ("HYDE PARK", "Hyde Park"),
+    ("Mesa Park", "Mesa Park"),
+    ("Bouldin Creek", "Bouldin Creek"),
+    ("McKinney", "McKinney"),
+    ("district 2-a", "District 2-A"),
+    ("north-183 creek", "NORTH-183 Creek"),
+    ("  HYDE   PARK ", "Hyde Park"),
+])
+def test_planning_area_name_polish(original, expected):
+    assert areas.clean_planning_area_name(original) == expected
+    assert areas.clean_planning_area_name(expected) == expected
+
+
+@pytest.mark.parametrize(("original", "expected"), [
+    ("Brushy Crk Sec 1 (South)", "Brushy Creek"),
+    ("BRUSHY cRk SEC 1 (OLD (SOUTH) PLAT)", "Brushy Creek"),
+    ("Brushy Crk Sec 1 (South", "Brushy Creek"),
+    ("Block House Crk", "Block House Creek"),
+    ("Block House Creek", "Block House Creek"),
+    ("Cedar Park Ranchettes #4", "Cedar Park Ranchettes #4"),
+    ("CROSSING AT CARRIAGE HILLS", "Crossing at Carriage Hills"),
+    ("Woods Of Brushy Crk", "Woods of Brushy Creek"),
+    ("Of Brushy", "Of Brushy"),
+    ("Mesa Park", "Mesa Park"),
+    ("Avery Ranch", "Avery Ranch"),
+    ("FOREST EsTs", "Forest Estates"),
+    ("CRKLAND ESTSVILLE", "Crkland Estsville"),
+    ("BRUSHY CRK SEC. A-1 (SOUTH)", "Brushy Creek"),
+    ("BRUSHY CRK SECTION 3B (SOUTH) REPLAT", "Brushy Creek"),
+    ("BRUSHY CRK SEC II (SOUTH)", "Brushy Creek"),
+    ("BRUSHY CRK SEC ONE (SOUTH)", "Brushy Creek"),
+    ("BRUSHY CRK SEC HOUSE", "Brushy Creek Sec House"),
+    ("BRUSHY CRK SEC 1 WEST", "Brushy Creek Sec 1 West"),
+    ("BLOCK HOUSE CRK SEC 1 PHASE II REPLAT (SOUTH)", "Block House Creek"),
+])
+def test_wcad_name_polish(original, expected):
+    assert areas.clean_wcad_subdivision_name(original) == expected
+    assert areas.clean_wcad_subdivision_name(expected) == expected
+
+
+@pytest.mark.parametrize("kind", ["wcad", "austin_subdivision", "hays_subdivision"])
+@pytest.mark.parametrize(("original", "expected"), [
+    ("Crossing At Carriage Hills", "Crossing at Carriage Hills"),
+    ("WOODS OF BRUSHY CREEK", "Woods of Brushy Creek"),
+    ("Of Brushy", "Of Brushy"),
+    ("Mesa Park", "Mesa Park"),
+    ("THE WOODS ON THE LAKE AND HILL", "The Woods on the Lake and Hill"),
+    ("Woods-Of-Brushy Creek", "Woods-of-Brushy Creek"),
+    ("Villas at Carriage Hills", "Villas at Carriage Hills"),
+])
+def test_small_words_in_all_subdivision_sources(ad, kind, original, expected):
+    [rec] = list(ad.normalize(payload(kind, [feature(kind, name=original)])))
+    assert rec.properties["name"] == expected
+
+
+@pytest.mark.parametrize(("first", "second"), [
+    ("BLOCK HOUSE CRK SEC 1 (SOUTH)", "Block House Creek"),
+    ("FOREST ESTS", "Forest Estates"),
+    ("CROSSING AT THE CRK", "Crossing at the Creek"),
+])
+def test_wcad_polished_names_merge_before_the_existing_share_rule(ad, first, second):
+    records = list(ad.normalize(payload("block_group", [feature("block_group")])))
+    rows = [feature("wcad", portion(.25), name=first),
+            feature("wcad", box(X + 250, Y, X + 400, Y + 1000), name=second),
+            feature("wcad", portion(.25), name=first)]
+    records.extend(ad.normalize(payload("wcad", rows)))
+    rec = ad.finalize(records)[0]
+    assert rec.properties["name"] == areas.clean_wcad_subdivision_name(second)
+    assert rec.properties["name_source"] == "WCAD subdivision" and rec.properties["name_share"] == .4
+    # The overlap is unioned, not counted twice. Below 40% still falls through.
+    partial = records[:1] + list(ad.normalize(payload("wcad", [rows[0], rows[2]])))
+    assert ad.finalize(partial)[0].properties["name_source"] == "Census block group"
+
+
+def test_polished_planning_name_keeps_its_source_share_and_priority(ad):
+    records = list(ad.normalize(payload("block_group", [feature("block_group", county="453")])))
+    records.extend(ad.normalize(payload("austin", [feature("austin", portion(.5), name="MCKINNEY-MLK")])))
+    records.extend(ad.normalize(payload("austin_subdivision", [feature("austin_subdivision", name="Other Name")])))
+    rec = ad.finalize(records)[0]
+    assert rec.properties["name"] == "McKinney-MLK"
+    assert rec.properties["name_source"] == "City of Austin neighborhood planning area"
+    assert rec.properties["name_share"] == .5
+
+
 @pytest.mark.parametrize(("share", "expected"), [(.49999, "Test Creek"), (.5, "Test Austin Plan"),
                                                        (.50001, "Test Austin Plan"), (.6, "Test Austin Plan")])
 def test_austin_precedence_and_half_edge(ad, share, expected):
@@ -319,6 +413,8 @@ def test_fixtures_publish_only_boundaries_and_show_test_data(repo):
     assert {row["name_source"] for row in props} == {"City of Austin neighborhood planning area",
         "WCAD subdivision", "City of Austin subdivision", "Hays County subdivision", "Census place", "Census block group"}
     assert any(row["name_share"] == .45 and row["name_source"] == "WCAD subdivision" for row in props)
+    assert any(row["name"] == "Block House Creek" and row["name_share"] == .45 for row in props)
+    assert any(row["name"] == "North Austin Civic Association" and row["name_source"] == "City of Austin neighborhood planning area" for row in props)
     assert any(row["name"] == "Met Center II" and row["name_source"] == "City of Austin subdivision" for row in props)
     assert any(row["name"] == "Wimberley View Estates" and row["name_source"] == "Hays County subdivision" for row in props)
     assert any(row["name"] == "Austin" and row["name_source"] == "Census place" for row in props)

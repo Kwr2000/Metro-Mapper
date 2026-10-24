@@ -63,8 +63,8 @@ if __name__ == "__main__":
                 NAME="Austin city", BASENAME="Austin", LSADC="25")])
     write("place_28", [feature(portion(near, 0, .25), GEOID="4800002", NAME="Test CDP",
                                 BASENAME="Test", LSADC="57")])
-    write("austin", [feature(portion(austin, 0, .6), PLANNING_AREA_NAME="Test Austin Plan")])
-    wcad = [feature(portion(wcad45, 0, .25), name="TEST CREEK SEC 3", scode="0000",
+    write("austin", [feature(portion(austin, 0, .6), PLANNING_AREA_NAME="NORTH AUSTIN CIVIC ASSOCIATION")])
+    wcad = [feature(portion(wcad45, 0, .25), name="BLOCK HOUSE CRK SEC 3 (SOUTH)", scode="0000",
                     type="SUB", filedate="2020-01-01T00:00:00"),
             feature(portion(wcad35, 0, .35), name="TEST OAKS PHASE II", scode="0001",
                     type="SUB", filedate="2020-01-01T00:00:00")]
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     wcad.extend({"type": "Feature", "properties": {"name": "TEST FILLER", "scode": f"{i:04d}",
         "type": "SUB", "filedate": "2020-01-01T00:00:00"}, "geometry": filler} for i in range(2, 2000))
     write("wcad_0", wcad)
-    write("wcad_2000", [feature(portion(wcad45, .25, .45), name="TEST CREEK REPLAT", scode="2000",
+    write("wcad_2000", [feature(portion(wcad45, .25, .45), name="BLOCK HOUSE CREEK REPLAT", scode="2000",
                                 type="SUB", filedate="2020-01-01T00:00:00")])
 
     write("austin_subdivisions_0", [
