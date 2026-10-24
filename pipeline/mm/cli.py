@@ -90,6 +90,29 @@ def _cmd_layers_due(a: argparse.Namespace) -> int:
     return layers_due.main(a.summary_since, a.force)
 
 
+def _cmd_validate(a: argparse.Namespace) -> int:
+    from . import validation
+
+    return validation.main(write_files=a.write)
+
+
+def _cmd_refresh(a: argparse.Namespace) -> int:
+    from . import refresh
+
+    return refresh.main(mode=a.mode, dry_run=a.dry_run, report=a.report)
+
+
+def _copy_validation() -> None:
+    """The last refresh's validation report is served with the site (no network)."""
+    from .paths import paths
+
+    src = paths().data / "validation" / "validation.json"
+    if src.is_file():
+        dst = paths().web_public / "validation.json"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(src.read_bytes())
+
+
 def _cmd_publish(a: argparse.Namespace) -> int:
     """Publish from stored live data (data/canonical); adapters that have never run live
     publish their fixtures, labeled Test data. No network calls. Used by the Pages build."""
@@ -114,6 +137,7 @@ def _cmd_publish(a: argparse.Namespace) -> int:
                 print("  error:", e.splitlines()[0])
     _cmd_compile(a)
     _cmd_health(a)
+    _copy_validation()
     return worst
 
 
@@ -156,6 +180,16 @@ def main(argv: list[str] | None = None) -> int:
     ld.add_argument("--force", action="store_true", help="list every layer adapter, due or not")
     ld.add_argument("--summary-since", help="instead, print a table of live layer runs since this UTC time")
     ld.set_defaults(fn=_cmd_layers_due)
+
+    v = sub.add_parser("validate", help="validation report on what is published (hard checks decide the exit code)")
+    v.add_argument("--write", action="store_true", help="also write data/validation/")
+    v.set_defaults(fn=_cmd_validate)
+
+    rf = sub.add_parser("refresh", help="monthly refresh: run due adapters, validate, keep or roll back")
+    rf.add_argument("--mode", choices=["live", "fixture"], default="live")
+    rf.add_argument("--dry-run", action="store_true", help="list what is due and validate; no source calls, no writes")
+    rf.add_argument("--report", help="also write the Markdown report to this file")
+    rf.set_defaults(fn=_cmd_refresh)
 
     sub.add_parser("publish", help="publish from stored live data (fixtures where none); no network").set_defaults(fn=_cmd_publish)
     sub.add_parser("build", help="run all adapters on fixtures, compile, health").set_defaults(fn=_cmd_build)

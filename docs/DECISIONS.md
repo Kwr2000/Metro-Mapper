@@ -3,6 +3,33 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-24 — P1-09 monthly refresh and validation (Claude)
+
+- `refresh.yml` runs at 09:15 UTC on the 3rd of each month, the schedule proposed in the P1-09
+  outline and approved with Phase 1. No budget or cadence changes: each adapter uses its own
+  approved budget and each layer its approved `refresh` (monthly: FEMA, APD, access; annual:
+  areas, ACS, schools). Manual runs default to a dry run with no source calls.
+- "Due" now means the last live success is at least 25 days old (monthly) or 350 days
+  (annual), instead of 30 days less 12 hours. With a run on the 3rd, the old rule skipped
+  March (Feb 3 to Mar 3 is 28 days). This keeps the approved monthly cadence; it does not make
+  refreshes more frequent.
+- The workflow commits the run log and report to `main` every run, and stored data only when
+  all hard checks pass; otherwise `data/canonical` is restored and the previous month stays
+  live. It then starts `pages.yml`, because pushes made with the workflow token don't trigger
+  other workflows. Direct data commits to `main` are the refresh's job (PLAN: "publishes");
+  code still goes through PRs.
+- APD's run summary gains "reports in block groups outside APD area" so the published
+  block-group counts can be reconciled exactly against APD's independent total. That check
+  is skipped until APD's next refresh stores the new count.
+- The H3 stability check uses the property each non-demographic block-group layer colours by,
+  hexagon overlap-weighted means and Spearman ≥ 0.8 (soft). New dependency: `h3` (free).
+- First scheduled run (2026-11-03) will find nothing due (FEMA and APD ran 2026-10-23), so
+  FEMA and APD refresh on 2026-12-03. Between about 2026-11-27 and 2026-12-03 the site will
+  label them "stale" (35-day freshness window). One-time; accepted rather than refreshing
+  early.
+- Open question for the owner, not changed: the P1-02 spec says areas are "yearly (names
+  monthly)", but the approved layer manifests say `refresh: annual`, so names refresh yearly.
+
 ## 2026-10-23 — Owner approvals: P1-07 access budget and ODbL
 
 - **Owner approval:** `access: {per_day: 6, min_interval_seconds: 5, max_minutes: 25}`,

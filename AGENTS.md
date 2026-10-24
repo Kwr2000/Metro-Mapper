@@ -116,7 +116,9 @@ mm run --adapter <id> --mode live    # budgeted live run (normally only in workf
 ```
 
 Workflows: `ci.yml` (once per PR, fast subset), `pages.yml` (deploys the site on push to
-main from committed data; no source calls), `probe.yml` (manual source probe).
+main from committed data; no source calls), `probe.yml` (manual source probe), `live-run.yml`
+(one adapter, manual, to a review branch), `refresh.yml` (monthly on the 3rd: due adapters,
+validation report, publishes only if hard checks pass; `mm refresh --dry-run` locally).
 
 ## Reference material
 

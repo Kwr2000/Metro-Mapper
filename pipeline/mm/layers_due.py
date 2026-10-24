@@ -1,9 +1,11 @@
 """Which map-layer adapters are due a live refresh, and a summary of what ran.
 
-For the monthly refresh workflow (P1-09). An adapter is due when a layer it feeds has a
-weekly, monthly or annual `refresh` and its last successful live run is older than that
-interval (less 12 hours of slack), or it has never run live. Manual layers and gated
-adapters are excluded.
+For the monthly refresh workflow (P1-09), which runs on the 3rd of each month. An adapter
+is due when a layer it feeds has a weekly, monthly or annual `refresh` and its last
+successful live run is at least MIN_AGE old, or it has never run live. MIN_AGE sits a few
+days under the interval so a month-to-month run (28 to 31 days apart) is never skipped,
+while a manual run in the last 25 days still waits for the next month. Manual layers and
+gated adapters are excluded.
 
     mm layers-due                      # adapter ids, one per line
     mm layers-due --summary-since T    # Markdown table of live runs since T (UTC ISO time)
@@ -19,7 +21,8 @@ from . import config, runlog
 from .manifests import load_layers
 
 INTERVAL = {"weekly": timedelta(days=7), "monthly": timedelta(days=30), "annual": timedelta(days=365)}
-SLACK = timedelta(hours=12)
+MIN_AGE = {timedelta(days=7): timedelta(days=6), timedelta(days=30): timedelta(days=25),
+           timedelta(days=365): timedelta(days=350)}
 
 
 def layer_adapters() -> dict[str, timedelta]:
@@ -46,7 +49,7 @@ def due(now: datetime | None = None, force: bool = False) -> list[tuple[str, str
         ok = [r for r in runlog.for_adapter(adapter_id, runs) if r.mode == "live" and r.status == "success"]
         if not ok:
             result.append((adapter_id, "never succeeded live"))
-        elif now - ok[-1].finished_at >= iv - SLACK:
+        elif now - ok[-1].finished_at >= MIN_AGE[iv]:
             result.append((adapter_id, f"last live success {ok[-1].finished_at:%Y-%m-%d}"))
     return result
 
