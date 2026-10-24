@@ -236,6 +236,7 @@ class APDReports(SourceAdapter):
                     props["safety_note"] = TOO_FEW
             output.append(AreaFeature(dataset="block_group", feature_id=geoid, geometry=bg.geometry,
                                       properties=props, source_as_of=self.as_of))
+        inside_ids = {r.feature_id for r in output if r.properties["safety_note"] != OUTSIDE}
         eligible = [r for r in output if r.properties["safety_note"] is None]
         populations = [r.properties["population_2020"] for r in eligible]
         for field, count_fields in (("rate_part1", ("violent", "property")), ("rate_violent", ("violent",))):
@@ -246,6 +247,9 @@ class APDReports(SourceAdapter):
             "without block group": sum(r["count"] for r in counts if r["geoid"] is None),
             "block groups with reports": len(codes),
             "block groups in APD area": sum(r.properties["safety_note"] != OUTSIDE for r in output),
+            # For the refresh validation (P1-09): located reports the map does not show.
+            "reports in block groups outside APD area": sum(
+                r["count"] for r in counts if r["geoid"] is not None and r["geoid"] not in inside_ids),
             "out-of-county codes": sum(g[:5] not in {"48453", "48491", "48209"} for g in codes),
             "unmatched codes": len(codes - matched), "period start": str(self.start), "period end": str(self.as_of)}
         print("apd: run note: " + summary_text(summary), file=sys.stderr)
