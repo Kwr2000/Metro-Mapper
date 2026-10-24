@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-24 (end of Claude session: P1-09 merged; P1-05b spec ready)._
+_Last updated 2026-10-24 (P1-05b)._
 
 ## Phase
 
@@ -85,6 +85,13 @@ are decided (`DECISIONS.md`).
 - **P1-05b spec** (Claude): DPS agency-level data is XLSX from the DPS UCR portal (needs a
   "compatible" user agent; probe PRs #55, #56, #57). Spec `docs/tasks/P1-05b-agency-safety.md`.
 
+- **P1-05b** (Codex): DPS agency-wide safety adapter, native XLSX/TIGER synthetic fixtures,
+  strict 28-agency/25-place joins, city/sheriff/split assignment, layer and count-only audit.
+  Owner budget/publication approvals recorded; live use gated. PR #59: full local
+  `make test` passes after installing declared dependencies (629 pipeline tests, no skips;
+  34 web tests, schema/type checks, fixture and production builds). No live source calls.
+  Awaiting Claude's live agency/place counts, assignment counts, Austin rate and unmapped totals.
+
 ## Next
 
 1. Claude (scheduled, 2026-10-25 00:15 UTC): `areas` live run for P1-02c name polish
@@ -93,16 +100,14 @@ are decided (`DECISIONS.md`).
 2. Claude (scheduled, 2026-10-25 00:25 UTC): re-run the `access` first live check (P1-07,
    merged PR #50; first run 40054053666 failed only on CapMetro's missing `calendar.txt`,
    fixed PR #51; OSM processing took ~12 min). Then merge data, ungate `access`.
-3. Owner: approve the `dps_agency` budget (10/day, annual) and publishing DPS portal figures
-   under the Q1 rule; then paste the P1-05b prompt into Codex.
-4. Claude: P1-05b review and first live check (28 agencies, 25 places, split count, Austin PD
+3. Claude: P1-05b review and first live check (28 agencies, 25 places, split count, Austin PD
    about 35.7 per 1,000), then ungate.
-5. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
+4. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
    site once all layers are in. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
 
-- Agency-level safety outside Austin PD: spec ready (P1-05b), awaiting owner approval and build.
+- Agency-level safety outside Austin PD: P1-05b built on fixtures, awaiting Claude's live check.
 - FEMA and APD will read "stale" from about 2026-11-27 until the 2026-12-03 refresh (one-time).
 - Areas cadence: P1-02 spec said "names monthly", layer manifests say annual; left annual.
 - APD reconciliation check is skipped until APD's next refresh stores the new summary count.
@@ -112,7 +117,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- P1-05b approvals (Next item 3).
+- Nothing right now.
 
 ## Working notes for agents
 

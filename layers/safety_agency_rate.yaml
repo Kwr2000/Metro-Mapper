@@ -1,0 +1,54 @@
+id: safety_agency_rate
+title: Reported Part I crime per 1,000 residents (agency-wide)
+group: Safety
+description: >-
+  One number per police agency for calendar year 2025, from reports to the Texas
+  Department of Public Safety, shown on every area that agency covers. It does not
+  vary within a city or county area and is not specific to any street. Reports are
+  not convictions. Sheriff rates cover unincorporated areas and cities without
+  their own police. For detail inside Austin, see the Austin PD block-group layers.
+source: dps_agency
+geometry: polygon
+join: block_group
+dataset: block_group
+publish: geojson
+style:
+  type: fill
+  paint:
+    fill-opacity: 0.55
+    fill-color:
+      - case
+      - ["==", [get, rate_part1], null]
+      - '#bdbdbd'
+      - [step, [get, rate_part1], '#feedde', 10, '#fdbe85', 20, '#fd8d3c', 30, '#e6550d', 50, '#a63603']
+popup_title: Reported Part I crime (agency-wide)
+popup:
+  - {field: agency, label: Police agency}
+  - {field: rate_part1, label: "Agency-wide Part I rate per 1,000", format: number, annotation_field: retrieved}
+  - {field: rate_violent, label: "Agency-wide violent rate per 1,000", format: number}
+  - {field: part1, label: Agency-wide Part I offenses, format: number}
+  - {field: violent, label: Agency-wide violent offenses, format: number}
+  - {field: property, label: Agency-wide property offenses, format: number}
+  - {field: part1_prev, label: Previous-year Part I offenses, format: number}
+  - {field: part1_change, label: Part I change (%), format: number}
+  - {field: agency_population, label: DPS jurisdictional population, format: number}
+  - {field: agency_share, label: Share of this area in the jurisdiction, format: percent}
+  - {field: period, label: Report period}
+  - {field: retrieved, label: Retrieved, format: date}
+  - {field: coverage_note, label: Coverage}
+  - {field: safety_note, label: Note}
+  - {field: geoid, label: GEOID}
+legend:
+  - {label: Below 10, color: '#feedde'}
+  - {label: 10 to below 20, color: '#fdbe85'}
+  - {label: 20 to below 30, color: '#fd8d3c'}
+  - {label: 30 to below 50, color: '#e6550d'}
+  - {label: 50 or more, color: '#a63603'}
+  - {label: Not available, color: '#bdbdbd'}
+coverage: study_area
+refresh: annual
+attribution: Texas Department of Public Safety, UCR Crime in Texas; U.S. Census Bureau (TIGER)
+license: ''
+disclaimer: Figures as reported to DPS by each agency; DPS updates them as agencies revise reports.
+default_visible: false
+order: 62

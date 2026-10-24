@@ -3,6 +3,32 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-24 — Owner approvals: P1-05b DPS agency safety
+
+- **Owner approval:** `dps_agency: {per_day: 10, min_interval_seconds: 2}`, refreshed
+  annually, approved in writing in the owner's P1-05b build request. A normal run is five
+  calls; live use remains gated awaiting Claude's first live check.
+- **Owner approval:** publish the DPS UCR portal's agency figures as public government data
+  with no stated license, credited to the Texas Department of Public Safety, under the
+  owner's Q1 rule. Approved in writing in the same request; the layer leaves `license`
+  empty so the site says "No license stated".
+
+## 2026-10-24 — P1-05b implementation choices (Codex)
+
+- If multiple cities qualify at half area, assign the greatest unrounded share, then
+  ascending ORI for an exact tie. City priority over sheriff and the spec's 1e-9 tolerance
+  remain unchanged. All counts and rates remain the entire agency's figures.
+- The first workbook sheet is the agency table; preserve legend sheets in the parsed
+  payload but do not treat them as agency records. Strict column matching recognizes the
+  two specified assault/auto-theft spellings and whitespace/hyphen variants. Numeric text
+  may have valid thousands separators or an integral decimal; blanks fail rather than zero.
+- A separate non-spatial canonical `run_summary`, count-only stderr note, and
+  `tools/live_summary.py` support persist the audit without changing pipeline core, as in
+  APD. Per-agency block-group counts include all 28 ORIs, even those assigned no block groups;
+  unmapped agencies retain violent/property/Part I and portal-total counts only, keyed by ORI.
+- The required manifest description names 2025; it needs a prose update at the next annual
+  review. Record-level year, period, retrieval and source-as-of dates are computed each run.
+
 ## 2026-10-24 — P1-05b: DPS agency data format checked; spec written (Claude)
 
 - The *Crime in Texas 2025* PDF has agency tables for the Top 25 only. Every agency is in the

@@ -32,7 +32,7 @@ def main(adapter_id: str) -> int:
             f"source as of {r.source_as_of or '—'}, {int((r.finished_at - r.started_at).total_seconds())} s"]
     out += [f"- note: {n}" for n in r.notes]
     out += [f"- error: {e.splitlines()[0][:300]}" for e in r.errors if e.strip()]
-    if adapter_id in {"apd", "access"} and r.status == "success":
+    if adapter_id in {"apd", "access", "dps_agency"} and r.status == "success":
         for record in canonical.read("area_feature", adapter_id) or []:
             if record.dataset == "run_summary" and record.source_as_of == r.source_as_of:
                 out += [f"- note: {key}={value}" for key, value in record.properties.items()]
