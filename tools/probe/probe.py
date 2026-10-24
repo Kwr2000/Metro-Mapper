@@ -466,7 +466,6 @@ TIGER_CURRENT = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/t
 
 @check("dps_txucr_agency_xlsx", "DPS UCR portal: 2025 index crime by agency (XLSX, 50k-100k report)")
 def _():
-    import http.cookiejar
     import re
 
     url = TXUCR_XLSX.format(rid=613)
@@ -481,26 +480,14 @@ def _():
             f", title {title.group(1).strip()[:80]!r}, text {snippet!r}" if kind != "xlsx" else "")
 
     out = []
-    # 1. with Accept and Referer headers
-    status, _, body, _ = _req(url, headers={"Accept": "*/*", "Referer": page})
-    out.append("headers: " + show(status, body))
-    time.sleep(2)
-    # 2. with a session: load the report page and the report's offense list first
-    jar = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
-    h = {"User-Agent": UA, "Accept": "*/*", "Referer": page}
-    try:
-        for u in (page, "https://txucr.nibrs.com/Report/GetReportOffenseByReportID?ReportId=613", url):
-            req = urllib.request.Request(u, headers=h)
-            try:
-                with opener.open(req, timeout=TIMEOUT) as resp:
-                    status, body = resp.status, resp.read()
-            except urllib.error.HTTPError as e:
-                status, body = e.code, e.read(4000)
-            time.sleep(2)
-        out.append(f"session ({len(jar)} cookies): " + show(status, body))
-    except Exception as e:  # noqa: BLE001
-        out.append(f"session: {type(e).__name__}: {e}"[:200])
+    # The page itself, then the download with a conventional crawler-style user agent that
+    # still names this project (ASP.NET sites sometimes fail on unrecognised agents).
+    compat = f"Mozilla/5.0 (compatible; {UA})"
+    for label, u, agent in (("page, project UA", page, UA), ("page, compatible UA", page, compat),
+                            ("xlsx, compatible UA", url, compat)):
+        status, _, body, _ = _req(u, headers={"User-Agent": agent, "Accept": "*/*"})
+        out.append(f"{label}: " + show(status, body if u == url else body[:4000]))
+        time.sleep(2)
     return "; ".join(out)
 
 
