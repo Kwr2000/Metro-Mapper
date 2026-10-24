@@ -1,0 +1,40 @@
+{
+  "status": 200,
+  "body": {
+    "features": [
+      {
+        "attributes": {
+          "GEOID": "484530001001001",
+          "POP100": 70,
+          "INTPTLON": "-097.7800000",
+          "INTPTLAT": "+30.2700000"
+        }
+      },
+      {
+        "attributes": {
+          "GEOID": "484530001001002",
+          "POP100": 30,
+          "INTPTLON": "-097.7765013",
+          "INTPTLAT": "+30.2700000"
+        }
+      },
+      {
+        "attributes": {
+          "GEOID": "484530001002003",
+          "POP100": 50,
+          "INTPTLON": "-097.7100253",
+          "INTPTLAT": "+30.2700000"
+        }
+      },
+      {
+        "attributes": {
+          "GEOID": "484530001004004",
+          "POP100": 100,
+          "INTPTLON": "-097.7753350",
+          "INTPTLAT": "+30.2700000"
+        }
+      }
+    ],
+    "exceededTransferLimit": false
+  }
+}

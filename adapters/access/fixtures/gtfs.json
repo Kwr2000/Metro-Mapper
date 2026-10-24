@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "body": {
+    "files": {
+      "calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\nweekday,1,1,1,1,1,0,0,20200101,20991231\nweekend,0,0,0,0,0,1,1,20200101,20991231\n",
+      "calendar_dates.txt": "service_id,date,exception_type\nweekday,20261028,2\nextra,20261104,1\n",
+      "trips.txt": "route_id,service_id,trip_id\nbus,weekday,t1\nrail,weekday,t2\nbus,extra,t3\nbus,weekday,late\nbus,weekday,nine\nbus,weekend,inactive\n",
+      "routes.txt": "route_id,route_type\nbus,3\nrail,2\n",
+      "stops.txt": "stop_id,stop_lat,stop_lon\ns1,30.27,-97.78\ns2,30.27,-97.77650126460227\nremote,30.27,-97.71002529204543\n",
+      "stop_times.txt": "trip_id,stop_id,departure_time\nt1,s1,07:00:00\nt1,s2,07:10:00\nt2,s2,08:59:59\nt3,s1,08:00:00\nlate,s1,25:00:00\nnine,s1,09:00:00\ninactive,s1,08:00:00\n"
+    },
+    "gtfs_feed_version": "synthetic-2026"
+  }
+}

@@ -8,3 +8,4 @@ adapters:
   acs: {per_day: 30, min_interval_seconds: 1}
   schools: {per_day: 10, min_interval_seconds: 1}
   apd: {per_day: 10, min_interval_seconds: 1}
+  access: {per_day: 6, min_interval_seconds: 5, max_minutes: 25}
