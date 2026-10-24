@@ -1,0 +1,163 @@
+{
+  "status": 200,
+  "body": {
+    "sheets": {
+      "Index Crime": [
+        [
+          "Texas Cities - 2025 vs 2024"
+        ],
+        [
+          "ORI",
+          "Agency",
+          "Population",
+          "Murder",
+          "Rape",
+          "Robbery",
+          "Aggravated Assault",
+          "Burglary",
+          "Larceny",
+          "AutoTheft",
+          "Human Trafficking\nCommercial Sex Acts",
+          "Human Trafficking\nInvoluntary Servitude",
+          "Arson",
+          "Total",
+          "%Change"
+        ],
+        [
+          "TX2270100",
+          "AUSTIN PD",
+          "20000"
+        ],
+        [
+          "",
+          "Number of Offenses - 2024",
+          "",
+          "1",
+          "1",
+          "1",
+          "1",
+          "2",
+          "2",
+          "2",
+          "0",
+          "0",
+          "0",
+          "10",
+          ""
+        ],
+        [
+          "",
+          "Number of Offenses - 2025",
+          "",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "4",
+          "2",
+          "3",
+          "3",
+          "33",
+          ""
+        ],
+        [
+          "TX2270900",
+          "PFLUGERVILLE PD",
+          "20000"
+        ],
+        [
+          "",
+          "Number of Offenses - 2024",
+          "",
+          "1",
+          "1",
+          "1",
+          "1",
+          "2",
+          "2",
+          "2",
+          "0",
+          "0",
+          "0",
+          "10",
+          ""
+        ],
+        [
+          "",
+          "Number of Offenses - 2025",
+          "",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "5",
+          "2",
+          "3",
+          "3",
+          "34",
+          ""
+        ],
+        [
+          "TX2270200",
+          "MANOR PD",
+          "20000"
+        ],
+        [
+          "",
+          "Number of Offenses - 2024",
+          "",
+          "1",
+          "1",
+          "1",
+          "1",
+          "2",
+          "2",
+          "2",
+          "0",
+          "0",
+          "0",
+          "10",
+          ""
+        ],
+        [
+          "",
+          "Number of Offenses - 2025",
+          "",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "6",
+          "2",
+          "3",
+          "3",
+          "35",
+          ""
+        ]
+      ],
+      "Legend Info": [
+        [
+          "Printed On: 10/24/2026"
+        ],
+        [
+          "Beginning Date: 01/01/2025"
+        ],
+        [
+          "Ending Date: 12/31/2025"
+        ],
+        [
+          "Offenses: 09A, 09B, 11A, 11B, 11C, 120, 13A, 200, 220, 23A-23H, 240, 64A, 64B"
+        ],
+        [
+          "Data Type: NIBRS"
+        ]
+      ]
+    }
+  }
+}

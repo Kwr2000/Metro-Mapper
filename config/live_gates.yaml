@@ -3,3 +3,4 @@
 # the source, and record that in docs/DECISIONS.md.
 gated:
   access: "awaiting Claude's first live check"
+  dps_agency: "awaiting Claude's first live check"
