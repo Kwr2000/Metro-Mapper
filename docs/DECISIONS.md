@@ -3,6 +3,26 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-24 — P1-05b live check passed; `dps_agency` ungated (Claude)
+
+- First run 40108168966 failed safely after 1 call: real ORIs can contain letters
+  (`TXDPD0000`, `TX227289E`); fixed in PR #60. Run 40108617517: 5 calls, 25 s. Both runs'
+  calls are in the run log (6 of 10 today).
+- 2025 data: 28 agencies and 25 places matched; 1,206 block groups: Austin PD 604, Travis
+  County SO 125, Williamson County SO 106, Hays County SO 62, Round Rock 59, Georgetown 46,
+  Cedar Park 44, Pflugerville 34, San Marcos 34, Leander 22, Kyle 16, Taylor 12, Lakeway 10,
+  Hutto 9, others 1–5. Six block groups are split between agencies (not available).
+- Austin PD: 35,685 Part I on 1,000,639 people = 35.7 per 1,000, as expected. Rates run from
+  5.3 to 344.4 (Sunset Valley: 604 residents and a retail centre; the small-population note
+  shows on 7 block groups).
+- Six small-town police departments get no block group (Florence, Granger, Jarrell, Liberty
+  Hill, Mustang Ridge, Thrall): each town is under half of every block group it touches, so
+  those areas show their county sheriff's rate. This follows the spec's 50% rule; the popup
+  names the agency and its share.
+- Zero-population agencies (schools, universities, transit, constables) total about 1,660
+  Part I offenses, the largest UT Austin PD (945); kept in the run summary only.
+- `dps_agency` ungated. It refreshes annually through the monthly refresh.
+
 ## 2026-10-24 — Owner approvals: P1-05b DPS agency safety
 
 - **Owner approval:** `dps_agency: {per_day: 10, min_interval_seconds: 2}`, refreshed

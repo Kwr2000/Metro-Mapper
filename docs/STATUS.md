@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-24 (P1-05b)._
+_Last updated 2026-10-24 (P1-05b live and ungated)._
 
 ## Phase
 
@@ -90,7 +90,8 @@ are decided (`DECISIONS.md`).
   Owner budget/publication approvals recorded; live use gated. PR #59: full local
   `make test` passes after installing declared dependencies (629 pipeline tests, no skips;
   34 web tests, schema/type checks, fixture and production builds). No live source calls.
-  Awaiting Claude's live agency/place counts, assignment counts, Austin rate and unmapped totals.
+  Live (Claude, run 40108617517; ORI fix PR #60): 28 agencies, 1,206 block groups, 6 split;
+  Austin PD 35.7 per 1,000. Ungated.
 
 ## Next
 
@@ -100,14 +101,13 @@ are decided (`DECISIONS.md`).
 2. Claude (scheduled, 2026-10-25 00:25 UTC): re-run the `access` first live check (P1-07,
    merged PR #50; first run 40054053666 failed only on CapMetro's missing `calendar.txt`,
    fixed PR #51; OSM processing took ~12 min). Then merge data, ungate `access`.
-3. Claude: P1-05b review and first live check (28 agencies, 25 places, split count, Austin PD
-   about 35.7 per 1,000), then ungate.
-4. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
+3. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
    site once all layers are in. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
 
-- Agency-level safety outside Austin PD: P1-05b built on fixtures, awaiting Claude's live check.
+- Six small-town PDs (Florence, Granger, Jarrell, Liberty Hill, Mustang Ridge, Thrall) cover under
+  half of any block group, so those areas show the county sheriff's rate.
 - FEMA and APD will read "stale" from about 2026-11-27 until the 2026-12-03 refresh (one-time).
 - Areas cadence: P1-02 spec said "names monthly", layer manifests say annual; left annual.
 - APD reconciliation check is skipped until APD's next refresh stores the new summary count.
