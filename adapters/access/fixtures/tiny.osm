@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="synthetic-fixture">
+  <node id="1" lat="30.2700" lon="-97.7800"><tag k="shop" v="grocery"/></node>
+  <node id="2" lat="30.2700" lon="-97.7790"><tag k="amenity" v="cafe"/><tag k="shop" v="hardware"/></node>
+  <node id="3" lat="30.2710" lon="-97.7790"/>
+  <node id="4" lat="30.2710" lon="-97.7800"/>
+  <node id="5" lat="30.2700" lon="-97.7799"/>
+  <node id="6" lat="30.2700" lon="-97.7798"/>
+  <node id="7" lat="30.2701" lon="-97.7798"/>
+  <node id="8" lat="30.2701" lon="-97.7799"/>
+  <node id="9" lat="0" lon="0"/>
+  <node id="10" lat="30.272" lon="-97.7800"><tag k="leisure" v="park"/></node>
+  <way id="100"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><tag k="highway" v="residential"/><tag k="name" v="Synthetic unused name"/></way>
+  <way id="101"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/><tag k="leisure" v="park"/></way>
+  <way id="102"><nd ref="5"/><nd ref="6"/><nd ref="7"/><nd ref="8"/><nd ref="5"/><tag k="leisure" v="park"/></way>
+  <way id="103"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/><tag k="shop" v="supermarket"/></way>
+  <way id="104"><nd ref="1"/><nd ref="9"/><nd ref="2"/><nd ref="3"/><tag k="highway" v="residential"/></way>
+</osm>

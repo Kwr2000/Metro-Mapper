@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-24 (P1-02c)._
+_Last updated 2026-10-24 (P1-07)._
 
 ## Phase
 
@@ -72,10 +72,16 @@ are decided (`DECISIONS.md`).
   (496 pipeline + 34 web tests and build). Awaiting Claude's live check for all-capital
   planning names and remaining Crk/Ests abbreviations.
 
+- **P1-07** (Codex): access adapter and nine shared-bundle walk/bike/transit layers, small
+  synthetic fixtures/tests, ODbL and budget approvals, and live gate. Routes and Census
+  population-weighted medians include cap/missing notes; GTFS trips are counted once.
+  `make test` passes (559 pipeline, one local parser skip, 34 web tests and build). Awaiting
+  Claude's live runtime/memory, graph counts, snap share and plausibility checks.
+
 ## Next
 
 1. Claude: review P1-08 filters, comparison, privacy and methodology on the live site.
-2. Claude: verify sources and write P1-07 (access) and P1-05b (agency-level safety) specs.
+2. Claude: first live check of P1-07 access, then verify the P1-05b agency-level safety sources.
 
 ## Open issues
 

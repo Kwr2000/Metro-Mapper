@@ -3,6 +3,52 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-23 — Owner approvals: P1-07 access budget and ODbL
+
+- **Owner approval:** `access: {per_day: 6, min_interval_seconds: 5, max_minutes: 25}`,
+  refreshed monthly, confirmed in the owner's P1-07 build request. A normal run has four
+  requests. The first live run remains gated for Claude's check.
+- **Owner approval:** publish access values as a derivative database offered under
+  **ODbL 1.0**, as explicitly approved in the P1-07 build request. Retain OpenStreetMap
+  attribution, identify the derivation and make the derived values available on those
+  terms. CapMetro's GTFS retains its CMTA Open Data License and attribution; Census inputs
+  are public domain. Do not characterize the output as only a produced work to avoid the
+  database share-alike obligation.
+
+## 2026-10-23 — P1-07 access implementation choices (Codex)
+
+- Tiny fixture mode bypasses only the production minimum volumes (100,000 walk nodes,
+  50 study-area groceries, 1,000 stops/active trips, 20,000 populated blocks). Native schema,
+  identifier, routing and 95% walking-snap checks remain active. Live mode always enforces
+  the volume guards. Tests also exercise that distinction without live source calls.
+- Walking/biking use undirected great-circle edges. Bike starts with the task's walking
+  base, then applies its extra exclusions. Repeated edges take their minimum length rather
+  than summing. Snapping is EPSG:5070, with a 1e-7-metre numerical tolerance at 300 m;
+  snapped connector distances are not added to network times. Unreachable blocks contribute
+  61 destination minutes and zero accessible CapMetro trips.
+- Use the lower population-weighted median at an exact half-weight tie, avoiding interpolation
+  of the 61 sentinel. Round final minutes to nearest-even whole numbers; transit is the median
+  distinct-trip count divided by two. Per-measure notes distinguish capped values from finite
+  values; `access_note` summarizes them. No populated blocks means nulls, never invented zeros.
+- A Wednesday with any type-2 calendar removal is skipped as a holiday candidate; type-1
+  additions apply on the selected date. Feed version is read from the ZIP's `feed_info.txt`
+  when available and otherwise stays null. All routes count, and trips at several nearby stops
+  count once per block. Stop searches hold one bounded distance vector at a time.
+- Stream OSM with pyosmium's node/way callbacks, storing only bbox nodes, then compact to
+  used nodes. Require node-before-way ordering, split ways at missing/outside refs, and
+  ignore point parks with no measurable area. Park ways need 0.1 ha and add all boundary
+  vertices. Destination ways crossing the clipping boundary cannot supply a complete vertex
+  centroid and are ignored. No OSM relation destinations are added beyond the specified
+  nodes/ways contract. Raw PBFs are deleted before fetch returns; OSM failures prevent a second
+  core retry/download. Routing and extraction check the same 25-minute deadline.
+- The unchanged adapter contract cannot append saved run notes. Print count-only notes and
+  retain a separate canonical `run_summary` audit record, as in APD, with runtime and peak RSS.
+  `tools/live_summary.py` displays it; map manifests select only block-group records. The layer
+  as-of date is Geofabrik's Last-Modified date, with GTFS version and service date shown separately.
+- pyosmium is imported only by the live-file parser. It is declared as a dependency and CI
+  exercises a tiny native OSM file; offline local development can run compact fixtures without
+  downloading the parser. The parser-specific test skips locally if it is not installed.
+
 ## 2026-10-24 — P1-02b live: better names published (Claude)
 
 - Run 40044207313: 24 calls. 1,206 block groups named: Census place 641, City of Austin

@@ -31,6 +31,7 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 | Hays County GIS parcels | Parcel polygons (fresher than StratMap) | Parcel | H | Irregular (last 2026-03-12) | Yes | Yes, no license stated |
 | Comptroller Property Value Study 2024 | Appraisal accuracy by district | CAD | T W H | Every 2 years | Yes (page) | Yes (state facts, cited) |
 | Census TIGERweb 2020 block groups | Base map unit | Block group | T W H | Fixed (2020) | Yes | Yes (public domain) |
+| Census TIGERweb 2020 populated blocks | Access population weights and interior points | Census block | T W H | Fixed (2020) | Yes | Yes (public domain) |
 | Census ACS 5-year 2020–2024 | Demographics with margins of error | Block group / tract | T W H | Yearly (Dec) | Yes, with key (503s on first runs were transient) | Yes (public domain) |
 | APD Crime Reports (`fdj4-gpfu`) | Reported incidents by block group | Block group | Austin PD area only | Weekly | Yes (Socrata API) | **Yes** (Public Domain) |
 | Texas DPS, Crime in Texas 2025 | Agency-level offense counts | Agency | T W H | Yearly | Yes (PDF) | Yes (state facts, cited) — format to check |
@@ -214,6 +215,12 @@ published in 2027.
 
 ## Access
 
+- **2020 Census populated blocks**, TIGERweb Census2020 layer 10, checked by Claude
+  2026-10-24 (P1-07 spec): 21,924 blocks in Travis, Williamson and Hays with `POP100>0`.
+  Request `GEOID,POP100,INTPTLAT,INTPTLON`, no geometry; one request, transfer-limit guard.
+  `POP100` supplies exact 2020 population weights, and signed-text interior points are
+  snapped to the access networks. Public domain; credit "U.S. Census Bureau".
+  Endpoint: <https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/10/query>.
 - **CapMetro GTFS**: CapMetro's developer page (<https://www.capmetro.org/developertools>) points
   to data.texas.gov. Download `https://data.texas.gov/download/r4v4-vz24/application%2Fzip`
   (33.3 MB, 11 files). `feed_info.txt`: feed start 2026-10-07, end 2027-01-09, version
