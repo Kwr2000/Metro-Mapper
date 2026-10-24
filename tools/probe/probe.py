@@ -464,14 +464,43 @@ TXUCR_XLSX = ("https://txucr.nibrs.com/Report/DownloadReportExcel?offenses=&star
 TIGER_CURRENT = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer"
 
 
-@check("dps_txucr_agency_xlsx", "DPS UCR portal: 2025 index crime by agency (XLSX, 3 reports)")
+@check("dps_txucr_agency_xlsx", "DPS UCR portal: 2025 index crime by agency (XLSX, 50k-100k report)")
 def _():
-    out = []
-    for rid in (615, 613, 652):  # over 100k, 50k-100k, under 50k jurisdictional population
-        status, hdrs, body, _ = _req(TXUCR_XLSX.format(rid=rid))
+    import http.cookiejar
+    import re
+
+    url = TXUCR_XLSX.format(rid=613)
+    page = "https://txucr.nibrs.com/Report/TexasCITReport"
+
+    def show(status, body):
         kind = "xlsx" if body[:4] == b"PK\x03\x04" else "not a zip"
-        out.append(f"{rid}: HTTP {status}, {len(body):,} bytes, {kind}")
-        time.sleep(2)
+        text = body.decode("utf-8", "replace") if kind != "xlsx" else ""
+        title = re.search(r"<title>(.*?)</title>", text, re.S | re.I)
+        snippet = re.sub(r"<[^>]+>|\s+", " ", text)[:160]
+        return f"HTTP {status}, {len(body):,} bytes, {kind}" + (
+            f", title {title.group(1).strip()[:80]!r}, text {snippet!r}" if kind != "xlsx" else "")
+
+    out = []
+    # 1. with Accept and Referer headers
+    status, _, body, _ = _req(url, headers={"Accept": "*/*", "Referer": page})
+    out.append("headers: " + show(status, body))
+    time.sleep(2)
+    # 2. with a session: load the report page and the report's offense list first
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    h = {"User-Agent": UA, "Accept": "*/*", "Referer": page}
+    try:
+        for u in (page, "https://txucr.nibrs.com/Report/GetReportOffenseByReportID?ReportId=613", url):
+            req = urllib.request.Request(u, headers=h)
+            try:
+                with opener.open(req, timeout=TIMEOUT) as resp:
+                    status, body = resp.status, resp.read()
+            except urllib.error.HTTPError as e:
+                status, body = e.code, e.read(4000)
+            time.sleep(2)
+        out.append(f"session ({len(jar)} cookies): " + show(status, body))
+    except Exception as e:  # noqa: BLE001
+        out.append(f"session: {type(e).__name__}: {e}"[:200])
     return "; ".join(out)
 
 
