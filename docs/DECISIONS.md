@@ -3,6 +3,15 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-24 — P1-02b live: better names published (Claude)
+
+- Run 40044207313: 24 calls. 1,206 block groups named: Census place 641, City of Austin
+  neighborhood planning area 343, City of Austin subdivision 109, WCAD subdivision 68, Hays
+  County subdivision 18, fallback 27. Plain "Austin" names fell from 256 to 182.
+- Spot checks read well ("Circle C Ranch", "Avalon", "Belterra", "Plum Creek", "Santa Rita
+  Ranch"). Follow-ups for a later small task: planning-area names arrive in capitals ("NORTH
+  AUSTIN CIVIC ASSOCIATION"); WCAD abbreviations such as "Crk" stay as given.
+
 ## 2026-10-24 — ACS published and ungated (Claude)
 
 - Run 40043682058: 26 calls, 1,206 block groups and 471 tracts. Plain-language notes in place
