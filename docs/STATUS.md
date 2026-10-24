@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-24 (P1-07)._
+_Last updated 2026-10-24 (end of Claude session: P1-02c, P1-07, P1-08 merged)._
 
 ## Phase
 
@@ -80,15 +80,25 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Claude: review P1-08 filters, comparison, privacy and methodology on the live site.
-2. Claude: first live check of P1-07 access, then verify the P1-05b agency-level safety sources.
+1. Claude (scheduled, 2026-10-25 00:15 UTC): `areas` live run for P1-02c name polish
+   (merged PR #48); check no all-capital planning-area names (except MLK/RMMA/UT) and no
+   "Crk"/"Ests"; merge the data PR.
+2. Claude (scheduled, 2026-10-25 00:25 UTC): re-run the `access` first live check (P1-07,
+   merged PR #50; first run 40054053666 failed only on CapMetro's missing `calendar.txt`,
+   fixed PR #51; OSM processing took ~12 min). Then merge data, ungate `access`.
+3. Claude: P1-09 monthly refresh workflow and validation report (Claude's task; uses the
+   approved budgets and cadences only).
+4. Claude: verify the DPS Crime in Texas 2025 table format, then write the P1-05b spec for
+   Codex (agency-level safety outside Austin PD).
+5. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
+   site once all layers are in.
 
 ## Open issues
 
-- APD codes verified as 2020 by Claude in P1-05's spec; the adapter enforces a 99% match.
-  Agency-level safety elsewhere is deferred to P1-05b pending the DPS table-format check.
-- Schools have four checked finder overrides; other districts use AskTED district websites
-  or show Not available. Claude checks links and live join counts before ungating P1-06.
+- Agency-level safety outside Austin PD is deferred to P1-05b (DPS table-format check).
+- Schools: four checked finder links; other districts link to their AskTED website or show
+  Not available.
+- Transit covers CapMetro only; other agencies are labeled as not included.
 
 ## Waiting on the owner
 
