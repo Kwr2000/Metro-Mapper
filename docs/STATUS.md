@@ -62,8 +62,9 @@ are decided (`DECISIONS.md`).
 
 - **P1-08** (Codex): registry-driven ranges and map highlights, four-area comparison,
   private shortlist/notes, shareable view links and methodology draft. People stays context
-  only, with no sorting/ranking. Desktop/mobile fixture smoke added locally, outside CI;
-  awaiting Claude's live-site filter and methodology review.
+  only, with no sorting/ranking. `make test` passes (435 pipeline + 34 web tests and build);
+  local Chromium smoke passes at 1440×900 and 390×844, outside CI. Awaiting Claude's
+  live-site filter and methodology review.
 
 ## Next
 
