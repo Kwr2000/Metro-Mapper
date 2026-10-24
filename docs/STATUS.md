@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-24 (ACS and P1-08)._
+_Last updated 2026-10-24 (P1-02c)._
 
 ## Phase
 
@@ -65,6 +65,12 @@ are decided (`DECISIONS.md`).
   only, with no sorting/ranking. `make test` passes (435 pipeline + 34 web tests and build);
   local Chromium smoke passes at 1440×900 and 390×844, outside CI. Awaiting Claude's
   live-site filter and methodology review.
+
+- **P1-02c** (Codex): planning-area title case with MLK/digit/Mc handling; WCAD whole-word
+  abbreviation and parenthesis cleanup; small words in subdivision names. Synthetic tests
+  verify polished spellings merge before the existing share rules. `make test` passes
+  (496 pipeline + 34 web tests and build). Awaiting Claude's live check for all-capital
+  planning names and remaining Crk/Ests abbreviations.
 
 ## Next
 

@@ -43,25 +43,37 @@ QUALIFIER = re.compile(
     r"(?:[,;\s-]+)(?:(?:SEC(?:TION)?|PH(?:ASE)?|UNIT)\.?\s+[A-Z0-9-]+"
     r"|AMENDED|REPLAT|REVISED|RESUB)\.?\s*$", re.IGNORECASE
 )
+PLAT_IDENTIFIER = r"(?:\d[\w-]*|[A-Z](?:-?\d+[A-Z]?)?|[IVX]+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)"
+WCAD_QUALIFIER = re.compile(
+    r"(?:[,;\s-]+)(?:(?:SEC(?:TION)?|PH(?:ASE)?|UNIT)\.?\s+" + PLAT_IDENTIFIER
+    + r"|AMENDED|REPLAT|REVISED|RESUB)\.?\s*$", re.IGNORECASE)
+SMALL_WORDS = {"at", "of", "the", "and", "on"}
 
 
-def clean_subdivision_name(value: str) -> str:
-    value = " ".join(value.split())
-    while True:
-        cleaned = QUALIFIER.sub("", value).strip(" ,;-")
-        if cleaned == value:
-            return value.title()
-        value = cleaned
+def lower_small_words(value: str) -> str:
+    first = re.search(r"\w+", value)
+    return re.sub(r"\b\w+\b", lambda match: match.group().lower()
+                  if match.group().lower() in SMALL_WORDS and first and match.start() > first.start()
+                  else match.group(), value)
 
 
-PLAT_QUALIFIER = re.compile(
-    r"\b(?:SECTION|SEC|PHASE|PH|UNIT|BLOCK|BLK|LOTS|LOT)\.?\s+"
-    r"(?:\d[\w-]*|[A-Z](?:-?\d+[A-Z]?)?|[IVX]+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)\b",
-    re.IGNORECASE)
+# City of Austin planning-area acronyms kept in capitals (RMMA = the Mueller area).
+PLANNING_ACRONYMS = {"MLK", "RMMA", "UT"}
 
 
-def clean_austin_subdivision_name(value: str) -> str | None:
-    value = value.rstrip().removesuffix("*")
+def clean_planning_area_name(value: str) -> str:
+    def part(word):
+        if word.upper() in PLANNING_ACRONYMS:
+            return word.upper()
+        if len(word) > 2 and word[:2].upper() == "MC":
+            return "Mc" + word[2:].capitalize()
+        return word.title()
+    # A digit preserves the entire whitespace-delimited token, including hyphens.
+    return " ".join(word.upper() if any(char.isdigit() for char in word)
+                    else "-".join(part(piece) for piece in word.split("-")) for word in value.split())
+
+
+def without_parentheses(value: str) -> str:
     # Truncation can leave a parenthesis open; discard that annotation through the end.
     outside, depth = [], 0
     for char in value:
@@ -73,7 +85,34 @@ def clean_austin_subdivision_name(value: str) -> str | None:
                 outside.append(" ")
         elif depth == 0:
             outside.append(char)
-    value = "".join(outside).split(",", 1)[0]
+    return "".join(outside)
+
+
+def clean_subdivision_name(value: str, qualifier: re.Pattern[str] = QUALIFIER) -> str:
+    value = " ".join(value.split())
+    while True:
+        cleaned = qualifier.sub("", value).strip(" ,;-")
+        if cleaned == value:
+            return lower_small_words(value.title())
+        value = cleaned
+
+
+PLAT_QUALIFIER = re.compile(
+    r"\b(?:SECTION|SEC|PHASE|PH|UNIT|BLOCK|BLK|LOTS|LOT)\.?\s+"
+    + PLAT_IDENTIFIER + r"\b",
+    re.IGNORECASE)
+
+
+def clean_wcad_subdivision_name(value: str) -> str:
+    value = without_parentheses(value)
+    value = re.sub(r"\b(?:crk|ests)\b", lambda match: {"crk": "Creek", "ests": "Estates"}[match.group().lower()],
+                   value, flags=re.IGNORECASE)
+    return clean_subdivision_name(value, WCAD_QUALIFIER)
+
+
+def clean_austin_subdivision_name(value: str) -> str | None:
+    value = value.rstrip().removesuffix("*")
+    value = without_parentheses(value).split(",", 1)[0]
     # Drop a plat qualifier only with an identifier after it ("SEC 3", "PH B", "PHASE ONE",
     # "LOTS 42"), so names like "Block House Creek" keep their words.
     value = PLAT_QUALIFIER.sub(" ", value)
@@ -83,7 +122,7 @@ def clean_austin_subdivision_name(value: str) -> str | None:
     # Preserve Roman numerals in base names, as in the spec's "Met Center II" example.
     value = re.sub(r"\b(?:Ii|Iii|Iv|Vi|Vii|Viii|Ix|Xi|Xii|Xiii|Xiv|Xv|Xvi|Xvii|Xviii|Xix|Xx)\b",
                    lambda match: match.group().upper(), value)
-    return value if len(value) > 1 else None
+    return lower_small_words(value) if len(value) > 1 else None
 
 
 def exceeded_transfer_limit(body):
@@ -333,8 +372,12 @@ class Areas(SourceAdapter):
                     if name is None:
                         skipped_names += 1
                         continue
+                elif kind == "wcad" and name:
+                    name = clean_wcad_subdivision_name(name)
                 elif kind in SUBDIVISION_KINDS and name:
                     name = clean_subdivision_name(name)
+                elif kind == "austin" and name:
+                    name = clean_planning_area_name(name)
                 props["name"] = name
             yield AreaFeature(dataset="area_input", feature_id=f"{raw.request.key}_{index}",
                               geometry=geometry, properties=props)
