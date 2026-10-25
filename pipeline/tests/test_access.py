@@ -399,11 +399,10 @@ def test_mocked_live_storage_and_count_only_summary(context, monkeypatch, capsys
 def test_budget_and_live_gate(context, monkeypatch):
     b = config.budgets().adapters["access"]
     assert b.per_day == 6 and b.min_interval_seconds == 5 and b.max_minutes == 25
-    (context.adapter_dir.parents[1] / "config/live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
-    config.clear_cache(); monkeypatch.delenv("MM_LIVE_CHECK", raising=False)
-    run = runner.run("access", mode="live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
-    assert "awaiting Claude's first live check" in " ".join(run.notes)
+    # Ungated after Claude's first live check (run 40146625568, DECISIONS 2026-10-25).
+    import yaml
+    gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}
+    assert "access" not in gates
 
 
 def test_failed_osm_download_is_not_retried_by_runner(context, monkeypatch):
