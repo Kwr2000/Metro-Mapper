@@ -3,11 +3,11 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (Phase 2 approved; P2-01 spec)._
+_Last updated 2026-10-25 (P2-01)._
 
 ## Phase
 
-**Phase 2 — approved 2026-10-25, starting** (P2-01 spec ready). Phase 1 is complete.
+**Phase 2 — approved 2026-10-25, in progress** (P2-01 built on fixtures). Phase 1 is complete.
 
 **Phase 1 — done 2026-10-25** (approved 2026-10-23). Phase 0 is done. All owner questions (Q1–Q3)
 are decided (`DECISIONS.md`).
@@ -114,12 +114,19 @@ are decided (`DECISIONS.md`).
 - **Phase 1 closing review** (Claude, 2026-10-25): every layer checked on real data at desktop
   and phone sizes; layout fixes; methodology page complete.
 
+- **P2-01** (Codex): canonical-only StratMap parcel base for three counties, safe DBF
+  field selection, streamed temporary ZIPs, repeated-ID unions/interior points, Census
+  assignments and count-only audit. Approved budget and first-live-check gate added; no
+  core/web changes or layer. `make test` passes (723 pipeline, 35 web tests and builds).
+  Synthetic fixtures only. Awaiting Claude's live kept/skip/coverage counts, file size,
+  runtime/memory and stored-field privacy check.
+
 ## Next
 
-1. Codex: P1-11 (comparisons) in progress; Claude reviews the PR and runs the live checks.
-2. Owner: after P1-11's PR, paste the P2-01 prompt (parcel base) into Codex.
+1. Claude: review P1-11 PR #82 (comparisons) and run its live checks.
+2. Claude: review P2-01 and run the first parcels live check before dependent parcel facts tasks.
 3. After P1-11 is live: Claude specs P1-12 (colour by comparison); P2-02 (TCAD) spec next.
-3. Check the 2026-11-03 refresh report (expect nothing due).
+4. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
 

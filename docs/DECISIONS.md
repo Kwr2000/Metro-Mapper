@@ -3,6 +3,36 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-25 — P2-01 parcel-base implementation choices (Codex)
+
+- Phase 2 and parcels 6/day are already approved in the owner's 2026-10-25 entry below.
+  Add the specified five-second pacing and 30-minute cap; keep first live use gated.
+  No map or non-map manifest is added. Annual cadence is declared by the adapter; the
+  map-manifest-driven scheduler will include the source only with later publication work.
+- Trim IDs but preserve case/leading zeros; skip only blank and exact "0". Use the first
+  nonblank GEO_ID in DBF order. Count a GEO_ID conflict once per property; distinguish
+  repeated properties from extra merged records so read/kept/skipped counts reconcile.
+- Scan only selected DBF attributes first, retaining shape indices; read/union geometry
+  one property at a time. This avoids keeping every parcel polygon in memory. Unselected
+  fields are never unpacked/decoded. Raw retention/recording remain off; all downloaded
+  archives and extracted components are temporary and gone before fetch returns, even
+  on errors. Failed payloads suppress an automatic second large download.
+- The task's compact response has one acquisition date per county, so require DATE_ACQ
+  to be constant as well as TAX_YEAR (including skipped-ID rows). A mixed-date delivery
+  fails instead of silently replacing per-property dates with the county's newest date.
+  Records retain the county date; source_as_of is the latest date across the three counties.
+- Repair only invalid source polygons, retain polygonal parts, and compute the point on
+  the unsimplified EPSG:5070 union. Sum source GIS_AREA (Acres), then round to three decimals;
+  do not substitute geometric acreage. WGS84 point coordinates use six decimals.
+- Block-group covers includes boundaries; choose the smallest GEOID when several cover a
+  point. Cross-county matches are valid. The 99% check is global across kept points and
+  applies to fixtures too; tiny fixtures bypass only the production per-county 2% count
+  guard. The tests exercise both thresholds without constructing large synthetic datasets.
+- The non-spatial count-only audit follows APD and is included by live_summary; runtime
+  includes downloads/parsing/assignment, and peak memory is the process high-water mark
+  at finalization. The runner then validates/serializes records; check complete job resources
+  too in the live run.
+
 ## 2026-10-25 — P1-07 access live check passed; ungated (Claude)
 
 - Run 40146625568: 4 calls, 11 min, peak memory 4.4 GB. OSM (Geofabrik 2026-10-23): walk graph
