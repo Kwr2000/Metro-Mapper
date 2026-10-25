@@ -42,7 +42,10 @@ TO_WGS84 = Transformer.from_crs(5070, 4326, always_xy=True).transform
 
 
 def integer(value):
-    # DBF numeric cells without decimal places are ints; CSV cells are text.
+    # CSV cells are text; DBF N fields are ints; DBF F fields (VTDKEY in the real
+    # VTDs_24PG.dbf, checked 2026-10-25) are floats such as 5450.0.
+    if isinstance(value, float) and math.isfinite(value) and value.is_integer() and value >= 0:
+        return int(value)
     if isinstance(value, bool) or not str(value).isdigit():
         raise ValueError("expected a nonnegative integer")
     return int(value)

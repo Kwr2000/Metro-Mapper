@@ -85,9 +85,12 @@ def shape_zip(tmp_path, omit=None):
     project = Transformer.from_crs(4326, crs, always_xy=True).transform
     base = tmp_path / "VTDs_24PG"
     with shapefile.Writer(str(base), shapeType=shapefile.POLYGON) as writer:
-        for name, typ, width in (("CNTY", "N", 3), ("COLOR", "N", 3), ("VTD", "C", 6), ("CNTYKEY", "N", 6),
-                                 ("VTDKEY", "N", 10), ("CNTYVTD", "C", 12), ("Shape_area", "N", 20), ("Shape_len", "N", 20)):
-            writer.field(name, typ, size=width)
+        # Field types as in the real VTDs_24PG.dbf (checked 2026-10-25): VTDKEY is a float
+        # field (F19.11), so the reader returns e.g. 5450.0, not 5450.
+        for name, typ, width, decimals in (("CNTY", "N", 10, 0), ("COLOR", "N", 10, 0), ("VTD", "C", 254, 0),
+                                           ("CNTYKEY", "N", 10, 0), ("VTDKEY", "F", 19, 11), ("CNTYVTD", "C", 8, 0),
+                                           ("Shape_area", "F", 19, 11), ("Shape_len", "F", 19, 11)):
+            writer.field(name, typ, size=width, decimal=decimals)
         for i, county in enumerate((453, 491, 209, 1)):
             west, south = -97.75 + i * .01, 30.3
             # Clockwise exterior ring (SHP convention).
@@ -136,6 +139,24 @@ def test_native_shapefile_prj_reprojection_fields_and_county_filter(tmp_path):
     first = el.polygon(body["features"][0]["geometry"])
     assert first.bounds == pytest.approx((-97.75, 30.3, -97.745, 30.305), abs=1e-8)
     assert not (folder / "not-required.txt").exists()
+
+
+
+def test_parsed_shapefile_normalizes_with_float_vtdkey(context, tmp_path):
+    """The real DBF stores VTDKEY as a float field; keys must still match the CSVs' integers."""
+    ad, raws = inputs(context)
+    archive = tmp_path / "shapes.zip"; archive.write_bytes(shape_zip(tmp_path))
+    folder = tmp_path / "extract"; folder.mkdir()
+    body = el.parse_shape_zip(archive, folder)
+    assert all(isinstance(f["properties"]["VTDKEY"], float) for f in body["features"])
+    records = list(ad.normalize(RawPayload(raws["vtd_shapes"].request, body)))
+    assert sorted(r.feature_id for r in records) == ["101", "102", "103"]
+
+
+@pytest.mark.parametrize("value", [5450.5, -1.0, float("nan"), float("inf"), True])
+def test_non_integral_or_negative_numbers_fail(value):
+    with pytest.raises(ValueError):
+        el.integer(value)
 
 
 class Response(BytesIO):
