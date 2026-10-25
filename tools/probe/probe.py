@@ -502,6 +502,21 @@ def _():
     return f"layer {lid}; {n} places intersect the study bbox; fields: " + _fields(f"{TIGER_CURRENT}/{lid}")[:300]
 
 
+TLC_ELECTIONS = ("https://data.capitol.texas.gov/dataset/35b16aee-0bb0-4866-b1ec-859f1f044241/resource/"
+                 "e1cd6332-6a7a-4c78-ad2a-852268f6c7a2/download/2024-general-vtds-election-data.zip")
+TLC_VTDS = ("https://data.capitol.texas.gov/dataset/4d8298d0-d176-4c19-b174-42837027b73e/resource/"
+            "906f47e4-4e39-4156-b1bd-4969be0b2780/download/vtds_24pg.zip")
+
+
+@check("tlc_elections", "Texas Legislative Council: 2024 general VTD election data and VTD shapes (HEAD)")
+def _():
+    out = []
+    for label, url in (("election data", TLC_ELECTIONS), ("VTD shapes", TLC_VTDS)):
+        status, hdrs, final = head(url)
+        out.append(f"{label}: HTTP {status}, {mb(size_of(hdrs))}, Last-Modified {hdrs.get('last-modified', '?')}")
+    return "; ".join(out)
+
+
 # ---------------------------------------------------------------- main
 
 def main() -> int:
