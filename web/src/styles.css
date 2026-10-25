@@ -57,7 +57,8 @@ a { color: var(--accent); }
 .small { font-size: 0.8rem; }
 .error { color: var(--error); }
 .footer { padding: 6px 16px; border-top: 1px solid var(--line); background: var(--panel); }
-.popup-close { position: absolute; top: 2px; right: 6px; border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); }
+.popup-close { position: absolute; z-index: 1; top: 2px; right: 2px; width: 28px; height: 28px; display: grid; place-items: center; border: none; border-radius: 4px; background: #fff; font-size: 1.3rem; line-height: 1; cursor: pointer; color: var(--muted); }
+.popup-close:hover, .popup-close:focus-visible { background: #eef2f6; color: var(--ink); }
 .popup-scroll { max-height: 50vh; overflow-y: auto; padding-right: 8px; }
 .popup h3 { margin: 0 0 6px; font-size: 0.95rem; }
 .popup table { border-collapse: collapse; font-size: 0.8rem; }
