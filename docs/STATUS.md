@@ -95,9 +95,6 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Claude (scheduled, 2026-10-25 00:15 UTC): `areas` live run for P1-02c name polish
-   (merged PR #48); check no all-capital planning-area names (except MLK/RMMA/UT) and no
-   "Crk"/"Ests"; merge the data PR.
 2. Claude (scheduled, 2026-10-25 00:25 UTC): re-run the `access` first live check (P1-07,
    merged PR #50; first run 40054053666 failed only on CapMetro's missing `calendar.txt`,
    fixed PR #51; OSM processing took ~12 min). Then merge data, ungate `access`.

@@ -3,6 +3,13 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-25 — P1-02c live: name polish published (Claude)
+
+- Run 40146023339: 24 calls. No all-capital planning-area names remain (MLK, MLK-183, RMMA and
+  UT kept as acronyms); no "Crk" or "Ests". WCAD-named block groups rose from 68 to 76 because
+  abbreviated and spelled-out names now merge; Census place 633, Austin planning area 343,
+  City of Austin subdivision 109, Hays County subdivision 18, fallback 27. Plain "Austin": 181.
+
 ## 2026-10-24 — P1-05b live check passed; `dps_agency` ungated (Claude)
 
 - First run 40108168966 failed safely after 1 call: real ORIs can contain letters
