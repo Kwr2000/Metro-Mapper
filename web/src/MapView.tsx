@@ -157,7 +157,8 @@ export function MapView(props: MapViewProps) {
           inspectPoint = event.lngLat;
           inspection = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "380px", className: "inspection-popup" })
             .setLngLat(event.lngLat);
-          renderInspection(); inspection.addTo(map);
+          // Add to the map first: the close button can only be wired once the popup element exists.
+          inspection.addTo(map); renderInspection();
           inspection.on("close", () => { unbind?.(); unbind = undefined; inspection = null; inspectPoint = null; clicked = null; });
         });
         map.on("sourcedata", indexSources); map.on("idle", indexSources); refresh.current?.();

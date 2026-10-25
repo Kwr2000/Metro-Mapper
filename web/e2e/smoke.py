@@ -63,6 +63,7 @@ def smoke(browser, registry, base, chosen_filter, width, height):
     expect(page.get_by_role("region", name="Selected area")).to_be_visible()
     page.get_by_role("button", name="Close selected area").click()
     page.get_by_role("button", name="Close popup").click()
+    expect(page.get_by_test_id("map-inspection")).to_have_count(0)  # the × really closes it
     tab(page,"Layers")
     # A new layer is addressed only through registry metadata, never a fixed id.
     page.locator(f'[data-layer-id="{chosen_filter["id"]}"] input[type=checkbox]').check()
