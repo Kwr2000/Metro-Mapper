@@ -71,6 +71,19 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   `assessed_val`, `deed_dt` (MM-DD-YYYY), `land_acres`. `IMP_DET.TXT` has `imprv_det_type_cd`/`desc`
   (e.g. "1st Floor"), `yr_built`, `imprv_det_area`. There is no living-area field, so living area
   is the sum of main-area segment types (code list to be confirmed in Phase 2).
+- **Re-checked 2026-10-25 for P2-02** (Claude, in the browser at the publisher): layout positions
+  for `PROP.TXT`, `IMP_INFO.TXT`, `IMP_DET.TXT`, `ABS_SUBD.TXT` and `TOTALS.TXT` match real
+  records (line lengths 9,922 / 114 / 622 / 50 / 2,491, CRLF; `PROP` values zero-padded,
+  `land_acres` with 4 implied decimals). `TOTALS.TXT` entity `03` Travis County: 453,779
+  real/mobile properties, 492,900 overall, `sup_num` 0. **Living area** = segments `1ST`, `2ND`,
+  `3RD`, `4TH`, `5TH`, `1/2`, `ADDL`, `FBSMT`, `RSBLW`: on TCAD's March 2026 "Improvement Details
+  Report 2026" CSV (same codes and IDs; preliminary, not certified) it matches the `095` HVAC
+  RESIDENTIAL area within 2% for 99.1% of 319,432 residential properties. Spec
+  `docs/tasks/P2-02-tcad.md`.
+- No prior-year value in the 2026 export, and no 2025 certified export is posted; the page has
+  the 2025 EARS submission (Comptroller format, 81.9 MB zip). 2025 values need an owner decision.
+- The certified JSON special export (3.55 GB zip, 29.9 GB JSON) also carries owner, appeal,
+  sale and permit sections; we don't use it.
 - **Strip at ingest** (ground rule 5): every `*_owner_*`, `*_addr_*`, `*_confidential_*`,
   every `*_exempt` and `*_qualify_yr` field, `mortgage_*`, agent names and addresses,
   `deed_num`, `deed_book_*`.

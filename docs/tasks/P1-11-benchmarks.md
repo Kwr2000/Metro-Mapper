@@ -173,3 +173,5 @@ higher_is_better | neutral`. Better/worse colours (green to red) only for non-de
 layers with a clear direction (crime, flood, access minutes, school scores); demographic and
 election layers use neutral colours with "lower/higher than" wording. Specified after P1-11's
 data is live.
+
+Full spec: `docs/tasks/P1-12-colour-by-comparison.md` (2026-10-25).
