@@ -152,13 +152,24 @@ def test_dps_texas_633_and_lettered_ori_combined_rate(repo):
 
 def test_fbi_annual_counts_over_mean_population_and_v_plus_p(repo):
     ad, recs, _ = normalized("fbi_national", repo)
-    recs[0].properties.update(count=12000, population=4000000)
-    recs[1].properties.update(count=60000, population=3000000)
+    by_kind = {r.feature_id: r for r in recs}
+    by_kind["V"].properties.update(count=12000, population=4000000)
+    by_kind["P"].properties.update(count=60000, population=3000000)
+    by_kind["ARS"].properties.update(count=3000, population=2500000)
     ix = indexed(ad.finalize(recs))
     assert ix["rate_violent", "us"]["value"] == 3
-    assert ix["rate_part1", "us"]["value"] == 23
+    # Summarized P includes arson, which DPS Part I excludes: (60,000 - 3,000) / 3,000,000 = 19.
+    assert ix["rate_part1", "us"]["value"] == 22
     assert "not FBI estimates" in ix["rate_part1", "us"]["note"]
-    assert "arson" in ix["rate_part1", "us"]["note"]
+    assert "arson removed" in ix["rate_part1", "us"]["note"]
+
+
+def test_fbi_arson_must_be_part_of_the_property_series(repo):
+    ad, recs, _ = normalized("fbi_national", repo)
+    by_kind = {r.feature_id: r for r in recs}
+    by_kind["ARS"].properties.update(count=by_kind["P"].properties["count"] + 1)
+    with pytest.raises(ValueError, match="arson"): ad.finalize(recs)
+    with pytest.raises(ValueError, match="V, P and ARS"): ad.finalize([r for r in recs if r.feature_id != "ARS"])
 
 
 def test_fbi_month_completeness_dates_and_missing_key_no_secret_in_logs(repo, monkeypatch):
@@ -234,7 +245,7 @@ def test_fbi_mocked_live_uses_transport_key_and_publishes_no_credentials(repo, m
         return Response(json.dumps(responses[seen[-1]]).encode())
     monkeypatch.setattr("urllib.request.urlopen", response)
     run = runner.run("fbi_national", "live", now=NOW)
-    assert run.status == "success" and seen == ["V", "P"] and run.calls_made == 2, run.errors
+    assert run.status == "success" and seen == ["V", "P", "ARS"] and run.calls_made == 3, run.errors
     assert token not in run.model_dump_json()
     doc = json.loads((paths().web_public / "benchmarks.json").read_text())
     assert not doc["test_data"] and "us" == doc["dps_agency"]["rate_part1"][0]["geography"]

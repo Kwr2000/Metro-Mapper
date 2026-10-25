@@ -52,7 +52,7 @@ class FBINational(SourceAdapter):
         if ctx.mode == "live" and not os.environ.get("FBI_API_KEY"):
             raise RuntimeError("FBI_API_KEY is required")
         return [Request(kind.lower(), {"url": API + kind, "kind": kind,
-                "query": {"from": f"01-{self.year}", "to": f"12-{self.year}"}}) for kind in ("V", "P")]
+                "query": {"from": f"01-{self.year}", "to": f"12-{self.year}"}}) for kind in ("V", "P", "ARS")]
 
     def fetch(self, req, ctx):
         key = os.environ.get("FBI_API_KEY")
@@ -83,13 +83,18 @@ class FBINational(SourceAdapter):
 
     def finalize(self, records):
         rows = {r.feature_id: r.properties for r in records}
-        if set(rows) != {"V", "P"} or len(records) != 2:
-            raise ValueError("FBI needs exactly V and P annual series")
-        rates = {kind: p["count"] / p["population"] * 1000 for kind, p in rows.items()}
+        if set(rows) != {"V", "P", "ARS"} or len(records) != 3:
+            raise ValueError("FBI needs exactly V, P and ARS annual series")
+        if not 0 <= rows["ARS"]["count"] <= rows["P"]["count"]:
+            raise ValueError("FBI arson count must be part of the property series")
+        # Summarized P includes arson (probe 2026-10-25: P = burglary + larceny + motor vehicle
+        # theft + arson, exactly). DPS Part I excludes arson, so take it out of P.
+        rates = {"V": rows["V"]["count"] / rows["V"]["population"] * 1000,
+                 "P": (rows["P"]["count"] - rows["ARS"]["count"]) / rows["P"]["population"] * 1000}
         as_of = date(self.year, 12, 31)
         return [benchmark("rate_violent", "us", "US", round(rates["V"], 1), str(self.year), "FBI Crime Data API", note=NOTE, as_of=as_of),
                 benchmark("rate_part1", "us", "US", round(rates["V"] + rates["P"], 1), str(self.year), "FBI Crime Data API",
-                    note=NOTE + "; V + summarized P property series; no arson series added", as_of=as_of)]
+                    note=NOTE + "; violent + burglary, larceny and motor vehicle theft (arson removed from the property series)", as_of=as_of)]
 
     def source_as_of(self, raws):
         return date(self.year, 12, 31)

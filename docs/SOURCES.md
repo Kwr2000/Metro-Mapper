@@ -261,8 +261,9 @@ Publisher checks and probe results supplied by Claude in `docs/tasks/P1-11-bench
   full year as DPS. `offenses.actuals["United States Offenses"]` are monthly reported
   offenses; `populations.participated_population["United States"]` is participating
   population. Use annual total / mean participating population, not FBI estimates; about
-  97% coverage. The gated first live check must confirm the P series excludes arson; no
-  separate arson count is added. An API key is required and is supplied only at transport.
+  97% coverage. Checked 2026-10-25 (probe run 40232292906): P includes arson exactly (P = burglary + larceny
+  + motor vehicle theft + arson), so the adapter also reads `ARS` (3 calls a run) and removes it,
+  matching DPS Part I. An API key is required and is supplied only at transport.
   The FBI permits a city-to-state and state-to-national perspective and asks users not to
   rank/compare peer cities for crime; therefore there are no peer-city crime benchmarks.
 - Schools use rated statewide campus/district rows already fetched from the TEA open-data
