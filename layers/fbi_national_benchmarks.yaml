@@ -1,0 +1,14 @@
+id: fbi_national_benchmarks
+title: US reported crime comparisons
+group: Safety
+description: National reported offenses for comparisons with Texas; no peer-city comparisons.
+source: fbi_national
+geometry: none
+join: none
+dataset: benchmark
+publish: none
+coverage: us
+refresh: annual
+attribution: FBI Crime Data API
+license: Public domain
+default_visible: false

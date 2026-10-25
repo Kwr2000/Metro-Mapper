@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (P1-11 spec, Phase 2 plan)._
+_Last updated 2026-10-25 (P1-11)._
 
 ## Phase
 
@@ -112,13 +112,20 @@ are decided (`DECISIONS.md`).
 - **Phase 1 closing review** (Claude, 2026-10-25): every layer checked on real data at desktop
   and phone sizes; layout fixes; methodology page complete.
 
+- **P1-11 Part 1** (Codex): validated benchmark publisher and fixture labeling; ACS
+  geographies/12-city averages, APD/DPS/FBI, statewide schools/elections and population-weighted
+  access comparisons. Popup and comparison-table details include sources, periods and MOEs;
+  no rankings or colour mode. Approved budgets and FBI workflow secret/gate recorded.
+  `make test` passes (705 pipeline, 41 web tests and builds); local e2e passes at 1440×900
+  and 390×844. Synthetic data only. Awaiting Claude's live benchmark/probe and FBI checks.
+
 ## Next
 
-1. Owner: approve the P1-11 budgets (acs 40/day, fbi_national 4/day), create the FBI key secret,
-   then paste the P1-11 prompt into Codex.
+1. Claude: P1-11 review and live benchmarks check; owner supplies FBI_API_KEY before the
+   gated FBI probe/run. Verify P excludes arson, then ungate only after the live checks pass.
 2. Owner: approve the Phase 2 plan (`PLAN.md`, "Phase 2 plan"); then Claude writes the P2-01 spec.
 3. After P1-11 is live: Claude specs P1-12 (colour by comparison).
-3. Check the 2026-11-03 refresh report (expect nothing due).
+4. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
 
@@ -136,7 +143,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- P1-11 approvals and FBI key; Phase 2 plan approval (Next items 1–2).
+- FBI key for the gated first check; Phase 2 plan approval (Next items 1–2). P1-11 budgets approved.
 
 ## Working notes for agents
 

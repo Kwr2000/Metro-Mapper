@@ -105,6 +105,14 @@ def smoke(browser, registry, base, chosen_filter, width, height):
     expect(dialog).to_be_visible()
     expect(dialog.get_by_text("People (context only)",exact=True)).to_be_visible()
     expect(dialog.locator("th").filter(has_text=str(areas[0]["properties"]["name"])).first).to_be_attached()
+    if width > 760:
+        expect(dialog.get_by_role("columnheader", name="Compared with", exact=True).first).to_be_visible()
+    else:
+        comparison = dialog.locator('.comparison-benchmarks[data-area="Compared with"]').filter(has_text="2020–2024").first
+        expect(comparison).to_be_visible()
+        assert comparison.evaluate("el => getComputedStyle(el, '::before').content") == '"Compared with"'
+    expect(dialog.locator(".comparison-benchmarks").filter(has_text="2020–2024").first).to_be_attached()
+    expect(dialog.locator(".comparison-benchmarks").filter(has_text="U.S. Census Bureau").first).to_be_attached()
     no_overflow(page)
     page.screenshot(path=str(ARTIFACTS / f"compare-{width}x{height}.png"))
     page.get_by_role("button", name="Close comparison").click()

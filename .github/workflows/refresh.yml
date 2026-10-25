@@ -44,6 +44,7 @@ jobs:
         id: refresh
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          FBI_API_KEY: ${{ secrets.FBI_API_KEY }}
         run: |
           set +e
           if [ "$DRY_RUN" = "true" ]; then

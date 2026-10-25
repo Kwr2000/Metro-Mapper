@@ -310,7 +310,7 @@ def test_fetch_aggregate_only_gzip_and_http_error(context, monkeypatch):
 def test_shared_bundle_manifests_and_test_data(context):
     run = runner.run("apd", now=NOW)
     assert run.status == "success", run.errors
-    assert run.planned_calls == 4 and run.calls_made == 0 and run.rows_out == 101
+    assert run.planned_calls == 4 and run.calls_made == 0 and run.rows_out == 104
     layers = [r for r in registry.compile_registry().layers if r.source == "apd"]
     assert {r.id for r in layers} == {"apd_part1_rate", "apd_part1_density", "apd_violent_rate"}
     assert len({r.data_url for r in layers}) == 1
@@ -360,7 +360,7 @@ def test_mocked_live_summary_only_aggregate_canonical_no_raws(context, monkeypat
     run = runner.run("apd", mode="live", now=NOW)
     assert run.status == "success" and run.calls_made == 4, run.errors
     records = canonical.read("area_feature", "apd")
-    assert {r.dataset for r in records} == {"block_group", "run_summary"}
+    assert {r.dataset for r in records} == {"block_group", "run_summary", "benchmark"}
     assert not (context.adapter_dir.parents[1] / "data/raw").exists()
     assert all(not privacy.personal_keys(r.properties) for r in records)
     spec = importlib.util.spec_from_file_location("apd_live_summary", ROOT / "tools/live_summary.py")

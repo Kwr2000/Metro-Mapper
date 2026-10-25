@@ -848,6 +848,80 @@
           "1"
         ]
       ]
+    },
+    "statewide": {
+      "2024_General_Election_Returns.csv": [
+        [
+          "Party",
+          "Votes"
+        ],
+        [
+          "D",
+          "224"
+        ],
+        [
+          "R",
+          "307"
+        ],
+        [
+          "L",
+          "12"
+        ],
+        [
+          "G",
+          "6"
+        ],
+        [
+          "W",
+          "5"
+        ]
+      ],
+      "2024_General_Election_VRTO.csv": [
+        [
+          "TotalVR",
+          "TotalTO"
+        ],
+        [
+          "1650",
+          "904"
+        ]
+      ],
+      "2020_General_Election_Returns.csv": [
+        [
+          "Party",
+          "Votes"
+        ],
+        [
+          "D",
+          "300"
+        ],
+        [
+          "R",
+          "310"
+        ],
+        [
+          "L",
+          "40"
+        ],
+        [
+          "G",
+          "0"
+        ],
+        [
+          "W",
+          "0"
+        ]
+      ],
+      "2020_General_Election_VRTO.csv": [
+        [
+          "TotalVR",
+          "TotalTO"
+        ],
+        [
+          "1500",
+          "872"
+        ]
+      ]
     }
   }
 }

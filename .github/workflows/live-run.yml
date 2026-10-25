@@ -41,6 +41,7 @@ jobs:
       - name: Live run (budgeted)
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          FBI_API_KEY: ${{ secrets.FBI_API_KEY }}
           MM_LIVE_CHECK: ${{ inputs.first_check && inputs.adapter || '' }}
         run: mm run --adapter "$ADAPTER" --mode live || true
       - name: Summary (run page and annotations)

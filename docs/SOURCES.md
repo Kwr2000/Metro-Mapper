@@ -232,6 +232,38 @@ published in 2027.
     domain), not 2020, since cities have annexed since 2020.
   - FBI Crime Data Explorer remains an alternative (API key needed).
 
+## Benchmarks (P1-11)
+
+Publisher checks and probe results supplied by Claude in `docs/tasks/P1-11-benchmarks.md`,
+2026-10-25; Codex used synthetic fixtures only.
+
+- **Census ACS 2020–2024 5-year**: the same variables, annotations, margins of error and
+  definitions as the map. Four requests to <https://api.census.gov/data/2024/acs/acs5> use
+  `ucgid` for US, Texas, current Austin metro (`310M700US12420`), Austin city and the three
+  counties, plus the twelve named 700,000–1.5 million-population cities in the task. Census
+  public-domain terms/credit are unchanged. Direct Census medians are used, not averages of
+  block-group medians. The peer value is the plain mean of all twelve city values, not a
+  pooled median; no peer value is emitted if any city's estimate is missing or capped.
+- **Texas DPS UCR report 633**, "Crime Rate by Offense": same XLSX portal, user agent and
+  Q1 publication decision as the agency tables above. The sheet supplies previous/current
+  year rates per 100,000. Sum the seven Part I categories (exclude arson/trafficking), then
+  divide by 100 for rates per 1,000. Report 615 also supplies combined counts/population of
+  all included city agencies; ORIs can contain letters. No budget increase for DPS.
+- **FBI Crime Data API / Crime Data Explorer**: <https://cde.ucr.cjis.gov/> and documented
+  API base <https://api.usa.gov/crime/fbi/cde>. Public-domain U.S. government data; credit
+  "FBI Crime Data API". `summarized/national/V` and `/P`, with January–December of the same
+  full year as DPS. `offenses.actuals["United States Offenses"]` are monthly reported
+  offenses; `populations.participated_population["United States"]` is participating
+  population. Use annual total / mean participating population, not FBI estimates; about
+  97% coverage. The gated first live check must confirm the P series excludes arson; no
+  separate arson count is added. An API key is required and is supplied only at transport.
+  The FBI permits a city-to-state and state-to-national perspective and asks users not to
+  rank/compare peer cities for crime; therefore there are no peer-city crime benchmarks.
+- Schools use rated statewide campus/district rows already fetched from the TEA open-data
+  source; access uses existing OSM/GTFS values weighted by populated Census blocks; elections
+  use statewide totals from the same TLC files. Their original licenses/attributions remain
+  unchanged. These benchmarks make no additional source requests.
+
 ## Elections
 
 Checked by Claude on 2026-10-25 for `docs/tasks/P1-10-elections.md` (publisher and probe;

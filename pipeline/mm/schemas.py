@@ -57,6 +57,8 @@ class LayerStyle(Strict):
 
 class PopupField(Strict):
     field: str
+    benchmark_field: str | None = None
+    benchmark_format: Literal["text", "number", "currency", "percent"] | None = None
     label: str
     format: Literal["text", "number", "currency", "date", "percent", "link"] = "text"
     moe_field: str | None = None

@@ -16,8 +16,8 @@ style:
     fill-color: [match, [get, overall_rating], A, "#1a6fb5", B, "#74b4dc", C, "#f2d64b", D, "#f28c38", F, "#c62828", "#bdbdbd"]
 popup:
   - {field: name, label: District}
-  - {field: overall_rating, label: Overall rating}
-  - {field: overall_score, label: Overall score, format: number}
+  - {field: overall_rating, label: Overall rating, benchmark_field: district_overall_rating, benchmark_format: percent}
+  - {field: overall_score, label: Overall score, format: number, benchmark_field: district_overall_score}
   - {field: student_achievement_rating, label: Student Achievement rating}
   - {field: student_achievement_score, label: Student Achievement score, format: number}
   - {field: school_progress_rating, label: School Progress rating}

@@ -31,6 +31,7 @@ def main():
     for i, (county, ori) in enumerate(SHERIFFS.items()):
         name = {"453": "TRAVIS", "491": "WILLIAMSON", "209": "HAYS"}[county] + " CO SO"
         reports[652].append((ori, name, 100000, 30 + i))
+    reports[615].append(("TXDPD0000", "DALLAS PD", 150000, 50))
     reports[652] += [("TX2272500", "UNIV OF TX AUSTIN PD", 0, 40), ("TX0010100", "ELSEWHERE PD", 10000, 41)]
     for report, agencies in reports.items():
         h = headers.copy()
@@ -39,14 +40,18 @@ def main():
         rows = [["Texas Cities - 2025 vs 2024"], h]
         for ori, name, pop, i in agencies:
             rows.append([ori, name, str(pop)])
-            if ori != "TX2460500":  # One agency lacks the prior year, as the live format permits.
+            if ori not in {"TX2460500", "TXDPD0000"}:  # One agency lacks the prior year, as the live format permits.
                 rows.append(["", "Number of Offenses - 2024", "", "1", "1", "1", "1", "2", "2", "2", "0", "0", "0", "10", ""])
             # Part I = 25 for Austin; excluded categories make the portal Total = 33.
-            counts = [1, 2, 3, 4, 5, 6, 4 + i, 2, 3, 3, 33 + i]
+            counts = [10] * 10 + [100] if ori == "TXDPD0000" else [1, 2, 3, 4, 5, 6, 4 + i, 2, 3, 3, 33 + i]
             rows.append(["", "Number of Offenses - 2025", "", *map(str, counts), ""])
         write(f"dps_{report}", {"sheets": {"Index Crime": rows, "Legend Info": [
             ["Printed On: 10/24/2026"], ["Beginning Date: 01/01/2025"], ["Ending Date: 12/31/2025"],
             ["Offenses: 09A, 09B, 11A, 11B, 11C, 120, 13A, 200, 220, 23A-23H, 240, 64A, 64B"], ["Data Type: NIBRS"]]}})
+    names = ["Murder and Nonnegligent Manslaughter", "Rape", "Robbery", "Aggravated Assault",
+             "Burglary/Breaking and Entering", "Larceny", "Motor Vehicle Theft"]
+    write("dps_633", {"sheets": {"Rates": [["Crime rates - 2025"], ["Offense", "2024", "2025", "% Change"],
+          *[[name, "100", str(100 * (i + 1)), "0"] for i, name in enumerate(names)]]}})
     places = []
     for i, (ori, (geoid, name)) in enumerate(CITIES.items()):
         # Austin spans BGs with different county prefixes. Three neighboring cities form split/tie cases.
