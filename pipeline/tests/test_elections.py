@@ -222,6 +222,8 @@ def test_votes_shares_margin_and_turnout_hand_worked(context):
     assert p["registered_2024"] == 200 and p["ballots_2024"] == 120 and p["turnout_2024"] == .6
     assert p["turnout_2020"] is None and f"2020: {el.TURNOUT}" == p["election_note"]
     assert p["pres_2020_margin"] == -.1
+    assert p["pres_2024_lead"] == f"{p['pres_2024_dem_name']} +30.0 pts"
+    assert r["106"]["pres_2024_lead"] == f"{r['106']['pres_2024_rep_name']} +27.5 pts"
     assert r["106"]["pres_2024_dem_share"] == .333
     assert r["106"]["pres_2024_rep_share"] == .608
     assert r["106"]["pres_2024_margin"] == .275
@@ -453,3 +455,10 @@ def test_nearest_even_rounding_uses_unrounded_vote_margin(context):
     assert row["pres_2024_dem_share"] == .062
     assert row["pres_2024_rep_share"] == .5
     assert row["pres_2024_margin"] == .438  # Unrounded .4375 tie rounds even.
+
+
+def test_lead_text():
+    assert el.lead_text(None, "D", "R") is None
+    assert el.lead_text(0.0, "D", "R") == "Tied"
+    assert el.lead_text(-.618, "Harris", "Trump") == "Harris +61.8 pts"
+    assert el.lead_text(.05, "Harris", "Trump") == "Trump +5.0 pts"

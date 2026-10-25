@@ -44,8 +44,9 @@ popup:
   label: 2024 Total presidential votes
   format: number
 - field: pres_2024_margin
-  label: 2024 Republican minus Democratic margin
+  label: 2024 Lead
   format: percent
+  display_field: pres_2024_lead
 - field: pres_2020_dem_name
   label: 2020 Democratic candidate
   format: text
@@ -71,8 +72,9 @@ popup:
   label: 2020 Total presidential votes
   format: number
 - field: pres_2020_margin
-  label: 2020 Republican minus Democratic margin
+  label: 2020 Lead
   format: percent
+  display_field: pres_2020_lead
 - field: registered_2024
   label: 2024 Registered voters (all parties)
   format: number

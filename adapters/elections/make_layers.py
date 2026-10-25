@@ -15,8 +15,11 @@ def manifests():
                 ("dem_share", "Democratic share", "percent"), ("rep_name", "Republican candidate", "text"),
                 ("rep", "Republican votes", "number"), ("rep_share", "Republican share", "percent"),
                 ("other", "Other presidential votes", "number"), ("total", "Total presidential votes", "number"),
-                ("margin", "Republican minus Democratic margin", "percent")):
-            popup.append({"field": f"pres_{y}_{k}", "label": f"{y} {label}", "format": fmt})
+                ("margin", "Lead", "percent")):
+            field = {"field": f"pres_{y}_{k}", "label": f"{y} {label}", "format": fmt}
+            if k == "margin":
+                field["display_field"] = f"pres_{y}_lead"  # e.g. "Harris +61.8 pts"
+            popup.append(field)
     for y in (2024, 2020):
         for k, label, fmt in (("registered", "Registered voters (all parties)", "number"),
                               ("ballots", "Ballots cast", "number"), ("turnout", "Turnout", "percent")):

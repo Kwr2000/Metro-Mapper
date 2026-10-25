@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (P1-10 elections live)._
+_Last updated 2026-10-25 (Phase 1 closing review)._
 
 ## Phase
 
@@ -109,11 +109,14 @@ are decided (`DECISIONS.md`).
   35 web tests, schemas/types and builds). Claude fix: the real DBF's float `VTDKEY`. Live run
   40161817419: 553 precincts, totals match the source, 27 small precincts hidden; ungated.
 
+- **Phase 1 closing review** (Claude, 2026-10-25): every layer checked on real data at desktop
+  and phone sizes; layout fixes; methodology page complete.
+
 ## Next
 
-1. Claude: Phase 1 closing review on the live site (filters, compare, shortlist with every layer;
-   desktop and phone) and finish the methodology page (access, agency safety, elections).
-2. Owner: decide on the benchmarks idea and on starting Phase 2 (listing check).
+1. Owner: decide on the benchmarks idea and on starting Phase 2 (listing check). Phase 1 is
+   complete (closing review 2026-10-25, DECISIONS).
+2. If approved, Claude writes the next spec(s) and Codex prompts.
 3. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
@@ -134,7 +137,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Nothing right now.
+- Benchmarks idea and Phase 2 start (Next item 1).
 
 ## Working notes for agents
 
