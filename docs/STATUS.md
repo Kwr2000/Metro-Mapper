@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (Phase 1 closing review)._
+_Last updated 2026-10-25 (P1-11 spec, Phase 2 plan)._
 
 ## Phase
 
@@ -114,9 +114,10 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Owner: decide on the benchmarks idea and on starting Phase 2 (listing check). Phase 1 is
-   complete (closing review 2026-10-25, DECISIONS).
-2. If approved, Claude writes the next spec(s) and Codex prompts.
+1. Owner: approve the P1-11 budgets (acs 40/day, fbi_national 4/day), create the FBI key secret,
+   then paste the P1-11 prompt into Codex.
+2. Owner: approve the Phase 2 plan (`PLAN.md`, "Phase 2 plan"); then Claude writes the P2-01 spec.
+3. After P1-11 is live: Claude specs P1-12 (colour by comparison).
 3. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
@@ -131,13 +132,11 @@ are decided (`DECISIONS.md`).
 
 ## Ideas from the owner (not started; need a spec and approval)
 
-- Benchmarks: compare a value with Austin, Texas, the US and similar-size cities; a
-  better/worse colour mode for non-demographic layers (neutral above/below for demographics).
-  Census benchmarks need a small ACS budget increase; US crime needs an FBI API key.
+- (Taken up: comparisons are P1-11/P1-12.)
 
 ## Waiting on the owner
 
-- Benchmarks idea and Phase 2 start (Next item 1).
+- P1-11 approvals and FBI key; Phase 2 plan approval (Next items 1–2).
 
 ## Working notes for agents
 

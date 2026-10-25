@@ -53,6 +53,24 @@ why, and (for approvals) that the owner approved it in writing.
   D 4); 7 edge districts based outside the counties show "No TEA district rating found".
   New layer `school_district_ratings`.
 
+## 2026-10-25 — Comparisons spec (P1-11) and Phase 2 plan (Claude; owner said yes to both)
+
+- **Owner (2026-10-25):** yes to the comparisons idea and to planning Phase 2. The Phase 2 plan in
+  `PLAN.md` still needs the owner's approval before any Phase 2 task is built.
+- Comparisons (spec `docs/tasks/P1-11-benchmarks.md`), checked 2026-10-25:
+  - Census ACS `ucgid` returns US, Texas, three counties, Austin metro (`310M700US12420`),
+    Austin city and 15 large cities in one request (probe). Peer cities: the 12 US cities with
+    700,000–1.5 million people (ACS 2020–2024). About 4 extra ACS calls a year.
+  - DPS report 633 gives Texas statewide rates per 100,000 (2025 Part I ≈ 21.6 per 1,000).
+  - FBI Crime Data API has 2025 national reported offenses (violent ≈ 3.3 per 1,000). The FBI
+    asks users not to compare places with each other except city to state and state to nation,
+    so crime compares with Austin, Texas and the US only, never peer cities.
+  - **Pending owner approval:** `acs` budget 30 → 40/day; new `fbi_national` budget 4/day,
+    annual; the owner creates a free api.data.gov key and saves it as the Actions secret
+    `FBI_API_KEY`.
+- Phase 2 sources re-checked: FHFA purchase-only HPI for the 100 largest metros (Austin included,
+  quarterly through 2026 Q2); HMDA 2025 released 2026-06-23.
+
 ## 2026-10-25 — Phase 1 closing review (Claude)
 
 - Reviewed the site with every real layer (63 layers, all current) in Chromium at 1440×900 and
