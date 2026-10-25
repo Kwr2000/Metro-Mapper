@@ -3,7 +3,7 @@ import type { CompiledLayer, Registry } from "./registry";
 import { polygonContains, polygonFeatures, type PolygonFeature } from "./map-polygons";
 
 export const PEOPLE = "People (context only)";
-export const PEOPLE_NOTE = "Census estimates for context. They are not used in any score.";
+export const PEOPLE_NOTE = "Census estimates and election results, for context only. They are not used in any score or ranking.";
 export type LayerData = Record<string, FeatureCollection>;
 export type Range = { min: number | null; max: number | null };
 export type Filters = Record<string, Range>;

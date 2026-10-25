@@ -34,7 +34,7 @@ describe("registry filters", () => {
     const { rerender } = render(<FiltersPanel registry={registry([demographic])} data={{ [demographic.data_url!]: collection }} errors={{}} filters={filters} missing={{}} onChange={(f) => { filters = f; }} />);
     const section = screen.getByText(PEOPLE).closest("details")!;
     expect(section.open).toBe(false);
-    expect(section.textContent).toContain("Census estimates for context. They are not used in any score.");
+    expect(section.textContent).toContain("for context only. They are not used in any score or ranking.");
     section.open = true;
     const checkbox = screen.getByRole("checkbox");
     expect((checkbox as HTMLInputElement).checked).toBe(false);

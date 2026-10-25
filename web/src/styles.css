@@ -131,9 +131,12 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
 .saved-list textarea { width: 100%; min-height: 70px; resize: vertical; display: block; margin-top: 5px; }
 .text-button { color: var(--accent); border: none; padding: 0; text-align: left; text-decoration: underline; background: none; }
 .action-message { padding: 8px; border-left: 3px solid var(--brand); background: #f0f5fa; font-size: .85rem; }
-.selected-area { position: absolute; z-index: 2; bottom: 28px; left: 16px; max-width: min(420px, calc(100% - 32px)); padding: 12px 30px 12px 12px; background: #fff; border: 1px solid #c3cedb; border-radius: 8px; box-shadow: 0 3px 14px #16344b26; overflow-wrap: anywhere; }
-.selected-area p { margin: 5px 0; }
-.selected-area button { margin: 5px 5px 0 0; }
+/* A compact strip at the top of the map, so it never covers the "What's here?" popup. */
+.selected-area { position: absolute; z-index: 2; top: 10px; left: 10px; max-width: min(620px, calc(100% - 70px)); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 6px 32px 6px 10px; background: #fff; border: 1px solid #c3cedb; border-radius: 8px; box-shadow: 0 2px 8px #16344b26; overflow-wrap: anywhere; }
+.selected-area p { margin: 0; flex-basis: 100%; }
+.selected-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.selected-actions { display: flex; gap: 6px; }
+.selected-area button { margin: 0; padding: 4px 10px; }
 .close-selection { position: absolute; top: 0; right: 0; border: 0; background: none; }
 .map-error { position: absolute; top: 65px; left: 10px; z-index: 2; background: #fff; padding: 8px; }
 .compare-dialog { width: min(1180px, calc(100% - 40px)); max-height: calc(100dvh - 40px); border: 1px solid var(--line); border-radius: 10px; padding: 20px; overflow-y: auto; color: var(--ink); }
@@ -162,7 +165,7 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
   .workbench .tool-tabs { flex-shrink: 0; padding: 8px; }
   .tool-body { padding: 10px 14px 18px; }
   .tool-tabs button { font-size: .8rem; padding: 8px 3px; }
-  .selected-area { top: 90px; bottom: auto; left: 12px; max-width: calc(100% - 24px); font-size: .85rem; max-height: 33%; overflow-y: auto; }
+  .selected-area { top: 8px; left: 8px; max-width: calc(100% - 60px); font-size: .85rem; }
   .test-banner { font-size: .75rem; padding: 5px 8px; }
   .footer { font-size: .68rem; padding: 5px 10px; }
   .compare-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); padding: 12px; }

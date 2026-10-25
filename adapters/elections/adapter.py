@@ -163,6 +163,16 @@ def display_geometry(doc):
     return result
 
 
+def lead_text(margin, dem_name, rep_name):
+    """'Harris +61.8 pts' style text for the popup; the stored margin only sets the colour."""
+    if margin is None:
+        return None
+    points = round(abs(margin) * 100, 1)
+    if points == 0:
+        return "Tied"
+    return f"{rep_name if margin > 0 else dem_name} +{points:.1f} pts"
+
+
 def production_checks(count, totals):
     if not 523 <= count <= 583:
         raise ValueError("elections: precinct count outside 553 +/- 30")
@@ -327,6 +337,7 @@ class Elections(SourceAdapter):
                     notes.append(f"{year}: {SMALL}")
                 props.update({base + k: round(v, 3) if isinstance(v, float) else v for k, v in values.items()})
                 props.update({base + "dem_name": major["D"][0]["candidate"], base + "rep_name": major["R"][0]["candidate"]})
+                props[base + "lead"] = lead_text(props[base + "margin"], props[base + "dem_name"], props[base + "rep_name"])
                 p = groups[f"turnout_{year}_input"][vtd].properties
                 reg, cast = p["registered"], p["ballots"]
                 props.update({f"registered_{year}": reg, f"ballots_{year}": cast,

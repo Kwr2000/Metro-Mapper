@@ -53,6 +53,17 @@ why, and (for approvals) that the owner approved it in writing.
   D 4); 7 edge districts based outside the counties show "No TEA district rating found".
   New layer `school_district_ratings`.
 
+## 2026-10-25 — Phase 1 closing review (Claude)
+
+- Reviewed the site with every real layer (63 layers, all current) in Chromium at 1440×900 and
+  390×844: no page or console errors; filters, compare, shortlist, share links pass the smoke test.
+- Fixes: the selected-area card is now a compact strip at the top of the map (it covered the
+  "What's here?" popup); on phones a map tap folds the tools sheet so the popup is visible; the
+  People note now covers election results; election margins read "Harris +61.8 pts" instead of
+  a signed percentage (`pres_<year>_lead`, needs one elections re-run).
+- Methodology page updated: violent rate and the under-1,000 note, agency-wide safety, district
+  ratings, access, election results, and the monthly refresh with its publish checks.
+
 ## 2026-10-25 — P1-10 live check passed; `elections` ungated (Claude)
 
 - Review fix before merging (PR #74): the real `VTDs_24PG.dbf` stores `VTDKEY` as a float field,

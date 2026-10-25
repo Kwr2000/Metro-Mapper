@@ -111,11 +111,15 @@ export function Workspace({ registry, active }: { registry: Registry; active: bo
         {showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)])) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
         {base?.data_url && errors[base.data_url] && <p className="map-error" role="alert">{errors[base.data_url]}</p>}
         <MapView registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
-          bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => { setSelected(id); setMessage(""); }} />
+          bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
+            setSelected(id); setMessage("");
+            // On a phone the tools sheet covers the lower map: fold it so the popup is visible.
+            if (window.matchMedia?.("(max-width: 760px)").matches) setExpanded(false);
+          }} />
         {chosen && <section className="selected-area" aria-label="Selected area"><button className="close-selection" aria-label="Close selected area" onClick={() => setSelected(null)}>×</button>
-          <strong>{areaName(chosen)}</strong><p className="small muted">{featureId(chosen)} · {base && asOfLabel(base)}</p>
-          <p className="small muted">Source: {base?.attribution}</p>
-          <div><button onClick={() => compare(featureId(chosen))}>Add to compare</button><button onClick={() => save(featureId(chosen))}>Save area</button></div>
+          <div className="selected-head"><strong>{areaName(chosen)}</strong>
+            <span className="small muted" title={`Source: ${base?.attribution ?? ""}`}>{featureId(chosen)} · {base && asOfLabel(base)}</span></div>
+          <div className="selected-actions"><button onClick={() => compare(featureId(chosen))}>Add to compare</button><button onClick={() => save(featureId(chosen))}>Save area</button></div>
           {message && <p className="small" role="status">{message}</p>}
         </section>}
       </div>
