@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-24 (P1-05b live and ungated)._
+_Last updated 2026-10-25 (display fixes, district ratings)._
 
 ## Phase
 
@@ -95,6 +95,10 @@ are decided (`DECISIONS.md`).
 
 - **P1-07** access: live (run 40146625568, 2026-10-25). Ungated.
 
+- **Owner fixes 2026-10-25** (Claude, PRs #66–#70): map popup × closes; violent-rate layer and
+  under-1,000-residents note for Austin PD areas; empty notes hidden; distinct campus colours;
+  TEA district ratings on districts plus a district rating layer (24 of 31 districts rated).
+
 ## Next
 
 3. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
@@ -110,6 +114,14 @@ are decided (`DECISIONS.md`).
 - Schools: four checked finder links; other districts link to their AskTED website or show
   Not available.
 - Transit covers CapMetro only; other agencies are labeled as not included.
+
+## Ideas from the owner (not started; need a spec and approval)
+
+- Benchmarks: compare a value with Austin, Texas, the US and similar-size cities; a
+  better/worse colour mode for non-demographic layers (neutral above/below for demographics).
+  Census benchmarks need a small ACS budget increase; US crime needs an FBI API key.
+- Election results by precinct (Texas Legislative Council VTD data, CC BY). Texas has no party
+  registration. Owner to decide whether to add and how it may be used.
 
 ## Waiting on the owner
 
