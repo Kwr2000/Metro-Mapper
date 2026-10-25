@@ -542,6 +542,30 @@ def _():
     return "; ".join(out)
 
 
+
+@check("fbi_national", "FBI Crime Data API (documented, api.usa.gov): 2025 national violent and property")
+def _():
+    key = os.environ.get("FBI_API_KEY", "")
+    if not key:
+        return "FBI_API_KEY not set"
+    out = []
+    for code in ("V", "P"):
+        url = (f"https://api.usa.gov/crime/fbi/cde/summarized/national/{code}"
+               f"?from=01-2025&to=12-2025&type=rates&API_KEY={key}")
+        status, _, body, _ = _req(url)
+        if status != 200:
+            out.append(f"{code}: HTTP {status}")  # never print the body: it could echo the key
+            continue
+        j = json.loads(body)
+        actual = sum((j.get("offenses", {}).get("actuals", {}).get("United States Offenses") or {}).values())
+        pops = list((j.get("populations", {}).get("participated_population", {}).get("United States") or {}).values())
+        rate = actual / (sum(pops) / len(pops)) * 1000 if pops else None
+        out.append(f"{code}: {len(pops)} months, offenses {actual:,}, per 1,000 {rate:.2f}, "
+                   f"top keys {sorted(j)[:6]}")
+        time.sleep(2)
+    return "; ".join(out)
+
+
 # ---------------------------------------------------------------- main
 
 def main() -> int:
