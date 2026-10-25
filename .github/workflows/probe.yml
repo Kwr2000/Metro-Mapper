@@ -29,6 +29,7 @@ jobs:
       - name: Probe (summary appears on the run page)
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          FBI_API_KEY: ${{ secrets.FBI_API_KEY }}
           ONLY: ${{ inputs.only }}
         run: |
           mkdir -p probe-out
