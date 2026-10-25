@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (display fixes, district ratings)._
+_Last updated 2026-10-25 (P1-10)._
 
 ## Phase
 
@@ -100,11 +100,19 @@ are decided (`DECISIONS.md`).
   TEA district ratings on districts plus a district rating layer (24 of 31 districts rated).
 
 - **P1-10 spec** (Claude): election results by precinct (TLC, CC BY), context only.
-  Spec `docs/tasks/P1-10-elections.md`; awaiting owner budget approval and Codex build.
+  Spec `docs/tasks/P1-10-elections.md`; owner budget/dependency approvals recorded in DECISIONS.
+
+- **P1-10** (Codex): TLC precinct election adapter, two context-only layers sharing one
+  bundle, native synthetic ZIP/CSV/shapefile tests, temporary download cleanup and count-only
+  audit. Added the approved pyshp dependency and budget; live use gated. Core change limited
+  to the precinct join enum and generated outputs. `make test` passes (679 pipeline tests,
+  35 web tests, schemas/types and builds). No data-source calls. Awaiting Claude's live
+  precinct/party totals, suppression counts, memory/runtime and dropped-column check.
 
 ## Next
 
-3. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
+1. Claude: first live P1-10 check, then ungate after counts, totals and output checks pass.
+2. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
    site once all layers are in. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
@@ -126,7 +134,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- P1-10: approve the `elections` budget (4/day, annual) and `pyshp`; paste the prompt into Codex.
+- Nothing right now.
 
 ## Working notes for agents
 

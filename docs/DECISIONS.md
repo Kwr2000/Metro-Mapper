@@ -53,6 +53,38 @@ why, and (for approvals) that the owner approved it in writing.
   D 4); 7 edge districts based outside the counties show "No TEA district rating found".
   New layer `school_district_ratings`.
 
+## 2026-10-24 — Owner approvals: P1-10 elections
+
+- **Owner approval:** `elections: {per_day: 4, min_interval_seconds: 5, max_minutes: 15}`,
+  refreshed annually, approved in writing in the owner's P1-10 build request. A normal
+  run downloads two files; live use stays gated awaiting Claude's first live check.
+- **Owner approval:** add `pyshp>=2.3,<3` (MIT, pure Python) to read TLC's precinct shapefile,
+  approved in writing in the same request.
+
+## 2026-10-24 — P1-10 implementation choices (Codex)
+
+- Tiny fixture mode bypasses only the production precinct-count and 2024 party-total guards;
+  all field, join, duplicate, count, geometry and suppression checks still apply. Live mode
+  always enforces 553 ± 30 precincts and both verified party totals within 1%. Tests exercise
+  these checks separately and in a full-size synthetic run.
+- Count a return once per year/precinct/party/candidate; multiple named write-ins are allowed.
+  Require exactly one D and one R candidate row per precinct/year, even for a zero-vote
+  precinct, so missing rows cannot silently become zeros. Store numeric VTD keys as canonical
+  text while preserving original VTD labels. Compute margin from unrounded shares, then
+  round all final ratios to three decimals with Python's nearest-even rounding.
+- Prefix suppression/turnout notes with their year; combine them in `election_note`. Candidate
+  names remain visible when vote values are suppressed. Zero registered voters with zero
+  ballots has null turnout; any ballots above registration also gets the specified note.
+- Use the latest election's date, 2024-11-05, as `source_as_of`, with TLC's 2020-to-2024
+  re-tabulation explained in `source_note`. Source archive modification dates remain in SOURCES.
+- Repair invalid source precinct polygons with `make_valid`, retain polygonal parts, then use
+  the areas adapter's EPSG:5070 5 m simplification and six-decimal WGS84 display coordinates.
+  Invalid/collapsed rounded display geometry fails. Read source projection from `.prj`.
+- Temporary archives/extracted components are always deleted. Return a failed payload on
+  download/parse errors to avoid the core's automatic second large download. Only safe
+  selected fields survive CSV parsing; raw retention and recording are off. The count-only
+  canonical audit follows APD and adds runtime/peak memory, also displayed by live_summary.
+
 ## 2026-10-24 — P1-05b live check passed; `dps_agency` ungated (Claude)
 
 - First run 40108168966 failed safely after 1 call: real ORIs can contain letters

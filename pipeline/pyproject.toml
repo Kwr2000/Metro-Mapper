@@ -12,6 +12,7 @@ dependencies = [
   "osmium>=4.0,<5",
   "scipy>=1.14,<2",
   "h3>=4.1,<5",
+  "pyshp>=2.3,<3",
 ]
 
 [project.optional-dependencies]

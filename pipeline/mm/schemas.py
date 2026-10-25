@@ -85,7 +85,7 @@ class LayerManifest(Strict):
     description: str = ""
     source: str = Field(pattern=SLUG_PATTERN, description="Adapter id that produces this layer")
     geometry: Literal["point", "line", "polygon", "raster", "none"]
-    join: Literal["parcel", "point", "block_group", "tract", "zip", "jurisdiction", "none"]
+    join: Literal["parcel", "point", "block_group", "tract", "zip", "jurisdiction", "precinct", "none"]
     publish: Literal["geojson", "pmtiles", "none"]
     style: LayerStyle | None = None
     popup: list[PopupField] = Field(default_factory=list)

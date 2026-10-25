@@ -177,6 +177,7 @@
             "tract",
             "zip",
             "jurisdiction",
+            "precinct",
             "none"
           ],
           "title": "Join",
