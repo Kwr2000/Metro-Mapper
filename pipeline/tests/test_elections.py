@@ -366,9 +366,8 @@ def test_budget_and_live_gate(context):
     assert (budget.per_day, budget.min_interval_seconds, budget.max_minutes) == (4, 5, 15)
     (paths().config / "live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text())
     config.clear_cache()
-    assert config.live_gates()["elections"] == "awaiting Claude's first live check"
-    run = runner.run("elections", "live", now=NOW)
-    assert run.status == "skipped" and run.calls_made == 0
+    # Ungated after Claude's first live check (run 40161817419, DECISIONS 2026-10-25).
+    assert "elections" not in config.live_gates()
 
 
 def test_runner_shared_publication_and_saved_count_only_summary(context, monkeypatch, capsys):

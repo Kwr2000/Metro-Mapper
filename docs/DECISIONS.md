@@ -53,6 +53,18 @@ why, and (for approvals) that the owner approved it in writing.
   D 4); 7 edge districts based outside the counties show "No TEA district rating found".
   New layer `school_district_ratings`.
 
+## 2026-10-25 — P1-10 live check passed; `elections` ungated (Claude)
+
+- Review fix before merging (PR #74): the real `VTDs_24PG.dbf` stores `VTDKEY` as a float field,
+  which the adapter rejected; it now accepts whole-number floats, and a test runs a parsed
+  shapefile with real field types through normalisation.
+- Run 40161817419: 2 calls, 43 s, peak memory 114 MB. 553 precincts (Travis 300, Williamson
+  166, Hays 87). 2024 President: D 612,262, R 384,529, other 22,507; 2020: D 637,693, R
+  347,584. Registered 2024 1,564,474, ballots 1,024,839. Precincts under 50 votes: 27 (2024),
+  28 (2020); one 2020 precinct has ballots above registration (turnout hidden). All match the
+  source file checked in the browser. No `SpanishSurnamePercent` or `TotalPop` in stored data.
+- `elections` ungated; refreshes annually.
+
 ## 2026-10-24 — Owner approvals: P1-10 elections
 
 - **Owner approval:** `elections: {per_day: 4, min_interval_seconds: 5, max_minutes: 15}`,

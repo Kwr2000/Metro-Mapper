@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (P1-10)._
+_Last updated 2026-10-25 (P1-10 elections live)._
 
 ## Phase
 
@@ -106,14 +106,15 @@ are decided (`DECISIONS.md`).
   bundle, native synthetic ZIP/CSV/shapefile tests, temporary download cleanup and count-only
   audit. Added the approved pyshp dependency and budget; live use gated. Core change limited
   to the precinct join enum and generated outputs. `make test` passes (679 pipeline tests,
-  35 web tests, schemas/types and builds). No data-source calls. Awaiting Claude's live
-  precinct/party totals, suppression counts, memory/runtime and dropped-column check.
+  35 web tests, schemas/types and builds). Claude fix: the real DBF's float `VTDKEY`. Live run
+  40161817419: 553 precincts, totals match the source, 27 small precincts hidden; ungated.
 
 ## Next
 
-1. Claude: first live P1-10 check, then ungate after counts, totals and output checks pass.
-2. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
-   site once all layers are in. Check the 2026-11-03 refresh report (expect nothing due).
+1. Claude: Phase 1 closing review on the live site (filters, compare, shortlist with every layer;
+   desktop and phone) and finish the methodology page (access, agency safety, elections).
+2. Owner: decide on the benchmarks idea and on starting Phase 2 (listing check).
+3. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
 
@@ -121,7 +122,6 @@ are decided (`DECISIONS.md`).
   half of any block group, so those areas show the county sheriff's rate.
 - FEMA and APD will read "stale" from about 2026-11-27 until the 2026-12-03 refresh (one-time).
 - Areas cadence: P1-02 spec said "names monthly", layer manifests say annual; left annual.
-- APD reconciliation check is skipped until APD's next refresh stores the new summary count.
 - Schools: four checked finder links; other districts link to their AskTED website or show
   Not available.
 - Transit covers CapMetro only; other agencies are labeled as not included.
