@@ -25,6 +25,19 @@ why, and (for approvals) that the owner approved it in writing.
   abbreviated and spelled-out names now merge; Census place 633, Austin planning area 343,
   City of Austin subdivision 109, Hays County subdivision 18, fallback 27. Plain "Austin": 181.
 
+## 2026-10-25 — Election results by precinct: owner approved adding; spec P1-10 (Claude)
+
+- **Owner approval (2026-10-25, "Yes please add it"):** add general-election results by voting
+  precinct as a context-only layer.
+- Source: Texas Legislative Council Capitol Data Portal, CC BY (checked 2026-10-25): 2024
+  general VTD election data (82 MB zip; 2020 and 2024 results on 2024 precincts) and 2024 VTD
+  shapes (47 MB). Both reachable from GitHub (probe). Texas has no party registration.
+- Treated like demographics: `demographic: true` (under "People (context only)", never a score
+  input); precinct grain only, never apportioned to block groups; vote counts hidden where a
+  precinct has under 50 votes; `SpanishSurnamePercent` and `TotalPop` never stored.
+- **Pending owner approval:** budget `elections: {per_day: 4, min_interval_seconds: 5,
+  max_minutes: 15}`, refresh annual (2 calls a run); new dependency `pyshp` (free, MIT).
+
 ## 2026-10-25 — Display fixes and TEA district ratings (Claude; owner requests)
 
 - Austin PD layers: new violent-rate layer (breaks 1/2.5/5/10 per 1,000). Areas with

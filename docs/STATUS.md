@@ -99,6 +99,9 @@ are decided (`DECISIONS.md`).
   under-1,000-residents note for Austin PD areas; empty notes hidden; distinct campus colours;
   TEA district ratings on districts plus a district rating layer (24 of 31 districts rated).
 
+- **P1-10 spec** (Claude): election results by precinct (TLC, CC BY), context only.
+  Spec `docs/tasks/P1-10-elections.md`; awaiting owner budget approval and Codex build.
+
 ## Next
 
 3. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
@@ -120,12 +123,10 @@ are decided (`DECISIONS.md`).
 - Benchmarks: compare a value with Austin, Texas, the US and similar-size cities; a
   better/worse colour mode for non-demographic layers (neutral above/below for demographics).
   Census benchmarks need a small ACS budget increase; US crime needs an FBI API key.
-- Election results by precinct (Texas Legislative Council VTD data, CC BY). Texas has no party
-  registration. Owner to decide whether to add and how it may be used.
 
 ## Waiting on the owner
 
-- Nothing right now.
+- P1-10: approve the `elections` budget (4/day, annual) and `pyshp`; paste the prompt into Codex.
 
 ## Working notes for agents
 
