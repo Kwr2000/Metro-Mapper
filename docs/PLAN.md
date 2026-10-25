@@ -20,7 +20,7 @@ tracts as the steadier view and H3 resolution 8 as a stability check.
 |---|---|---|
 | 0 | Source verification, this plan, `SOURCES.md`, `DECISIONS.md`, Phase 1 specs | Done 2026-10-22 (awaiting approval) |
 | 1 | Pipeline skeleton; block-group map with names; layers for schools, safety, access, flood, ACS demographics; filters; side-by-side comparison; methodology page | Done 2026-10-25 (plus elections, comparisons in progress) |
-| 2 | Listing check: harmonized parcel base for T/W/H, static sharded address lookup, appraisal-based value range with flags | Plan below, awaiting owner approval |
+| 2 | Listing check: harmonized parcel base for T/W/H, static sharded address lookup, appraisal-based value range with flags | In progress (approved 2026-10-25) |
 | 3 | Value-for-money map with browser-side weights | |
 | 4 | Market trends: appraisal history by area (WCAD 2015–2026; TCAD and Hays exports by year), HMDA tract values | |
 | Later | More counties, fixed destinations for commutes, verified sale prices and a calibrated model, launch polish | |
@@ -106,7 +106,7 @@ refined before they are built.
 | P1-08 | Filters, comparison, shortlist, methodology page | Codex | 1c | P1-02..07 |
 | P1-09 | Monthly refresh workflow and validation report | Claude | 1c | P1-02..07 |
 
-## Phase 2 plan — listing check (proposed 2026-10-25; needs the owner's approval)
+## Phase 2 plan — listing check (approved by the owner 2026-10-25)
 
 **What you get.** A "Check a home" page: type an address you saw on Zillow, or click a home on
 the map at close zoom, and see that property's public facts (year built, living area, lot size,

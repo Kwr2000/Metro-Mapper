@@ -135,6 +135,12 @@ published in 2027.
   `DATE_ACQ` and `TAX_YEAR`. The metadata suggests the underlying CAD deliveries differ by county
   (Travis 2026-02; Williamson 2025-07; Hays 2025). Check `DATE_ACQ`. TxGIO says the data is "AS-IS" and
   meant as a basemap, "not for detailed analysis".
+  **Re-checked 2026-10-25 (browser):** zips still dated 2026-10-01; `.prj` WGS84; `DATE_ACQ`
+  2026-07-01 for Travis (386,752 records) and Williamson (287,194), 2026-02-01 for Hays
+  (121,110). Williamson `PROP_ID`s look like `R070302`; Hays has 257 blank and 292 "0" IDs;
+  repeated IDs are multi-polygon parcels. Phase 2 reads only `PROP_ID`, `GEO_ID`, `GIS_AREA(_U)`,
+  `FIPS`, `DATE_ACQ`, `TAX_YEAR` and geometry; owner, mailing and legal-description fields are
+  never read.
 - **Travis County GIS — TCAD parcels** (`gis.traviscountytx.gov/server1/rest/services/
   Boundaries_and_Jurisdictions/TCAD_public/MapServer/0`): 386,682 parcels, updated monthly
   by Travis County TNR from TCAD data, with no owner fields. Copyright text "Travis Central Appraisal
