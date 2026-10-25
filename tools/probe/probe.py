@@ -517,6 +517,31 @@ def _():
     return "; ".join(out)
 
 
+# Benchmarks (P1-11): one ACS request for every comparison geography via the ucgid predicate.
+PEERS = {"0668000": "San Jose", "1235000": "Jacksonville", "4827000": "Fort Worth", "3918000": "Columbus",
+         "1836003": "Indianapolis", "3712000": "Charlotte", "0667000": "San Francisco", "5363000": "Seattle",
+         "0820000": "Denver", "4819000": "Dallas", "4865000": "San Antonio", "0666000": "San Diego",
+         "4752006": "Nashville", "1150000": "Washington", "4055000": "Oklahoma City"}
+
+
+@check("census_ucgid_benchmarks", "Census ACS 2024 5-year: comparison geographies in one ucgid request")
+def _():
+    key = os.environ.get("CENSUS_API_KEY", "")
+    ids = ["0100000US", "0400000US48", "0500000US48453", "0500000US48491", "0500000US48209",
+           "310M700US12420", "310M600US12420", "1600000US4805000", *("1600000US" + g for g in PEERS)]
+    out = []
+    url = ("https://api.census.gov/data/2024/acs/acs5?get=NAME,B01003_001E,B19013_001E&ucgid="
+           + ",".join(ids) + (f"&key={key}" if key else ""))
+    status, _, body, _ = _req(url)
+    if status != 200:
+        return f"HTTP {status}: {body[:200].decode('utf-8', 'replace')}"
+    rows = json.loads(body)
+    out.append(f"{len(rows) - 1} of {len(ids)} geographies returned")
+    for name, pop, income, ucgid in ((r[0], r[1], r[2], r[-1]) for r in rows[1:]):
+        out.append(f"{ucgid} {name}: pop {pop}, median income {income}")
+    return "; ".join(out)
+
+
 # ---------------------------------------------------------------- main
 
 def main() -> int:
