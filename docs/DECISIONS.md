@@ -53,6 +53,20 @@ why, and (for approvals) that the owner approved it in writing.
   D 4); 7 edge districts based outside the counties show "No TEA district rating found".
   New layer `school_district_ratings`.
 
+## 2026-10-25 — Owner approvals: P1-11 budgets; Phase 2 plan
+
+- **Owner approval (2026-10-25):** `acs` budget 30 → 40 calls a day (still about one run a year;
+  the cap leaves room for retries within that run) and the new `fbi_national` source (4/day,
+  annual). The owner created the FBI key and saved it as the Actions secret `FBI_API_KEY`;
+  probe run 40226938290 confirmed the documented API (2025: violent 1,098,778 reported
+  offenses, 3.30 per 1,000; property 15.52 per 1,000).
+- **Owner approval (2026-10-25): Phase 2 starts** as planned in `PLAN.md` ("Phase 2 plan"),
+  including its call budgets: `parcels` 6/day, `tcad` 2/day, `wcad` 40/day, `hays_cad` 2/day,
+  `fhfa_hpi` 2/day, `hmda` 6/day. Each task still gets a spec before it is built.
+- P2-01 spec written after re-checking StratMap 2026 in the browser: WGS84, `DATE_ACQ`
+  2026-07-01 (Travis, Williamson) and 2026-02-01 (Hays); Williamson IDs like `R070302`; blank,
+  "0" and repeated IDs handled as specified.
+
 ## 2026-10-25 — Comparisons spec (P1-11) and Phase 2 plan (Claude; owner said yes to both)
 
 - **Owner (2026-10-25):** yes to the comparisons idea and to planning Phase 2. The Phase 2 plan in

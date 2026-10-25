@@ -3,11 +3,13 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (P1-11 spec, Phase 2 plan)._
+_Last updated 2026-10-25 (Phase 2 approved; P2-01 spec)._
 
 ## Phase
 
-**Phase 1 — approved 2026-10-23, in progress.** Phase 0 is done. All owner questions (Q1–Q3)
+**Phase 2 — approved 2026-10-25, starting** (P2-01 spec ready). Phase 1 is complete.
+
+**Phase 1 — done 2026-10-25** (approved 2026-10-23). Phase 0 is done. All owner questions (Q1–Q3)
 are decided (`DECISIONS.md`).
 
 ## Done
@@ -114,10 +116,9 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Owner: approve the P1-11 budgets (acs 40/day, fbi_national 4/day), create the FBI key secret,
-   then paste the P1-11 prompt into Codex.
-2. Owner: approve the Phase 2 plan (`PLAN.md`, "Phase 2 plan"); then Claude writes the P2-01 spec.
-3. After P1-11 is live: Claude specs P1-12 (colour by comparison).
+1. Codex: P1-11 (comparisons) in progress; Claude reviews the PR and runs the live checks.
+2. Owner: after P1-11's PR, paste the P2-01 prompt (parcel base) into Codex.
+3. After P1-11 is live: Claude specs P1-12 (colour by comparison); P2-02 (TCAD) spec next.
 3. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
@@ -136,7 +137,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- P1-11 approvals and FBI key; Phase 2 plan approval (Next items 1–2).
+- Nothing right now.
 
 ## Working notes for agents
 
