@@ -54,7 +54,9 @@ describe("honest labels", () => {
   });
 
   it("fixture builds are labeled Test data", () => {
-    expect(registry.layers.every((l) => l.freshness === "fixture_only")).toBe(true);
+    // Layers that publish no file (comparison-only metadata) take their freshness from the run
+    // log, so a live run of their source must not break this check.
+    expect(registry.layers.filter((l) => l.publish !== "none").every((l) => l.freshness === "fixture_only")).toBe(true);
     expect(freshnessLabel({ freshness: "fixture_only" })).toBe("Test data");
     expect(showsTestData(registry, initialVisible(registry))).toBe(true);
     expect(showsTestData(registry, new Set())).toBe(false);
