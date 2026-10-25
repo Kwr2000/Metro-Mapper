@@ -19,8 +19,8 @@ tracts as the steadier view and H3 resolution 8 as a stability check.
 | Phase | Delivers | Status |
 |---|---|---|
 | 0 | Source verification, this plan, `SOURCES.md`, `DECISIONS.md`, Phase 1 specs | Done 2026-10-22 (awaiting approval) |
-| 1 | Pipeline skeleton; block-group map with names; layers for schools, safety, access, flood, ACS demographics; filters; side-by-side comparison; methodology page | Next |
-| 2 | Listing check: harmonized parcel base for T/W/H, static sharded address lookup, appraisal-based value range with flags | |
+| 1 | Pipeline skeleton; block-group map with names; layers for schools, safety, access, flood, ACS demographics; filters; side-by-side comparison; methodology page | Done 2026-10-25 (plus elections, comparisons in progress) |
+| 2 | Listing check: harmonized parcel base for T/W/H, static sharded address lookup, appraisal-based value range with flags | Plan below, awaiting owner approval |
 | 3 | Value-for-money map with browser-side weights | |
 | 4 | Market trends: appraisal history by area (WCAD 2015–2026; TCAD and Hays exports by year), HMDA tract values | |
 | Later | More counties, fixed destinations for commutes, verified sale prices and a calibrated model, launch polish | |
@@ -105,6 +105,70 @@ refined before they are built.
 | P1-07 | Access (OSM walk/bike minutes, CapMetro frequency) | Claude verified; Codex builds | 1b | P1-02 |
 | P1-08 | Filters, comparison, shortlist, methodology page | Codex | 1c | P1-02..07 |
 | P1-09 | Monthly refresh workflow and validation report | Claude | 1c | P1-02..07 |
+
+## Phase 2 plan — listing check (proposed 2026-10-25; needs the owner's approval)
+
+**What you get.** A "Check a home" page: type an address you saw on Zillow, or click a home on
+the map at close zoom, and see that property's public facts (year built, living area, lot size,
+2026 and 2025 appraisals, appraisal district neighborhood), an **appraisal-based value range**,
+and, if you type the asking price (kept only in your browser), whether it falls below, inside or
+above that range. It also shows where the asking price per square foot sits among similar homes
+in the same appraisal neighborhood, and the area's existing map layers. No listings are pulled,
+nothing is called "fair value" or "a good deal", and no owner names are ever stored.
+
+**How the value range works** (every step shown on the page):
+1. Start from the appraisal district's certified market value (as of January 1, 2026).
+2. Adjust for each district's measured appraisal level from the Comptroller's 2024 Property
+   Value Study (Travis 1.00, Williamson 0.96, Hays 1.00 median level for single-family homes).
+3. Bring it forward to today with FHFA's purchase-only house price index for the Austin metro
+   (quarterly; public domain U.S. government data).
+4. The range is ±10% around that centre: in the Comptroller study about 3 in 4 single-family
+   sales (73–76%) fell within 10% of the appraisal. Homes the appraisal is likely to miss
+   (built or remodelled in the last two years, lots over one acre, condos, unusually large or
+   small homes for their neighborhood, big year-over-year jumps) get a ±20% range and say why.
+
+**Validation (hard checks before the range is published).** Tract medians of the adjusted values
+against HMDA 2025 tract median `property_value` for home-purchase loans (tracts with ≥ 30 loans):
+median ratio 0.90–1.10 and ≥ 75% of tracts within ±20%. If this fails, facts still show but the
+range is withheld with a note. WCAD sales ratios are used only as area-level checks (Q3).
+
+**Sources** (verified in Phase 0, 2026-10-22, and re-checked in each task spec):
+
+| Source | Use | Calls per run | Proposed budget | Refresh |
+|---|---|---|---|---|
+| TxGIO StratMap 2026 parcels (CC0), 3 county zips | Parcel locations and IDs (centroids only in Phase 2) | 3 | `parcels: {per_day: 6, max_minutes: 30}` | Annual |
+| TCAD 2026 certified export (557 MB zip) | Travis values and facts | 1 | `tcad: {per_day: 2, max_minutes: 45}` | Annual (July) |
+| WCAD open data (Socrata) certified property and segments | Williamson values and facts | about 15–25 pages | `wcad: {per_day: 40, min_interval_seconds: 2}` | Annual |
+| Hays CAD certified export (19 MB zip) | Hays values and facts | 1 | `hays_cad: {per_day: 2}` | Annual |
+| FHFA HPI purchase-only, 100 largest metros | Time adjustment | 1 | `fhfa_hpi: {per_day: 2}` | Monthly (quarterly data) |
+| HMDA 2025 data browser (3 counties) | Validation | 1–3 | `hmda: {per_day: 6}` | Annual |
+| Comptroller 2024 study | Level adjustment and range width | none (cited constants) | — | Every 2 years (next 2027) |
+
+All $0, no keys beyond what exists. Big files are processed inside GitHub Actions and never
+committed; only stripped, derived records are stored. Owner names, mailing addresses,
+exemptions, agents and deed numbers are dropped at ingest (ground rule 5).
+
+**Tasks** (each gets a full spec before it's built; one at a time):
+
+| ID | Task | Agent | Depends on |
+|---|---|---|---|
+| P2-01 | Parcel base: StratMap centroids, IDs, block group, county | Codex (Claude verifies) | — |
+| P2-02 | TCAD facts and values (fixed-width export, living-area codes) | Codex (Claude verifies layout) | P2-01 |
+| P2-03 | WCAD facts and values (Socrata) | Codex | P2-01 |
+| P2-04 | Hays CAD facts and values | Codex | P2-01 |
+| P2-05 | Harmonized property records, address normalization, static sharded address lookup | Codex | P2-02..04 |
+| P2-06 | Value range: Comptroller level, FHFA time adjustment, ranges, flags, neighborhood $/sq ft | Claude spec, Codex builds | P2-05 |
+| P2-07 | "Check a home" page and map click at close zoom | Codex | P2-05, P2-06 |
+| P2-08 | HMDA validation (hard check) and WCAD area-level ratio check | Claude | P2-06 |
+
+**Storage.** About 600,000 residential properties; the stored, stripped records are roughly
+30–40 MB compressed per year, committed once a year. If the repo grows too much, the fallback
+is a GitHub Release file read by the Pages build (still $0).
+
+**Risks.** Appraisals lag fast markets and miss interiors; new construction and remodels are the
+weakest cases (hence wider ranges and flags). TCAD has no living-area field (sum of main-area
+segments, codes to confirm). Fixed-width TCAD files are large (4.9 GB unzipped): processing time
+and disk on Actions runners must be measured in P2-02.
 
 ## Risks
 
