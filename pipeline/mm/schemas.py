@@ -42,6 +42,7 @@ class Strict(BaseModel):
 class LegendItem(Strict):
     label: str
     color: str
+    outline: str | None = Field(None, description="Swatch border colour, e.g. for a hollow 'not rated' symbol")
 
 
 class LayerStyle(Strict):
@@ -64,6 +65,9 @@ class PopupField(Strict):
     # A text property shown instead of the formatted value when set (e.g. "$250,000 or
     # more" for a Census top-coded median, whose stored number is only used for colour).
     display_field: str | None = None
+    # Notes that only sometimes apply: leave the row out when empty instead of showing
+    # "Not available" (which would read as missing data).
+    hide_if_empty: bool = False
 
 
 class LayerVariant(Strict):

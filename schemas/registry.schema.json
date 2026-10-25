@@ -437,11 +437,25 @@
         "label": {
           "title": "Label",
           "type": "string"
+        },
+        "outline": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Swatch border colour, e.g. for a hollow 'not rated' symbol",
+          "title": "Outline"
         }
       },
       "required": [
         "label",
-        "color"
+        "color",
+        "outline"
       ],
       "title": "LegendItem",
       "type": "object"
@@ -490,6 +504,11 @@
           "title": "Format",
           "type": "string"
         },
+        "hide_if_empty": {
+          "default": false,
+          "title": "Hide If Empty",
+          "type": "boolean"
+        },
         "label": {
           "title": "Label",
           "type": "string"
@@ -526,7 +545,8 @@
         "moe_field",
         "reliability_field",
         "annotation_field",
-        "display_field"
+        "display_field",
+        "hide_if_empty"
       ],
       "title": "PopupField",
       "type": "object"

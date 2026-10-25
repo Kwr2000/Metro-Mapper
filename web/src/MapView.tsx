@@ -3,7 +3,7 @@ import maplibregl, { type GeoJSONSource, type StyleSpecification } from "maplibr
 import "maplibre-gl/dist/maplibre-gl.css";
 import { asOfLabel, buildMapLayers, drawable, freshnessLabel, sourceFor, type CompiledLayer, type Registry } from "./registry";
 import { buildPolygonIndexIdle, type PolygonIndex } from "./map-polygons";
-import { bindPopupClose, escapeHtml as esc, popupContent, popupFieldHtml } from "./popup";
+import { bindPopupClose, escapeHtml as esc, popupContent, popupFieldHtml, shownFields } from "./popup";
 import type { LayerData } from "./areas";
 import { areaLayer, contextGroups, featureId, PEOPLE, PEOPLE_NOTE } from "./areas";
 import type { FeatureCollection } from "geojson";
@@ -20,7 +20,8 @@ async function resolveBasemap(url: string): Promise<StyleSpecification | string>
 
 /** One layer's section of a popup: values, then source, as-of and freshness. */
 export function featureHtml(meta: CompiledLayer, properties: Record<string, unknown> | null, fields = meta.popup): string {
-  const rows = fields.map((p) => `<tr><th>${esc(p.label)}</th><td>${popupFieldHtml(p, properties)}</td></tr>`).join("");
+  const rows = shownFields(fields, properties)
+    .map((p) => `<tr><th>${esc(p.label)}</th><td>${popupFieldHtml(p, properties)}</td></tr>`).join("");
   return `<section class="inspection-layer"><div class="popup-title">${esc(meta.popup_title ?? meta.title)}</div>` +
     `<table>${rows}</table>` +
     `<div class="popup-foot">Source: ${esc(meta.attribution)} · ${esc(asOfLabel(meta))} · ${esc(freshnessLabel(meta))}</div>` +

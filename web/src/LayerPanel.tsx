@@ -53,7 +53,7 @@ export function LayerPanel({
                       <ul className="layer-legend" aria-label={`${l.title} legend`}>
                         {l.legend.map((li) => (
                           <li key={li.label}>
-                            <span className={`swatch swatch-${l.style?.type}`} style={{ background: li.color }} aria-hidden="true" />
+                            <span className={`swatch swatch-${l.style?.type}`} style={{ background: li.color, ...(li.outline ? { boxShadow: `inset 0 0 0 2px ${li.outline}` } : {}) }} aria-hidden="true" />
                             <span>{li.label}</span>
                           </li>
                         ))}

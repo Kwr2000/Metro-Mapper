@@ -324,9 +324,14 @@ def test_layer_manifests_and_fixture_labeling(school_context):
     assert district.style.paint["fill-color"] == "rgba(0,0,0,0)"
     assert district.style.paint["fill-outline-color"] == "#454545"
     assert district.popup[2].format == "link" and district.popup[2].annotation_field == "finder_label"
-    assert campus.style.paint["circle-radius"] == 5 and campus.style.paint["circle-stroke-color"] == "#ffffff"
-    assert [item.color for item in campus.legend] == ["#3f007d", "#6a51a3", "#9e9ac8", "#cbc9e2", "#f2f0f7", "#bdbdbd"]
-    assert [item.label for item in campus.legend] == ["A", "B", "C", "D", "F", "Not rated / not available"]
+    # Distinct colours for A-F (owner request 2026-10-25); not rated is a hollow grey ring.
+    colors = ["#1a6fb5", "#74b4dc", "#f2d64b", "#f28c38", "#c62828"]
+    assert campus.style.paint["circle-color"] == ["match", ["get", "overall_rating"],
+        *[x for pair in zip("ABCDF", colors) for x in pair], "#ffffff"]
+    assert campus.style.paint["circle-stroke-width"][-2:] == [1, 2]
+    assert [item.color for item in campus.legend] == [*colors, "#ffffff"]
+    assert campus.legend[-1].outline == "#6b7280"
+    assert [item.label for item in campus.legend] == ["A", "B", "C", "D", "F", "Not rated / not available (hollow)"]
     fields = [field.field for field in campus.popup]
     assert fields.index("academic_growth_rating") < fields.index("school_progress_rating") < fields.index("student_achievement_rating")
     assert campus.attribution == "NCES EDGE; Texas Education Agency via data.texas.gov"

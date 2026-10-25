@@ -36,7 +36,7 @@ popup:
   - {field: period, label: Report period}
   - {field: retrieved, label: Retrieved, format: date}
   - {field: coverage_note, label: Coverage}
-  - {field: safety_note, label: Note}
+  - {field: safety_note, label: Note, hide_if_empty: true}
   - {field: geoid, label: GEOID}
 legend:
   - {label: Below 10, color: '#feedde'}

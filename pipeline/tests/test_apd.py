@@ -156,8 +156,27 @@ def test_minimum_population_boundary(context):
     def modify(raws):
         raws["block_groups"].body["features"][2]["properties"]["POP100"] = 100
     target = next(r.properties for r in output(context, modify) if r.feature_id == geoid(2))
-    assert target["safety_note"] is None and target["rate_part1_raw"] == 70
+    assert target["safety_note"] == apd.FEW and target["rate_part1_raw"] == 70
     assert target["rate_part1"] is not None
+
+
+def test_few_residents_note_does_not_change_the_smoothing_prior(context):
+    """The under-1,000 note is added after smoothing: same rates with or without it."""
+    def modify(raws):
+        raws["block_groups"].body["features"][2]["properties"]["POP100"] = 500
+
+    def rates():
+        return {r.feature_id: (r.properties["rate_part1"], r.properties["rate_violent"])
+                for r in output(context, modify) if r.dataset == "block_group"}
+    with_note = rates()
+    original = apd.FEW
+    try:
+        apd.FEW = None  # no note at all
+        assert rates() == with_note
+    finally:
+        apd.FEW = original
+    target = next(r.properties for r in output(context, modify) if r.feature_id == geoid(2))
+    assert target["safety_note"] == apd.FEW and target["rate_part1"] is not None
 
 
 def test_totals_include_outside_city_unlocated_and_out_of_county(context):
@@ -293,7 +312,7 @@ def test_shared_bundle_manifests_and_test_data(context):
     assert run.status == "success", run.errors
     assert run.planned_calls == 4 and run.calls_made == 0 and run.rows_out == 101
     layers = [r for r in registry.compile_registry().layers if r.source == "apd"]
-    assert {r.id for r in layers} == {"apd_part1_rate", "apd_part1_density"}
+    assert {r.id for r in layers} == {"apd_part1_rate", "apd_part1_density", "apd_violent_rate"}
     assert len({r.data_url for r in layers}) == 1
     for layer in layers:
         assert layer.data_bundle == "apd_block_group" and layer.dataset == "block_group"
@@ -305,9 +324,16 @@ def test_shared_bundle_manifests_and_test_data(context):
         assert [r.color for r in layer.legend] == ["#feedde", "#fdbe85", "#fd8d3c", "#e6550d", "#a63603", "#bdbdbd"]
         assert layer.legend[-1].label == "Not available"
         steps = layer.style.paint["fill-color"][-1]
-        assert steps[3::2] == ([10,25,50,100] if layer.id.endswith("rate") else [25,75,150,300])
-        assert [r.field for r in layer.popup] == ["rate_part1", "rate_part1_raw", "rate_violent", "rate_violent_raw", "density_part1",
-                                                "violent", "property", "other", "total", "population_2020", "period", "safety_note", "geoid"]
+        breaks = {"apd_part1_rate": [10, 25, 50, 100], "apd_part1_density": [25, 75, 150, 300],
+                  "apd_violent_rate": [1, 2.5, 5, 10]}
+        assert steps[3::2] == breaks[layer.id]
+        fields = ["rate_part1", "rate_part1_raw", "rate_violent", "rate_violent_raw", "density_part1",
+                  "violent", "property", "other", "total", "population_2020", "period", "safety_note", "geoid"]
+        if layer.id == "apd_violent_rate":
+            fields = ["rate_violent", "rate_violent_raw", "violent", "rate_part1", "rate_part1_raw", "density_part1",
+                      "property", "other", "total", "population_2020", "period", "safety_note", "geoid"]
+        assert [r.field for r in layer.popup] == fields
+        assert next(r for r in layer.popup if r.field == "safety_note").hide_if_empty
         doc = json.loads(publish.published_path(layer).read_text())
         assert doc["test_data"] is True and len(doc["features"]) == 100
         assert doc["source_as_of"] == "2026-09-30"

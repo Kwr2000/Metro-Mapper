@@ -26,6 +26,8 @@ COUNT_FIELDS = ("violent", "property", "other", "total")
 RATE_FIELDS = ("rate_part1", "rate_part1_raw", "rate_violent", "rate_violent_raw", "density_part1")
 OUTSIDE = "Not available (outside Austin PD)"
 TOO_FEW = "Too few residents for a rate"
+FEW = ("Under 1,000 residents: shops, offices or hospitals can make per-resident rates look high; "
+       "see density")
 EMPTY = {"type": "GeometryCollection", "geometries": []}
 TO_AREA = Transformer.from_crs(4326, 5070, always_xy=True).transform
 SQ_METRES_PER_SQ_MILE = 1609.344 ** 2
@@ -243,6 +245,10 @@ class APDReports(SourceAdapter):
             ys = [sum(r.properties[f] for f in count_fields) for r in eligible]
             for rec, value in zip(eligible, smooth(ys, populations)):
                 rec.properties[field] = round(value, 1)
+        # After smoothing, so the note never changes which areas set the Austin-wide prior.
+        for rec in eligible:
+            if rec.properties["population_2020"] < 1000:
+                rec.properties["safety_note"] = FEW
         summary = {"reports in period": total,
             "without block group": sum(r["count"] for r in counts if r["geoid"] is None),
             "block groups with reports": len(codes),

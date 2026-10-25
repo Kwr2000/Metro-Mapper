@@ -11,10 +11,10 @@ popup_title: TEA accountability ratings, 2024–25
 style:
   type: circle
   paint:
-    circle-radius: 5
-    circle-stroke-color: "#ffffff"
-    circle-stroke-width: 1
-    circle-color: [match, [get, overall_rating], A, "#3f007d", B, "#6a51a3", C, "#9e9ac8", D, "#cbc9e2", F, "#f2f0f7", "#bdbdbd"]
+    circle-radius: [match, [get, overall_rating], [A, B, C, D, F], 5.5, 4.5]
+    circle-stroke-color: [match, [get, overall_rating], [A, B, C, D, F], "#1f2933", "#6b7280"]
+    circle-stroke-width: [match, [get, overall_rating], [A, B, C, D, F], 1, 2]
+    circle-color: [match, [get, overall_rating], A, "#1a6fb5", B, "#74b4dc", C, "#f2d64b", D, "#f28c38", F, "#c62828", "#ffffff"]
 popup:
   - {field: name, label: Campus}
   - {field: district, label: District}
@@ -34,12 +34,12 @@ popup:
   - {field: ratings_year, label: Ratings year}
   - {field: rating_note, label: Rating note}
 legend:
-  - {label: A, color: "#3f007d"}
-  - {label: B, color: "#6a51a3"}
-  - {label: C, color: "#9e9ac8"}
-  - {label: D, color: "#cbc9e2"}
-  - {label: F, color: "#f2f0f7"}
-  - {label: Not rated / not available, color: "#bdbdbd"}
+  - {label: A, color: "#1a6fb5"}
+  - {label: B, color: "#74b4dc"}
+  - {label: C, color: "#f2d64b"}
+  - {label: D, color: "#f28c38"}
+  - {label: F, color: "#c62828"}
+  - {label: Not rated / not available (hollow), color: "#ffffff", outline: "#6b7280"}
 coverage: study_area
 refresh: annual
 attribution: NCES EDGE; Texas Education Agency via data.texas.gov
