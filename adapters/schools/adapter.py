@@ -33,10 +33,12 @@ FIELDS = {
 }
 DOMAINS = ("overall", "academic_growth", "school_progress", "student_achievement", "closing_the_gaps")
 RATING_FIELDS = [f"{domain}_{suffix}" for domain in DOMAINS for suffix in ("rating", "score")] + ["relative_performance_rating"]
+DISTRICT_RATING_FIELDS = [f"{domain}_{suffix}" for domain in DOMAINS for suffix in ("rating", "score")]
 YEAR = "2024–25"
 ZONE_NOTE = "Which school serves an address is set by the district and can change yearly. Check the district's school finder."
 NO_RATING = "No TEA rating found for this campus"
 NOT_RATED = "Not rated by TEA for 2024–25"
+DISTRICT_NO_RATING = "No TEA district rating found"
 EMPTY = {"type": "GeometryCollection", "geometries": []}
 TO_AREA = Transformer.from_crs(4326, 5070, always_xy=True).transform
 
@@ -139,7 +141,9 @@ def summary_counts(districts, campuses):
     not_rated = sum(rec.properties["rating_note"] == NOT_RATED for rec in campuses)
     rows = sum(rec.properties["rating_note"] != NO_RATING for rec in campuses)
     rated = sum(rec.properties["overall_rating"] in {"A", "B", "C", "D", "F"} for rec in campuses)
-    return {"districts kept": len(districts), "campuses": len(campuses), "matched": matched,
+    districts_rated = sum(rec.properties.get("overall_rating") in {"A", "B", "C", "D", "F"} for rec in districts)
+    return {"districts kept": len(districts), "districts rated": districts_rated,
+            "campuses": len(campuses), "matched": matched,
             "rating rows": rows, "rated": rated, "not rated": not_rated, "unmatched": len(campuses) - matched}
 
 
@@ -165,7 +169,8 @@ class Schools(SourceAdapter):
             Request("directory", {"kind": "directory", "url": ASKTED, "query": {
                 "$select": FIELDS["directory"], "$where": "nces_school_id IS NOT NULL", "$limit": 20000}}),
             Request("ratings", {"kind": "rating", "url": RATINGS, "query": {
-                "$select": FIELDS["rating"], "$where": "school_type != 'District'", "$limit": 20000}}),
+                # Campus and district rows (school_type 'District'): about 10,300 in 2024-25.
+                "$select": FIELDS["rating"], "$limit": 20000}}),
         ]
 
     def fetch(self, req, ctx):
@@ -263,9 +268,16 @@ class Schools(SourceAdapter):
                 "tea_district_number": digits(row.get("district_number"), 6),
                 "district": text(row.get("district_name")), "website": website(row.get("district_web_page_address"))}
         else:
-            identity = digits(row.get("campus_number"), 9)
             if row.get("school_type") == "District":
-                raise ValueError("district row in campus ratings")
+                identity = digits(row.get("district_number"), 6)
+                props = {"tea_district_number": identity}
+                for domain in DOMAINS:
+                    value = rating(row.get(domain + "_rating"))
+                    props[domain + "_rating"] = value
+                    props[domain + "_score"] = score(row.get(domain + "_score")) if value not in {None, "Not Rated"} else None
+                return AreaFeature(dataset="school_district_rating_input", feature_id=identity, geometry=geom,
+                                   properties=props)
+            identity = digits(row.get("campus_number"), 9)
             props = {"campus_number": identity, "tea_district_number": digits(row.get("district_number"), 6),
                 "school_type": text(row.get("school_type")), "grades_served": text(row.get("grades_served")),
                 "charter": yes_no(row.get("charter")), "alternative_education": text(row.get("alternative_education"))}
@@ -291,6 +303,8 @@ class Schools(SourceAdapter):
         for key in ambiguous:
             del directory[key]
         ratings = unique(groups["rating"], "campus_number")
+        district_ratings = unique([r for r in records if r.dataset == "school_district_rating_input"],
+                                  "tea_district_number")
         if len(campuses) < 500:
             raise ValueError("schools: fewer than 500 NCES campuses")
         if not groups["block_group"]:
@@ -335,9 +349,15 @@ class Schools(SourceAdapter):
                     raise ValueError("invalid checked district finder")
                 url, label = website(entry["url"]), entry["label"]
             display = name.replace("Consolidated Independent School District", "CISD").replace("Independent School District", "ISD")
+            found = district_ratings.get(tea)
+            district_rating = {field: (found.properties[field] if found else None) for field in DISTRICT_RATING_FIELDS}
+            district_rating["ratings_year"] = YEAR
+            district_rating["rating_note"] = (DISTRICT_NO_RATING if found is None else
+                                              NOT_RATED if found.properties["overall_rating"] == "Not Rated" else None)
             district_output.append(AreaFeature(dataset="district", feature_id=geoid, geometry=district.geometry,
                 properties={"geoid": geoid, "name": display, "grades": district.properties["grades"],
-                    "finder_link": url, "finder_label": label, "tea_district_number": tea, "zone_note": ZONE_NOTE}))
+                    "finder_link": url, "finder_label": label, "tea_district_number": tea, "zone_note": ZONE_NOTE,
+                    **district_rating}))
         district_names = {record.feature_id: record.properties["name"] for record in district_output}
         campus_output = []
         matched = row_count = 0

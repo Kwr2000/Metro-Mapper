@@ -78,6 +78,15 @@ if __name__ == "__main__":
             row[domain + "_rating"] = "Not Rated" if i == 1 else letter
             row[domain + "_score"] = None if i == 1 else str(90 - (i % 5) * 10)
         ratings.append(row)
+    # TEA district rows (school_type 'District'; no campus number). District 20 has none.
+    for district in range(19):
+        letter = ("A", "B", "C", "D", "F", "Not Rated")[district % 6]
+        row = {"district_number": "'" + f"{district + 1:03d}901", "district": NAMES[district], "school_type": "District"}
+        for domain in ("overall", "academic_growth", "school_progress", "student_achievement", "closing_the_gaps"):
+            row[domain + "_rating"] = letter
+            if letter != "Not Rated":
+                row[domain + "_score"] = str(90 - (district % 6) * 10)
+        ratings.append(row)
     write("campuses", {"features": campuses})
     write("directory", directory)
     write("ratings", ratings)

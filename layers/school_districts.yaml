@@ -17,10 +17,17 @@ popup:
   - {field: name, label: District}
   - {field: grades, label: Grades}
   - {field: finder_link, label: School finder, format: link, annotation_field: finder_label}
+  - {field: overall_rating, label: TEA district rating (2024–25)}
+  - {field: overall_score, label: Overall score, format: number}
+  - {field: student_achievement_rating, label: Student Achievement rating}
+  - {field: school_progress_rating, label: School Progress rating}
+  - {field: academic_growth_rating, label: Academic Growth rating}
+  - {field: closing_the_gaps_rating, label: Closing the Gaps rating}
+  - {field: rating_note, label: Rating note, hide_if_empty: true}
   - {field: zone_note, label: Assigned schools}
 coverage: study_area
 refresh: annual
-attribution: U.S. Census Bureau, TIGERweb
-license: Public domain
+attribution: U.S. Census Bureau, TIGERweb; Texas Education Agency via data.texas.gov (ratings)
+license: Public domain (boundaries); no license stated (TEA ratings)
 default_visible: false
 order: 300

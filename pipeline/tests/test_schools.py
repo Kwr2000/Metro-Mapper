@@ -84,7 +84,8 @@ def test_exact_plan_and_selected_fields_never_request_people(school_context):
     assert requests[1].params["query"]["where"] == "STATE='48' AND COUNTY IN ('453','491','209')"
     assert requests[2].params["query"]["where"] == "STATE='TX' AND CNTY IN ('48453','48491','48209')"
     assert requests[3].params["query"] == {"$select": schools.FIELDS["directory"], "$where": "nces_school_id IS NOT NULL", "$limit": 20000}
-    assert requests[4].params["query"] == {"$select": schools.FIELDS["rating"], "$where": "school_type != 'District'", "$limit": 20000}
+    # District rows are requested too (one request, campus and district ratings together).
+    assert requests[4].params["query"] == {"$select": schools.FIELDS["rating"], "$limit": 20000}
     assert not ad.recordable and not ad.retain_raw
 
 
@@ -111,7 +112,7 @@ def test_join_notes_charter_and_source_coordinates(school_context, capsys):
     assert unmatched["district"] == "Leander ISD"
     assert all(rec.properties["ratings_year"] == "2024–25" for rec in campuses.values())
     assert schools.summary_counts(districts, list(campuses.values())) == {
-        "districts kept": 20, "campuses": 500, "matched": 480, "rating rows": 450, "rated": 449, "not rated": 1, "unmatched": 20}
+        "districts kept": 20, "districts rated": 16, "campuses": 500, "matched": 480, "rating rows": 450, "rated": 449, "not rated": 1, "unmatched": 20}
     report = capsys.readouterr().err
     for fragment in ("districts kept=20", "campuses=500", "matched=480", "rated=449", "not rated=1", "unmatched=20"):
         assert fragment in report
@@ -312,7 +313,7 @@ def test_layer_manifests_and_fixture_labeling(school_context):
     run = runner.run("schools", now=NOW)
     assert run.status == "success" and run.calls_made == 0 and run.planned_calls == 5 and run.rows_out == 520
     layers = {layer.id: layer for layer in registry.compile_registry().layers if layer.source == "schools"}
-    assert set(layers) == {"school_districts", "school_campuses"}
+    assert set(layers) == {"school_districts", "school_campuses", "school_district_ratings"}
     for layer in layers.values():
         assert layer.freshness == "fixture_only" and layer.group == "Schools"
         assert layer.refresh == "annual" and not layer.default_visible
@@ -380,3 +381,21 @@ def test_budget_and_live_gate(school_context, monkeypatch):
     # Ungated after Claude's first live check (run 40039008305, DECISIONS 2026-10-23).
     gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}
     assert "schools" not in gates
+
+
+def test_district_ratings_join_by_tea_district_number(school_context):
+    """TEA district rows (school_type 'District') rate each kept district; none invented."""
+    districts = {rec.properties["tea_district_number"]: rec.properties
+                 for rec in output(school_context) if rec.dataset == "district"}
+    leander = districts["001901"]
+    assert leander["overall_rating"] == "A" and leander["overall_score"] == 90
+    assert leander["student_achievement_rating"] == "A" and leander["rating_note"] is None
+    assert leander["ratings_year"] == "2024–25"
+    not_rated = districts["006901"]
+    assert not_rated["overall_rating"] == "Not Rated" and not_rated["overall_score"] is None
+    assert not_rated["rating_note"] == schools.NOT_RATED
+    missing = districts["020901"]
+    assert missing["overall_rating"] is None and missing["overall_score"] is None
+    assert missing["rating_note"] == schools.DISTRICT_NO_RATING
+    campuses = [rec for rec in output(school_context) if rec.dataset == "campus"]
+    assert len(campuses) == 500  # district rows never become campuses

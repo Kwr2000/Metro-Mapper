@@ -1,0 +1,44 @@
+id: school_district_ratings
+title: School district ratings (TEA)
+group: Schools
+description: Each district shaded by its overall TEA 2024–25 accountability rating. A district rating summarises all its campuses; individual schools vary, and a district rating says nothing about which school serves an address.
+source: schools
+geometry: polygon
+join: jurisdiction
+dataset: district
+publish: geojson
+popup_title: TEA district rating, 2024–25
+style:
+  type: fill
+  paint:
+    fill-opacity: 0.45
+    fill-outline-color: "#454545"
+    fill-color: [match, [get, overall_rating], A, "#1a6fb5", B, "#74b4dc", C, "#f2d64b", D, "#f28c38", F, "#c62828", "#bdbdbd"]
+popup:
+  - {field: name, label: District}
+  - {field: overall_rating, label: Overall rating}
+  - {field: overall_score, label: Overall score, format: number}
+  - {field: student_achievement_rating, label: Student Achievement rating}
+  - {field: student_achievement_score, label: Student Achievement score, format: number}
+  - {field: school_progress_rating, label: School Progress rating}
+  - {field: school_progress_score, label: School Progress score, format: number}
+  - {field: academic_growth_rating, label: Academic Growth rating}
+  - {field: academic_growth_score, label: Academic Growth score, format: number}
+  - {field: closing_the_gaps_rating, label: Closing the Gaps rating}
+  - {field: closing_the_gaps_score, label: Closing the Gaps score, format: number}
+  - {field: ratings_year, label: Ratings year}
+  - {field: rating_note, label: Rating note, hide_if_empty: true}
+  - {field: finder_link, label: School finder, format: link, annotation_field: finder_label}
+legend:
+  - {label: A, color: "#1a6fb5"}
+  - {label: B, color: "#74b4dc"}
+  - {label: C, color: "#f2d64b"}
+  - {label: D, color: "#f28c38"}
+  - {label: F, color: "#c62828"}
+  - {label: Not rated / not available, color: "#bdbdbd"}
+coverage: study_area
+refresh: annual
+attribution: Texas Education Agency via data.texas.gov; U.S. Census Bureau, TIGERweb
+license: No license stated (TEA on data.texas.gov); public domain (boundaries)
+default_visible: false
+order: 299
