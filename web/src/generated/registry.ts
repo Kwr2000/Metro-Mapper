@@ -45,6 +45,7 @@ export type AnnotationField = string | null;
 export type DisplayField = string | null;
 export type Field = string;
 export type Format = "text" | "number" | "currency" | "date" | "percent" | "link";
+export type HideIfEmpty = boolean;
 export type Label = string;
 export type MoeField = string | null;
 export type ReliabilityField = string | null;
@@ -54,6 +55,10 @@ export type Join = "parcel" | "point" | "block_group" | "tract" | "zip" | "juris
 export type LastSuccess = string | null;
 export type Color = string;
 export type Label1 = string;
+/**
+ * Swatch border colour, e.g. for a hollow 'not rated' symbol
+ */
+export type Outline = string | null;
 export type Legend = LegendItem[];
 export type License = string;
 export type Order = number;
@@ -127,6 +132,7 @@ export interface PopupField {
   display_field: DisplayField;
   field: Field;
   format: Format;
+  hide_if_empty: HideIfEmpty;
   label: Label;
   moe_field: MoeField;
   reliability_field: ReliabilityField;
@@ -134,6 +140,7 @@ export interface PopupField {
 export interface LegendItem {
   color: Color;
   label: Label1;
+  outline: Outline;
 }
 /**
  * A MapLibre layer style. `paint`/`layout` are passed to MapLibre as-is.

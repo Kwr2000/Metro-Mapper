@@ -34,6 +34,14 @@ export function popupFieldHtml(field: PopupField, properties: Record<string, unk
   return value;
 }
 
+/** Popup rows to show: a `hide_if_empty` note is left out when it has no value. */
+export function shownFields(fields: PopupField[], properties: Record<string, unknown> | null): PopupField[] {
+  return fields.filter((f) => {
+    const v = properties?.[f.field];
+    return !(f.hide_if_empty && (v === null || v === undefined || v === ""));
+  });
+}
+
 /** Keep the close control outside the scroll body; the same markup serves all popups. */
 export function popupContent(html: string): string {
   return `<button type="button" class="popup-close" aria-label="Close popup">×</button><div class="popup-scroll">${html}</div>`;

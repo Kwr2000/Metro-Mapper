@@ -69,6 +69,7 @@ popup:
   label: Report period
 - field: safety_note
   label: Note
+  hide_if_empty: true
 - field: geoid
   label: GEOID
 popup_title: Reported Part I incidents per square mile

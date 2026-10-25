@@ -1,8 +1,17 @@
 import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { bindPopupClose, popupContent, popupFieldHtml, popupValueHtml } from "../popup";
+import { bindPopupClose, popupContent, popupFieldHtml, popupValueHtml, shownFields } from "../popup";
 
 describe("popups", () => {
+  it("leaves out empty optional notes but keeps empty data as Not available", () => {
+    const base = { format: "text", moe_field: null, reliability_field: null, annotation_field: null, display_field: null } as const;
+    const fields = [{ ...base, field: "rate", label: "Rate", hide_if_empty: false },
+                    { ...base, field: "note", label: "Note", hide_if_empty: true }];
+    expect(shownFields(fields, { rate: null, note: null }).map((f) => f.field)).toEqual(["rate"]);
+    expect(shownFields(fields, { rate: 1, note: "Few residents" }).map((f) => f.field)).toEqual(["rate", "note"]);
+    expect(popupFieldHtml(fields[0], { rate: null })).toBe("Not available");
+  });
+
   it("renders a source link without allowing HTML injection", () => {
     const html = popupValueHtml('https://example.gov/case?id=1&label="hello"', "link");
     expect(html).toContain('href="https://example.gov/case?id=1&amp;label=%22hello%22"');
@@ -31,7 +40,7 @@ describe("popups", () => {
 
   it("shows margins of error and flags unreliable estimates", () => {
     const field = { field: "share", label: "Share estimate", format: "percent" as const, moe_field: "moe",
-      reliability_field: "reliability", annotation_field: "annotation", display_field: null };
+      reliability_field: "reliability", annotation_field: "annotation", display_field: null, hide_if_empty: false };
     const html = popupFieldHtml(field, { share: 0.25, moe: 0.1, reliability: "low reliability", annotation: "<script>" });
     expect(html).toContain("25.0%"); expect(html).toContain("10.0 pp");
     expect(html).toContain('class="reliability-low"'); expect(html).toContain("&lt;script&gt;");
@@ -41,7 +50,7 @@ describe("popups", () => {
 
   it("shows a Census range in place of a capped median", () => {
     const field = { field: "income", label: "Income estimate", format: "currency" as const, moe_field: "moe",
-      reliability_field: null, annotation_field: null, display_field: "income_display" };
+      reliability_field: null, annotation_field: null, display_field: "income_display", hide_if_empty: false };
     const html = popupFieldHtml(field, { income: 250001, moe: null, income_display: "$250,000 or more" });
     expect(html).toContain("$250,000 or more"); expect(html).not.toContain("250,001");
     expect(popupFieldHtml(field, { income: 90000, moe: 5000 })).toContain("$90,000");
