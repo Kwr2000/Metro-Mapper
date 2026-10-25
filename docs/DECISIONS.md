@@ -25,6 +25,21 @@ why, and (for approvals) that the owner approved it in writing.
   abbreviated and spelled-out names now merge; Census place 633, Austin planning area 343,
   City of Austin subdivision 109, Hays County subdivision 18, fallback 27. Plain "Austin": 181.
 
+## 2026-10-25 — Display fixes and TEA district ratings (Claude; owner requests)
+
+- Austin PD layers: new violent-rate layer (breaks 1/2.5/5/10 per 1,000). Areas with
+  100–999 residents get a note that shops, offices or hospitals can make per-resident rates
+  look high (125 areas; added after smoothing, so rates are unchanged). Of the 36 areas at
+  100+ per 1,000, 34 are mostly property crime. APD re-run 40152158630 (4 calls) to carry the
+  note; totals unchanged (88,424).
+- Empty note rows are hidden (`PopupField.hide_if_empty`) instead of showing "Not available".
+- Campus ratings use distinct colours (A–F blue to red; not rated is a hollow grey ring).
+- TEA district ratings: the 2024–25 release (`nui6-x374`) has 1,208 district rows, which the
+  schools request had filtered out. Now requested in the same call (no budget change). Run
+  40152646647: all 24 districts with campuses in the three counties rated (A 3, B 8, C 9,
+  D 4); 7 edge districts based outside the counties show "No TEA district rating found".
+  New layer `school_district_ratings`.
+
 ## 2026-10-24 — P1-05b live check passed; `dps_agency` ungated (Claude)
 
 - First run 40108168966 failed safely after 1 call: real ORIs can contain letters
