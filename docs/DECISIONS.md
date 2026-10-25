@@ -3,6 +3,21 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-25 — P1-07 access live check passed; ungated (Claude)
+
+- Run 40146625568: 4 calls, 11 min, peak memory 4.4 GB. OSM (Geofabrik 2026-10-23): walk graph
+  2.92 M nodes, bike graph 1.99 M; destinations in the study area include 215 grocery, 1,415
+  park, 752 school, 71 library. 21,924 populated blocks, 97.4% snapped. CapMetro feed
+  261007_1345, service date 2026-10-28, 2,346 stops, 4,832 trips.
+- Medians across block groups: walk to grocery 23 min, park 9, school 15, daily-needs basket 41
+  (the basket is the slowest of five errands; libraries and hardware stores are sparse);
+  bike to grocery 8. Transit median 0 departures/hour (most of the area has no CapMetro
+  service); downtown about 73. Spot checks (Hyde Park, Downtown, Bouldin Creek, Circle C,
+  Belterra, Steiner Ranch) are plausible.
+- Caveat for the methodology page: OSM may miss some stores (215 groceries for three counties
+  looks low), which would make some walk times longer than reality.
+- `access` ungated.
+
 ## 2026-10-25 — P1-02c live: name polish published (Claude)
 
 - Run 40146023339: 24 calls. No all-capital planning-area names remain (MLK, MLK-183, RMMA and

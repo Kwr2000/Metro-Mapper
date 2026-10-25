@@ -93,11 +93,10 @@ are decided (`DECISIONS.md`).
   Live (Claude, run 40108617517; ORI fix PR #60): 28 agencies, 1,206 block groups, 6 split;
   Austin PD 35.7 per 1,000. Ungated.
 
+- **P1-07** access: live (run 40146625568, 2026-10-25). Ungated.
+
 ## Next
 
-2. Claude (scheduled, 2026-10-25 00:25 UTC): re-run the `access` first live check (P1-07,
-   merged PR #50; first run 40054053666 failed only on CapMetro's missing `calendar.txt`,
-   fixed PR #51; OSM processing took ~12 min). Then merge data, ungate `access`.
 3. Later: P1-08 is merged (filters, compare, shortlist, methodology); look at it on the live
    site once all layers are in. Check the 2026-11-03 refresh report (expect nothing due).
 
