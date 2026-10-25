@@ -1,0 +1,25 @@
+{
+  "status": 200,
+  "body": [
+    ["B25003_002E", "B25003_002M", "B25003_002EA", "B25003_002MA", "B25035_001E", "B25035_001M", "B25035_001EA", "B25035_001MA", "B25064_001E", "B25064_001M", "B25064_001EA", "B25064_001MA", "B25077_001E", "B25077_001M", "B25077_001EA", "B25077_001MA", "ucgid"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "0100000US"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "0400000US48"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "310M700US12420"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US4805000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "0500000US48453"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "0500000US48491"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "0500000US48209"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US0666000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US0667000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US0668000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US0820000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US1235000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US1836003"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US3712000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US3918000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US4819000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US4827000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US4865000"],
+    ["10", "5", null, null, "1985", "5", null, null, "1500", "5", null, null, "350000", "5", null, null, "1600000US5363000"]
+  ]
+}

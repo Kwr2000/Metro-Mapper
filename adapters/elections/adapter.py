@@ -20,6 +20,7 @@ import shapefile
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.paths import paths
 from mm.schemas import AreaFeature
+from mm.benchmarks import record as benchmark
 from pyproj import CRS, Transformer
 from shapely import make_valid, transform
 from shapely.geometry import MultiPolygon, mapping, shape
@@ -64,7 +65,7 @@ def member(z, filename):
 
 def parse_election_zip(path, check_time=lambda: None):
     """Stream four CSVs; never retain unused VRTO columns or non-presidential rows."""
-    members = {}
+    members, statewide = {}, {}
     with ZipFile(path) as z:
         for filename, (_, kind) in MEMBERS.items():
             keep = RETURNS if kind == "Returns" else VRTO
@@ -77,6 +78,7 @@ def parse_election_zip(path, check_time=lambda: None):
                 county_col = header.index("FIPS")
                 office_col = header.index("Office") if kind == "Returns" else None
                 kept = [list(keep)]
+                counts = Counter()
                 for i, row in enumerate(reader):
                     if i % 1000 == 0:
                         check_time()
@@ -84,14 +86,24 @@ def parse_election_zip(path, check_time=lambda: None):
                         continue
                     if len(row) != len(header):
                         raise ValueError("invalid election CSV row width")
-                    if integer(row[county_col]) not in COUNTIES:
-                        continue
                     if office_col is not None and row[office_col] != "President":
+                        continue
+                    if kind == "Returns":
+                        party = row[header.index("Party")]
+                        if party not in {"D", "R", "L", "G", "W"}:
+                            raise ValueError("unknown statewide presidential party")
+                        counts[party] += integer(row[header.index("Votes")])
+                    else:
+                        for col in ("TotalVR", "TotalTO"):
+                            counts[col] += integer(row[header.index(col)])
+                    if integer(row[county_col]) not in COUNTIES:
                         continue
                     # Only these selected cells survive parsing; the raw CSV is never extracted.
                     kept.append([row[pos] for pos in positions])
                 members[filename] = kept
-    return {"members": members}
+                statewide[filename] = ([['Party', 'Votes']] + [[k, str(v)] for k, v in sorted(counts.items())]
+                    if kind == "Returns" else [['TotalVR', 'TotalTO'], [str(counts['TotalVR']), str(counts['TotalTO'])]])
+    return {"members": members, "statewide": statewide}
 
 
 def reproject(geom, operation):
@@ -249,6 +261,34 @@ class Elections(SourceAdapter):
             return
         if raw.request.key != "election_data" or not isinstance(raw.body, dict) or set(raw.body.get("members", {})) != set(MEMBERS):
             raise ValueError("missing election CSV members")
+        if "statewide" in raw.body:
+            if set(raw.body["statewide"]) != set(MEMBERS):
+                raise ValueError("missing statewide election summaries")
+            for filename, (year, kind) in MEMBERS.items():
+                table = raw.body["statewide"][filename]
+                if kind == "Returns":
+                    if table[0] != ["Party", "Votes"]:
+                        raise ValueError("invalid statewide returns summary")
+                    counts = {}
+                    for party, value in table[1:]:
+                        if party not in {"D", "R", "L", "G", "W"} or party in counts:
+                            raise ValueError("invalid statewide party")
+                        counts[party] = integer(value)
+                    total = sum(counts.values())
+                    if total < 50 or not {"D", "R"} <= counts.keys():
+                        raise ValueError("missing statewide presidential totals")
+                    vals = {"dem_share": counts["D"] / total, "rep_share": counts["R"] / total,
+                            "margin": (counts["R"] - counts["D"]) / total}
+                    for field, value in vals.items():
+                        yield benchmark(f"pres_{year}_{field}", "texas", "Texas", round(value, 3), str(year),
+                                        "Texas Legislative Council, Capitol Data Portal", as_of=AS_OF)
+                else:
+                    if len(table) != 2 or table[0] != ["TotalVR", "TotalTO"]:
+                        raise ValueError("invalid statewide turnout summary")
+                    reg, cast = map(integer, table[1])
+                    if reg > 0 and cast <= reg:
+                        yield benchmark(f"turnout_{year}", "texas", "Texas", round(cast / reg, 3), str(year),
+                                        "Texas Legislative Council, Capitol Data Portal", as_of=AS_OF)
         for filename, (year, kind) in MEMBERS.items():
             rows = raw.body["members"][filename]
             columns = RETURNS if kind == "Returns" else VRTO
@@ -357,7 +397,7 @@ class Elections(SourceAdapter):
         print("elections: run note: " + json.dumps(summary, sort_keys=True), file=sys.stderr)
         output.append(AreaFeature(dataset="run_summary", feature_id=str(AS_OF), geometry=EMPTY,
                                   properties=summary, source_as_of=AS_OF))
-        return output
+        return output + [r for r in records if r.dataset == "benchmark"]
 
     def source_as_of(self, raws):
         return AS_OF

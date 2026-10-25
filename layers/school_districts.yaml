@@ -17,8 +17,8 @@ popup:
   - {field: name, label: District}
   - {field: grades, label: Grades}
   - {field: finder_link, label: School finder, format: link, annotation_field: finder_label}
-  - {field: overall_rating, label: TEA district rating (2024–25)}
-  - {field: overall_score, label: Overall score, format: number}
+  - {field: overall_rating, label: TEA district rating (2024–25), benchmark_field: district_overall_rating, benchmark_format: percent}
+  - {field: overall_score, label: Overall score, format: number, benchmark_field: district_overall_score}
   - {field: student_achievement_rating, label: Student Achievement rating}
   - {field: school_progress_rating, label: School Progress rating}
   - {field: academic_growth_rating, label: Academic Growth rating}

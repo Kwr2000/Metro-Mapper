@@ -1,3 +1,4 @@
+import { benchmarkHtml, EMPTY_BENCHMARKS, type Benchmarks } from "./benchmarks";
 import { useEffect, useRef } from "react";
 import type { PolygonFeature } from "./map-polygons";
 import { buildPolygonIndex } from "./map-polygons";
@@ -15,8 +16,8 @@ export function CompareTray({ areas, ids, onRemove, onOpen }: { areas: PolygonFe
   </section>;
 }
 
-export function CompareTable({ registry, areas, ids, data, errors, onClose }: {
-  registry: Registry; areas: PolygonFeature[]; ids: string[]; data: LayerData; errors: Record<string, string>; onClose: () => void;
+export function CompareTable({ registry, areas, ids, data, errors, onClose, benchmarks = EMPTY_BENCHMARKS }: {
+  registry: Registry; benchmarks?: Benchmarks; areas: PolygonFeature[]; ids: string[]; data: LayerData; errors: Record<string, string>; onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -38,9 +39,9 @@ export function CompareTable({ registry, areas, ids, data, errors, onClose }: {
           <p className="small muted">Source: {layer.attribution} · {asOfLabel(layer)} · {freshnessLabel(layer)}</p>
           {layer.disclaimer && <p className="small muted">{layer.disclaimer}</p>}
           {loading && <p role="status">Loading…</p>}{layer.data_url && errors[layer.data_url] && <p role="alert">{errors[layer.data_url]}</p>}
-          <table className="comparison-table"><thead><tr><th scope="col">Measure</th>{names.map((name, i) => <th scope="col" key={ids[i]}>{name}</th>)}</tr></thead>
+          <table className="comparison-table"><thead><tr><th scope="col">Measure</th>{names.map((name, i) => <th scope="col" key={ids[i]}>{name}</th>)}<th scope="col">Compared with</th></tr></thead>
             <tbody>{layer.popup.map((field) => <tr key={field.field}><th scope="row">{field.label}</th>{ids.map((id, i) => <td key={id} data-area={names[i]}
-              dangerouslySetInnerHTML={{ __html: popupFieldHtml(field, byId.get(id) ?? null) }} />)}</tr>)}</tbody></table>
+              dangerouslySetInnerHTML={{ __html: popupFieldHtml(field, byId.get(id) ?? null) }} />)}<td data-area="Compared with" className="comparison-benchmarks" dangerouslySetInnerHTML={{ __html: benchmarkHtml(layer, field, benchmarks, true) }} /></tr>)}</tbody></table>
         </section>;
       })}
     </section>)}
@@ -49,13 +50,13 @@ export function CompareTable({ registry, areas, ids, data, errors, onClose }: {
       {!jurisdictions.length && <p>Load a jurisdiction layer to see its name and source link here.</p>}
       {jurisdictions.map((layer) => {
         const index = buildPolygonIndex(data[layer.data_url!]);
-        const fields = layer.popup.filter((f) => f.field === "name" || f.format === "link");
+        const fields = layer.popup.filter((f) => f.field === "name" || f.format === "link" || f.benchmark_field);
         return <section key={layer.id}><h4>{layer.title}</h4><p className="small muted">Source: {layer.attribution} · {asOfLabel(layer)} · {freshnessLabel(layer)}</p>
           {ids.map((id, i) => {
             const area = areas.find((a) => featureId(a) === id), point = area ? interiorPoint(area) : null;
             const found = point ? index.query(point).features : [];
             return <div key={id}><strong>{names[i]}</strong>{found.length ? found.map((feature, j) => <p key={j}>{fields.map((field) =>
-              <span className="district-value" key={field.field} dangerouslySetInnerHTML={{ __html: popupFieldHtml(field, feature.properties) }} />)}</p>) : <p>Not available</p>}</div>;
+              <span className="district-value" key={field.field} dangerouslySetInnerHTML={{ __html: `${popupFieldHtml(field, feature.properties)}${benchmarkHtml(layer, field, benchmarks, true)}` }} />)}</p>) : <p>Not available</p>}</div>;
           })}</section>;
       })}
     </section>

@@ -20,6 +20,8 @@ from .schemas import AreaFeature, LayerManifest
 
 
 def selected(layer: LayerManifest, r: AreaFeature) -> bool:
+    if r.dataset == "benchmark":
+        return False
     if layer.dataset is not None and r.dataset != layer.dataset:
         return False
     return all(r.properties.get(k) == v for k, v in layer.where.items())
@@ -65,6 +67,8 @@ def publish_for_adapter(adapter_id: str, entity: str, records: list[BaseModel],
                         mode: str = "fixture", source_as_of: date | None = None,
                         keep_stale_flag: bool = True) -> list[str]:
     """`keep_stale_flag=False` is for a fresh live run publishing its own new data."""
+    from . import benchmarks
+    benchmarks.validate(records)
     written: list[str] = []
     done: set[str] = set()
     for layer in load_layers():
@@ -87,6 +91,7 @@ def publish_for_adapter(adapter_id: str, entity: str, records: list[BaseModel],
             doc.update(stale)  # the last refresh was held; keep showing this data as stale
         out.write_text(json.dumps(doc, default=_json_default, separators=(",", ":")))
         written.append(str(out.relative_to(paths().root)))
+    benchmarks.publish(adapter_id, records, mode)
     return written
 
 

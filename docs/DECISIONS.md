@@ -3,6 +3,52 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-25 — Owner approvals: P1-11 benchmark budgets
+
+- **Owner approval:** raise `acs` from 30 to 40 calls per day for its four comparison
+  requests, approved in writing in the owner's P1-11 build request.
+- **Owner approval:** `fbi_national: {per_day: 4, min_interval_seconds: 2}`, refreshed annually,
+  approved in writing in the same request; gated "awaiting Claude's first live check".
+  The `dps_agency` budget remains unchanged.
+
+## 2026-10-25 — P1-11 implementation choices (Codex)
+
+- Benchmark validation/publication lives in `mm/benchmarks.py`. The adapter's safe benchmark
+  records are also written per producer under ignored `web/public/data/benchmarks/`, so an
+  independent fixture/live run replaces only its own comparisons. `benchmarks.json` merges
+  those publications in the specified geography order, with a global fixture flag; both
+  inline comparisons and the page banner say Test data whenever that flag is true. Existing
+  canonical data without benchmarks produces no comparisons until that adapter is refreshed.
+- Two optional popup-manifest fields, `benchmark_field` and `benchmark_format`, distinguish
+  campus/district school statistics and display the A-or-B share as a percentage. Those
+  benchmark field keys are `campus_overall_score/rating` and `district_overall_score/rating`;
+  the geography label says "Texas (A or B)" for the share. The local rating is unchanged.
+- A benchmark's optional `display` preserves a Census capped median as a range. A peer
+  average requires all twelve finite, uncapped values; otherwise it is omitted. Missing
+  peer populations or populations outside the chosen band warn without failing. The average
+  is not a pooled median and its note lists all twelve cities; MOE remains null.
+- FBI declares a benchmark target namespace (`benchmark_source = "dps_agency"`); a non-map,
+  annual manifest lets the existing scheduler include it after ungating. Non-published
+  metadata stays on Sources and is omitted from map toggles. Count each series
+  over all twelve months and divide by its own mean participating population, then sum V/P
+  rates for Part I. The first live check must verify P's arson definition before ungating;
+  no separate arson series is added. Credentials stay only inside transport; errors withhold
+  the URL and response, as in ACS.
+- APD area rates use raw totals over eligible (at least 100 residents) area populations;
+  density uses all APD-area counts and area. The comparison note identifies the combined raw
+  method; no other crime source or peer city is attached to APD. DPS also supplies its own
+  Austin PD jurisdiction rate, so the popup's Austin comparison uses the same DPS definition.
+- Elections accumulate statewide totals while streaming the same four CSV members, before
+  county filtering and before precinct suppression. Only native Party/Votes and TotalVR/TotalTO
+  aggregate tables survive in the compact statewide response; dropped columns still never
+  survive parsing. The existing three-county precinct checks remain unchanged.
+- Popup lines use the specified four geography priorities; sources with none of those (access)
+  show their available three-county comparison. Hover details and the comparison column show
+  every available geography, MOE, period, source and note. Jurisdiction comparisons remain at
+  the existing interior-point check; precinct votes are never joined to comparison block groups.
+  No ranking, sorting, colour mode or benchmark direction was added (P1-12 stays separate).
+
+
 ## 2026-10-25 — P1-07 access live check passed; ungated (Claude)
 
 - Run 40146625568: 4 calls, 11 min, peak memory 4.4 GB. OSM (Geofabrik 2026-10-23): walk graph

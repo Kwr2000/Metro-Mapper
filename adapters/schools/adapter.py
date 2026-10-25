@@ -15,6 +15,7 @@ import yaml
 from mm import config
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.schemas import AreaFeature
+from mm.benchmarks import record as benchmark
 from pyproj import Transformer
 from shapely import STRtree, transform
 from shapely.geometry import mapping, shape
@@ -388,7 +389,18 @@ class Schools(SourceAdapter):
             raise ValueError("schools: TEA rating-row coverage below 80%")
         counts = summary_counts(district_output, campus_output)
         print("schools: run note: " + "; ".join(f"{key}={value}" for key, value in counts.items()), file=sys.stderr)
-        return district_output + campus_output
+        benchmarks = []
+        for dataset, rows in (("campus", ratings), ("district", district_ratings)):
+            rated = [r.properties for r in rows.values() if r.properties["overall_rating"] in {"A", "B", "C", "D", "F"}]
+            scores = [r["overall_score"] for r in rated if r["overall_score"] is not None]
+            source = "TEA, Texas Open Data Portal"
+            if scores:
+                benchmarks.append(benchmark(dataset + "_overall_score", "texas", "Texas", sum(scores) / len(scores), YEAR,
+                    source, note=f"Mean of rated Texas {dataset} scores"))
+            if rated:
+                benchmarks.append(benchmark(dataset + "_overall_rating", "texas", "Texas (A or B)", sum(r["overall_rating"] in {"A", "B"} for r in rated) / len(rated),
+                    YEAR, source, note=f"Share of rated Texas {dataset + 'es' if dataset == 'campus' else 'districts'} rated A or B"))
+        return district_output + campus_output + benchmarks
 
 
 ADAPTER = Schools

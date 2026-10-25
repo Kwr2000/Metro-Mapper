@@ -311,7 +311,7 @@ def test_fetch_uses_only_planned_query_and_gzip(school_context, monkeypatch):
 
 def test_layer_manifests_and_fixture_labeling(school_context):
     run = runner.run("schools", now=NOW)
-    assert run.status == "success" and run.calls_made == 0 and run.planned_calls == 5 and run.rows_out == 520
+    assert run.status == "success" and run.calls_made == 0 and run.planned_calls == 5 and run.rows_out == 524
     layers = {layer.id: layer for layer in registry.compile_registry().layers if layer.source == "schools"}
     assert set(layers) == {"school_districts", "school_campuses", "school_district_ratings"}
     for layer in layers.values():

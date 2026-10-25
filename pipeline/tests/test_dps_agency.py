@@ -60,9 +60,9 @@ def test_year_rule_utc(now, year):
     assert dps.report_year(now) == year
 
 
-def test_plan_exact_five_requests_and_compatibility_agent(context):
+def test_plan_exact_six_requests_and_compatibility_agent(context):
     ad, raws = inputs(context)
-    assert list(raws) == ["dps_615", "dps_613", "dps_652", "places", "block_groups"]
+    assert list(raws) == ["dps_615", "dps_613", "dps_652", "dps_633", "places", "block_groups"]
     assert ad.user_agent == "Mozilla/5.0 (compatible; metro-mapper/0.1 (+https://github.com/Kwr2000/metro-mapper))"
     assert ad.cadence == "annual" and not ad.recordable and not ad.retain_raw
     assert ad.source_as_of([]) == date(2025, 12, 31)
@@ -152,7 +152,7 @@ def test_http_errors_fail_closed(context, monkeypatch):
 
 def test_native_headers_pairing_sums_and_change(context):
     ad, raws = inputs(context)
-    agencies = {r.feature_id: r.properties for raw in list(raws.values())[:3] for r in ad.normalize(raw)}
+    agencies = {r.feature_id: r.properties for raw in list(raws.values())[:3] for r in ad.normalize(raw) if r.dataset == "agency_input"}
     assert len(agencies) == 29  # 28 mapped plus one zero-population university, elsewhere ignored.
     a = agencies["TX2270100"]
     assert (a["violent"], a["property"], a["part1"]) == (10, 15, 25)
@@ -300,10 +300,10 @@ def test_fixture_runner_publish_and_mocked_live_summary(context, monkeypatch, ca
     monkeypatch.setattr(cls, "fetch", lambda self, req, ctx: raws[req.key])
     monkeypatch.setattr(adapter, "load", lambda _: cls())
     live = runner.run("dps_agency", "live", now=NOW)
-    assert live.status == "success" and live.calls_made == 5, live.errors
+    assert live.status == "success" and live.calls_made == 6, live.errors
     assert not list((context.adapter_dir.parents[1] / "data/raw").rglob("*"))
     records = canonical.read("area_feature", "dps_agency")
-    assert {r.dataset for r in records} == {"block_group", "run_summary"}
+    assert {r.dataset for r in records} == {"block_group", "run_summary", "benchmark"}
     spec = importlib.util.spec_from_file_location("dps_live_summary", ROOT / "tools/live_summary.py")
     summary = importlib.util.module_from_spec(spec); spec.loader.exec_module(summary)
     summary.main("dps_agency")

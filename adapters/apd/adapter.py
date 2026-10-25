@@ -14,6 +14,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.schemas import AreaFeature
+from mm.benchmarks import record as benchmark
 from pyproj import Transformer
 from shapely import make_valid, transform, union_all
 from shapely.geometry import MultiPolygon, mapping, shape
@@ -262,6 +263,20 @@ class APDReports(SourceAdapter):
         # Count-only audit record preserves totals for the live summary without a core hook.
         output.append(AreaFeature(dataset="run_summary", feature_id=str(self.as_of), geometry=EMPTY,
                                   properties=summary, source_as_of=self.as_of))
+        inside = [r for r in output if r.dataset == "block_group" and r.feature_id in inside_ids]
+        rate_rows = [r for r in inside if r.properties["population_2020"] >= 100]
+        population = sum(r.properties["population_2020"] for r in rate_rows)
+        area = sum(r.properties["area_sq_mi"] for r in inside)
+        for field, keys in (("rate_part1", ("violent", "property")), ("rate_violent", ("violent",))):
+            if population:
+                value = sum(sum(r.properties[k] for k in keys) for r in rate_rows) / population * 1000
+                output.append(benchmark(field, "austin_pd_area", "Austin PD area (all areas combined)", round(value, 1),
+                    f"{self.start} to {self.as_of}", "City of Austin, APD Crime Reports",
+                    note="Raw combined rate; 2020 population, areas with at least 100 residents", as_of=self.as_of))
+        if area:
+            output.append(benchmark("density_part1", "austin_pd_area", "Austin PD area (all areas combined)",
+                round(sum(r.properties["violent"] + r.properties["property"] for r in inside) / area),
+                f"{self.start} to {self.as_of}", "City of Austin, APD Crime Reports", as_of=self.as_of))
         return output
 
     def source_as_of(self, raws):

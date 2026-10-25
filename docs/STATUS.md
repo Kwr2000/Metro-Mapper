@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (Phase 2 approved; P2-01 spec)._
+_Last updated 2026-10-25 (P1-11; Phase 2 approved, P2-01 spec)._
 
 ## Phase
 
@@ -114,12 +114,20 @@ are decided (`DECISIONS.md`).
 - **Phase 1 closing review** (Claude, 2026-10-25): every layer checked on real data at desktop
   and phone sizes; layout fixes; methodology page complete.
 
+- **P1-11 Part 1** (Codex): validated benchmark publisher and fixture labeling; ACS
+  geographies/12-city averages, APD/DPS/FBI, statewide schools/elections and population-weighted
+  access comparisons. Popup and comparison-table details include sources, periods and MOEs;
+  no rankings or colour mode. Approved budgets and FBI workflow secret/gate recorded.
+  `make test` passes (705 pipeline, 41 web tests and builds); local e2e passes at 1440×900
+  and 390×844. Synthetic data only. Awaiting Claude's live benchmark/probe and FBI checks.
+
 ## Next
 
-1. Codex: P1-11 (comparisons) in progress; Claude reviews the PR and runs the live checks.
+1. Claude: review P1-11 PR #82 and run live benchmark checks. FBI key/probe are ready
+   (run 40226938290); verify P's arson definition before ungating the adapter.
 2. Owner: after P1-11's PR, paste the P2-01 prompt (parcel base) into Codex.
 3. After P1-11 is live: Claude specs P1-12 (colour by comparison); P2-02 (TCAD) spec next.
-3. Check the 2026-11-03 refresh report (expect nothing due).
+4. Check the 2026-11-03 refresh report (expect nothing due).
 
 ## Open issues
 

@@ -18,6 +18,7 @@ from zipfile import ZipFile
 
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.schemas import AreaFeature
+from mm.benchmarks import record as benchmark
 from pyproj import Transformer
 from shapely import make_valid, union_all, transform
 from shapely.geometry import MultiPolygon, mapping, shape
@@ -152,7 +153,7 @@ def agency_name(name):
                     for w in name.split())
 
 
-def table_rows(body, year):
+def table_rows(body, year, include_all=False):
     if (not isinstance(body, dict) or not isinstance(body.get("sheets"), dict) or not body["sheets"]):
         raise ValueError("expected XLSX sheets")
     table = next(iter(body["sheets"].values()))
@@ -182,13 +183,13 @@ def table_rows(body, year):
             if not re.fullmatch(r"TX[0-9A-Z]{7}", ori) or not row["agency"].strip():
                 raise ValueError("invalid DPS agency row")
             current = {"ori": ori, "agency": agency_name(row["agency"].strip()),
-                       "agency_population": integer(row["population"]) if ori.startswith(PREFIXES) else 0, "years": {}}
+                       "agency_population": integer(row["population"]) if include_all or ori.startswith(PREFIXES) else 0, "years": {}}
             agencies.append(current)
         else:
             match = re.fullmatch(r"Number of Offenses\s*-\s*([0-9]{4})", row["agency"].strip())
             if current is None or match is None or row["population"].strip():
                 raise ValueError("unpaired DPS year row")
-            if not current["ori"].startswith(PREFIXES):
+            if not include_all and not current["ori"].startswith(PREFIXES):
                 continue
             y = int(match[1])
             if y not in {year - 1, year} or y in current["years"]:
@@ -197,7 +198,7 @@ def table_rows(body, year):
             current["years"][y] = counts
     result = []
     for agency in agencies:
-        if not agency["ori"].startswith(PREFIXES):
+        if not include_all and not agency["ori"].startswith(PREFIXES):
             continue
         if year not in agency["years"]:
             raise ValueError("missing DPS current-year row")
@@ -215,6 +216,34 @@ def table_rows(body, year):
             "safety_note": SMALL if 0 < population < 5000 else None,
             "reported_total": current["total"]})
     return result
+
+
+def texas_rates(body, year):
+    try:
+        table = next(iter(body["sheets"].values()))
+        header = [header_key(v) for v in table[1]]
+        if len(header) != 4 or set(header) != {"offense", str(year - 1), str(year), "%change"}:
+            raise ValueError()
+        index = header.index(str(year))
+        names = ("Murder and Nonnegligent Manslaughter", "Rape", "Robbery", "Aggravated Assault",
+                 "Burglary/Breaking and Entering", "Larceny", "Motor Vehicle Theft")
+        found = {}
+        for row in table[2:]:
+            if not row or row[0].strip() not in names:
+                continue
+            name = row[0].strip()
+            if name in found:
+                raise ValueError()
+            value = float(row[index].replace(",", ""))
+            if not math.isfinite(value) or value < 0:
+                raise ValueError()
+            found[name] = value
+        if found.keys() != set(names):
+            raise ValueError()
+        return {"rate_part1": sum(found.values()) / 100,
+                "rate_violent": sum(found[k] for k in names[:4]) / 100}
+    except (KeyError, IndexError, TypeError, StopIteration, ValueError):
+        raise ValueError("invalid DPS 633 headers/offense rows") from None
 
 
 def projected(doc, *, repair=False):
@@ -261,7 +290,7 @@ class DPSAgency(SourceAdapter):
         self.retrieved = ctx.now.astimezone(timezone.utc).date().isoformat()
         return [Request(f"dps_{report}", {"url": DPS, "query": {
             "offenses": "", "startdate": f"Jan - {self.year}", "enddate": f"Dec - {self.year}",
-            "reportId": report}}) for report in (615, 613, 652)] + [
+            "reportId": report}}) for report in (615, 613, 652, 633)] + [
             Request("places", {"url": TIGER + "/TIGERweb/tigerWMS_Current/MapServer/28/query", "query": {
                 "where": "GEOID IN (" + ",".join(f"'{g}'" for g, _ in CITIES.values()) + ")",
                 "outFields": "GEOID,BASENAME", "outSR": 4326, "f": "geojson", "returnGeometry": "true"}}),
@@ -292,6 +321,20 @@ class DPSAgency(SourceAdapter):
         if raw.status != 200:
             raise ValueError(f"dps_agency: HTTP {raw.status}")
         key, body = raw.request.key, raw.body
+        if key == "dps_633":
+            for field, value in texas_rates(body, self.year).items():
+                yield benchmark(field, "texas", "Texas", round(value, 1), str(self.year), "Texas DPS, UCR",
+                                note="Reported offenses; rate per 1,000", as_of=self.as_of)
+            return
+        if key == "dps_615":
+            statewide = table_rows(body, self.year, include_all=True)
+            population = sum(r["agency_population"] for r in statewide)
+            if not statewide or population <= 0:
+                raise ValueError("missing DPS 615 combined population")
+            for field, count in (("rate_part1", "part1"), ("rate_violent", "violent")):
+                yield benchmark(field, "texas_cities_100k", "Texas cities over 100,000 (combined)",
+                    round(sum(r[count] for r in statewide) / population * 1000, 1), str(self.year), "Texas DPS, UCR",
+                    note="Combined agency counts / combined jurisdictional population", as_of=self.as_of)
         if key in {"dps_615", "dps_613", "dps_652"}:
             for row in table_rows(body, self.year):
                 yield AreaFeature(dataset="agency_input", feature_id=row["ori"], geometry=EMPTY, properties=row)
@@ -373,7 +416,10 @@ class DPSAgency(SourceAdapter):
         print("dps_agency: run note: " + json.dumps(summary, sort_keys=True), file=sys.stderr)
         output.append(AreaFeature(dataset="run_summary", feature_id=str(self.as_of), geometry=EMPTY,
                                   properties=summary, source_as_of=self.as_of))
-        return output
+        for field in ("rate_part1", "rate_violent"):
+            output.append(benchmark(field, "austin_city", "Austin PD", agencies["TX2270100"].properties[field],
+                str(self.year), "Texas DPS, UCR", note="Agency-wide jurisdiction; per 1,000", as_of=self.as_of))
+        return output + [r for r in records if r.dataset == "benchmark"]
 
     def source_as_of(self, raws):
         return self.as_of
