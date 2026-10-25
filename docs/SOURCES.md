@@ -34,6 +34,7 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 | Census TIGERweb 2020 populated blocks | Access population weights and interior points | Census block | T W H | Fixed (2020) | Yes | Yes (public domain) |
 | Census ACS 5-year 2020–2024 | Demographics with margins of error | Block group / tract | T W H | Yearly (Dec) | Yes, with key (503s on first runs were transient) | Yes (public domain) |
 | APD Crime Reports (`fdj4-gpfu`) | Reported incidents by block group | Block group | Austin PD area only | Weekly | Yes (Socrata API) | **Yes** (Public Domain) |
+| Texas Legislative Council, Capitol Data Portal | Presidential returns, registered voters and ballots | 2024 precinct | T W H | Yearly | Yes (two ZIPs, probe 2026-10-24/25) | Yes, conditions (CC BY) |
 | Texas DPS, Crime in Texas 2025 (UCR portal) | Agency-level offense counts | Agency | T W H | Yearly | Yes (XLSX from txucr.nibrs.com; needs a "compatible" user agent) | Yes, no license stated (state statistics, cited) |
 | TEA ratings on data.texas.gov (`nui6-x374`, 2024–25) | Ratings, School Progress / Academic Growth | Campus | T W H | Yearly (posted ~June) | Yes (Socrata API) | Yes, no license stated |
 | TEA 2026 campus CSV (tea.texas.gov broker) | — | Campus | T W H | Yearly | Yes | No (TEA site terms) |
@@ -230,6 +231,37 @@ published in 2027.
   - City limits for agency areas: TIGERweb **Current** layer 28 "Incorporated Places" (public
     domain), not 2020, since cities have annexed since 2020.
   - FBI Crime Data Explorer remains an alternative (API key needed).
+
+## Elections
+
+Checked by Claude on 2026-10-25 for `docs/tasks/P1-10-elections.md` (publisher and probe;
+Codex builds only with synthetic fixtures). Publisher: **Texas Legislative Council, Capitol
+Data Portal**; license **Creative Commons Attribution (CC BY)**. Credit "Texas Legislative
+Council, Capitol Data Portal". Precinct context only; no score/ranking/model use.
+
+- **2024 general VTD election data**, 82.1 MB ZIP, Last-Modified 2025-02-25:
+  <https://data.capitol.texas.gov/dataset/35b16aee-0bb0-4866-b1ec-859f1f044241/resource/e1cd6332-6a7a-4c78-ad2a-852268f6c7a2/download/2024-general-vtds-election-data.zip>.
+  Read only `2024_General_Election_Returns.csv`, `2020_General_Election_Returns.csv`, and
+  each year's `General_Election_VRTO.csv`. Returns native fields: `County,FIPS,VTD,cntyvtd,
+  vtdkeyvalue,Office,Name,Party,Incumbent,Votes`; use only `Office=President` in counties
+  453/491/209. Parties D/R/L/G/W; L/G/W count as Other. VRTO retains only `vtdkey,TotalVR,
+  TotalTO`; use FIPS transiently to filter counties. **Drop `SpanishSurnamePercent` and
+  `TotalPop` immediately**, before keeping response bodies or records; never publish them.
+  All historical results were re-tabulated by TLC to 2024 general precincts, not reconstructed
+  by Metro Mapper. Texas has no party registration; TotalVR includes all registered voters.
+- **VTDs 2024 primary & general**, 46.6 MB ZIP, Last-Modified 2025-01-29:
+  <https://data.capitol.texas.gov/dataset/4d8298d0-d176-4c19-b174-42837027b73e/resource/906f47e4-4e39-4156-b1bd-4969be0b2780/download/vtds_24pg.zip>.
+  Read only `VTDs_24PG.shp/.shx/.dbf/.prj`, retaining shapes for counties 453/491/209 and
+  native fields `CNTY,VTD,VTDKEY,CNTYVTD`. VTDKEY joins vtdkeyvalue/vtdkey. Other DBF fields
+  COLOR/CNTYKEY/Shape_area/Shape_len are unused. Parse NAD83 Texas State Mapping System
+  Lambert Conformal Conic from `.prj`, reproject to WGS84, simplify for display at 5 m.
+- Expected: 553 precincts (Travis 300, Williamson 166, Hays 87); 2024 D 612,262, R 384,529,
+  others about 22,500; registered 1,564,474, ballots 1,024,839. About 27 precincts have under
+  50 presidential votes in 2024 (16 zero); suppress their vote values, not registration or
+  turnout. Thirteen have zero registered voters. Re-tabulation can produce ballots above
+  registration (one 2020 precinct); suppress that turnout and explain it.
+- Downloads are temporary only and deleted before fetch returns. Canonical results stay at
+  precinct grain; never apportioned to block groups, tracts or addresses.
 
 ## Access
 
