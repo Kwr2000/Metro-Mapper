@@ -387,6 +387,39 @@ def _():
             f"row gaps {dict(gaps.most_common(4))}")
 
 
+@check("tcad_estimate", "TCAD PROP.TXT: kept-count estimate from the first part of the file (codes and counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    m = next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == "PROP.TXT")
+    lh = range_get(final, m.offset, m.offset + 29)
+    nl, el = struct.unpack("<HH", lh[26:30])
+    start = m.offset + 30 + nl + el
+    data = range_get(final, start, start + 40_000_000 - 1)
+    raw = zlib.decompressobj(-15).decompress(data)
+    lines = [l.removesuffix(b"\r") for l in raw.split(b"\n")[:-1]]
+    cell = lambda l, a, b: l[a - 1:b].decode("latin-1").strip()
+    kept_codes = {"A1", "A4", "A2", "B2", "B3", "B4", "E1", "E2", "O1", "A3", "A5", "A9"}
+    types, kept, by_state, ids = Counter(), Counter(), Counter(), set()
+    for l in lines:
+        pid = cell(l, 1, 12)
+        if pid in ids:
+            continue
+        ids.add(pid)
+        t = cell(l, 13, 17); types[t] += 1
+        st = cell(l, 2732, 2741) or cell(l, 2742, 2751)
+        if t in ("R", "M") and st in kept_codes:
+            kept[st] += 1
+        elif t in ("R", "M"):
+            by_state[st] += 1
+    n, k = len(ids), sum(kept.values())
+    ratio = 453_779 / max(1, sum(v for t, v in types.items() if t in ("R", "M")))
+    return (f"first {n:,} distinct IDs (of ~493,000); prop types {dict(types.most_common(6))}; kept so far {k:,} ({k / n:.1%} of rows); "
+            f"kept by state {dict(kept.most_common(12))}; skipped R/M states {dict(by_state.most_common(8))}; "
+            f"naive extrapolation of kept to the whole file: {int(k / n * 492_900):,}")
+
+
 @check("wcad_socrata_parcels", "WCAD open data: parcel polygons (count + 1 geometry)")
 def _():
     n = socrata("data.wcad.org", "an3x-cnmw", "SELECT count(*) AS n")[0]["n"]
