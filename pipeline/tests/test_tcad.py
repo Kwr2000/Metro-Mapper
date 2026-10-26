@@ -286,6 +286,15 @@ def test_missing_or_duplicate_required_member_fails(kind):
         tcad.parse_export(BytesIO(tiny_zip(**{'omit' if kind=='missing' else 'duplicate':'IMP_DET.TXT'})))
 
 
+def test_blank_improvement_type_is_a_dwelling_not_a_failure():
+    # Real shape: one 2026 IMP_INFO row has a blank imprv_type_cd (found in the first live check).
+    source = source_rows()
+    source['IMP_INFO.TXT'].append(info(123,7,''))
+    source['IMP_DET.TXT'].append(segment(123,7,'1ST',400,'1980'))
+    p = next(r for r in tcad.parse_export(BytesIO(tiny_zip(source)))['properties'] if r['prop_id'] == '123')
+    assert p['living_area'] == 2750 and p['dwelling_count'] == 3 and p['adu_area'] == 550
+
+
 def test_duplicate_properties_improvements_and_missing_improvement_fail():
     for member in ['PROP.TXT','IMP_INFO.TXT']:
         source=source_rows();source[member].append(copy.deepcopy(source[member][0]))
@@ -375,6 +384,26 @@ def test_fetch_error_cleanup_and_sanitized_errors(context,monkeypatch,failure):
     with pytest.raises(ValueError):ad.follow_up(raw,context)
     with pytest.raises(ValueError):list(ad.normalize(raw))
     assert not any(value in json.dumps(raw.body) for value in CANARIES)
+
+
+def test_failed_check_names_the_adapter_message_but_never_source_text(context,monkeypatch):
+    ad,req,_=planned(context)
+    class Response(BytesIO):
+        status=200
+        headers={}
+    def run(exc_or_data):
+        if isinstance(exc_or_data,bytes):
+            monkeypatch.setattr(tcad.urllib.request,'urlopen',lambda *a,**k:Response(exc_or_data))
+        else:
+            monkeypatch.setattr(tcad.urllib.request,'urlopen',lambda *a,**k:(_ for _ in ()).throw(exc_or_data))
+        raw=ad.fetch(req,context)
+        with pytest.raises(ValueError) as error: ad.follow_up(raw,context)
+        return str(error.value)
+    assert 'missing or duplicate TCAD required ZIP member' in run(tiny_zip(omit='PROP.TXT'))
+    for hostile in [ValueError('invalid literal for int() with base 10: '+repr(CANARIES[0])),
+                    ValueError('TCAD '+CANARIES[1]), OSError(CANARIES[2]), ValueError('SMITH JOHN 123 MAIN ST')]:
+        message=run(hostile)
+        assert not any(c in message for c in CANARIES) and 'SMITH' not in message and "'" not in message
 
 
 def test_fixture_run_and_regenerated_fixtures(repo,monkeypatch):
