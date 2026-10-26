@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "body": {
+    "parcels": [
+      [
+        "R070302",
+        "TEST-GEO-1-0",
+        1.111,
+        -97.69,
+        30.31
+      ],
+      [
+        "R000123",
+        "TEST-GEO-1-1",
+        2.1109999999999998,
+        -97.68,
+        30.31
+      ]
+    ],
+    "skipped": {
+      "records_read": 5,
+      "blank_ids": 1,
+      "zero_ids": 1,
+      "repeated_ids_merged": 1,
+      "repeated_records_merged": 1,
+      "geo_id_conflicts": 0
+    },
+    "date_acq": "2026-07-01",
+    "tax_year": "2026"
+  }
+}

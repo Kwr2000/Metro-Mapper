@@ -140,20 +140,30 @@ published in 2027.
 
 ## Parcel shapes
 
-- **TxGIO StratMap Land Parcels 2026** — DataHub collection `1d33dafb-…`, acquisition date
-  2026-09-25, **License CC0-1.0**. Per-county zips on the public S3 bucket
-  `tnris-data-warehouse/LCD/collection/stratmap-2026-land-parcels/items/shp/`: Travis 104.1 MB
-  (≈ 386,752 parcels), Williamson 65.7 MB (≈ 287,194), Hays 31.7 MB (≈ 121,110), all dated
-  2026-10-01. The fields include `OWNER_NAME` and `MAIL_*` (strip), plus `MKT_VALUE`, `YEAR_BUILT`,
-  `DATE_ACQ` and `TAX_YEAR`. The metadata suggests the underlying CAD deliveries differ by county
-  (Travis 2026-02; Williamson 2025-07; Hays 2025). Check `DATE_ACQ`. TxGIO says the data is "AS-IS" and
-  meant as a basemap, "not for detailed analysis".
-  **Re-checked 2026-10-25 (browser):** zips still dated 2026-10-01; `.prj` WGS84; `DATE_ACQ`
-  2026-07-01 for Travis (386,752 records) and Williamson (287,194), 2026-02-01 for Hays
-  (121,110). Williamson `PROP_ID`s look like `R070302`; Hays has 257 blank and 292 "0" IDs;
-  repeated IDs are multi-polygon parcels. Phase 2 reads only `PROP_ID`, `GEO_ID`, `GIS_AREA(_U)`,
-  `FIPS`, `DATE_ACQ`, `TAX_YEAR` and geometry; owner, mailing and legal-description fields are
-  never read.
+- **TxGIO StratMap Land Parcels 2026** — **License CC0-1.0**. Credit "Texas Geographic
+  Information Office (TxGIO), StratMap Land Parcels 2026". Checked by Claude in the browser
+  2026-10-25 for `docs/tasks/P2-01-parcel-base.md`; Codex uses synthetic fixtures only.
+  Public S3 ZIP pattern:
+  `https://tnris-data-warehouse.s3.us-east-1.amazonaws.com/LCD/collection/stratmap-2026-land-parcels/items/shp/stratmap-2026-land-parcels_<FIPS>_shp.zip`.
+
+  | County / FIPS | ZIP bytes | Last-Modified | Source records | DATE_ACQ | Expected kept IDs |
+  |---|---:|---|---:|---|---:|
+  | Travis / 48453 | 104,121,915 | 2026-10-01 | 386,752 | 2026-07-01 | 386,240 |
+  | Williamson / 48491 | 65,657,083 | 2026-10-01 | 287,194 | 2026-07-01 | 286,776 |
+  | Hays / 48209 | 31,731,719 | 2026-10-01 | 121,110 | 2026-02-01 | 120,445 |
+
+  Read only the matching `stratmap-2026-land-parcels-<county>_<FIPS>.shp/.shx/.dbf/.prj`;
+  require WGS84 (`GCS_WGS_1984`) from the PRJ. Only DBF fields `PROP_ID`, `GEO_ID`,
+  `GIS_AREA`, `GIS_AREA_U` (Acres), `FIPS`, `DATE_ACQ`, `TAX_YEAR` are unpacked/decoded.
+  Never parse/retain `OWNER_NAME`, `NAME_CARE`, `MAIL_*`, `LEGAL_DESC` or any other
+  attribute; even legal descriptions can contain names. The ZIP and extracted DBF are
+  temporary, deleted before fetch returns; raw retention and recording are disabled.
+  Williamson IDs include `R070302`; blanks and "0" are skipped, repeated IDs unioned.
+  Counts observed by Claude: Travis 407 "0" records and 46 repeated IDs; Williamson 132
+  blank records and 284 repeated IDs; Hays 257 blank/292 "0" records and 100 other repeated
+  IDs. Only an interior point, safe IDs, summed acreage and Census assignment are stored in
+  this task, with no map layer. TxGIO says the source is "AS-IS", a basemap, "not for detailed
+  analysis". The annual source budget is owner-approved; see DECISIONS.
 - **Travis County GIS — TCAD parcels** (`gis.traviscountytx.gov/server1/rest/services/
   Boundaries_and_Jurisdictions/TCAD_public/MapServer/0`): 386,682 parcels, updated monthly
   by Travis County TNR from TCAD data, with no owner fields. Copyright text "Travis Central Appraisal

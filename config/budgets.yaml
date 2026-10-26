@@ -11,4 +11,5 @@ adapters:
   access: {per_day: 6, min_interval_seconds: 5, max_minutes: 25}
   dps_agency: {per_day: 10, min_interval_seconds: 2}
   elections: {per_day: 4, min_interval_seconds: 5, max_minutes: 15}
+  parcels: {per_day: 6, min_interval_seconds: 5, max_minutes: 30}
   fbi_national: {per_day: 4, min_interval_seconds: 2}

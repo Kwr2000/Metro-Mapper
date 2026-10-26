@@ -7,7 +7,7 @@ _Last updated 2026-10-25 (P1-11; Phase 2 approved, P2-01 spec)._
 
 ## Phase
 
-**Phase 2 — approved 2026-10-25, starting** (P2-01 spec ready). Phase 1 is complete.
+**Phase 2 — approved 2026-10-25, in progress** (P2-01 built on fixtures). Phase 1 is complete.
 
 **Phase 1 — done 2026-10-25** (approved 2026-10-23). Phase 0 is done. All owner questions (Q1–Q3)
 are decided (`DECISIONS.md`).
@@ -120,6 +120,15 @@ are decided (`DECISIONS.md`).
   no rankings or colour mode. Approved budgets and FBI workflow secret/gate recorded.
   `make test` passes (705 pipeline, 41 web tests and builds); local e2e passes at 1440×900
   and 390×844. Synthetic data only. Awaiting Claude's live benchmark/probe and FBI checks.
+
+
+- **P2-01** (Codex): canonical-only StratMap parcel base for three counties, safe DBF
+  field selection, streamed temporary ZIPs, repeated-ID unions/interior points, Census
+  assignments and count-only audit. Approved budget and first-live-check gate added; no
+  core/web changes or layer. `make test` passes (723 pipeline, 35 web tests and builds).
+  Synthetic fixtures only. Awaiting Claude's live kept/skip/coverage counts, file size,
+  runtime/memory and stored-field privacy check.
+
 
 ## Next
 
