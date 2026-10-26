@@ -566,6 +566,30 @@ def _():
     return "; ".join(out)
 
 
+@check("fbi_arson", "FBI Crime Data API: does the national property series (P) include arson?")
+def _():
+    key = os.environ.get("FBI_API_KEY", "")
+    if not key:
+        return "FBI_API_KEY not set"
+    totals, out = {}, []
+    for code in ("P", "BUR", "LAR", "MVT", "ARS"):
+        url = (f"https://api.usa.gov/crime/fbi/cde/summarized/national/{code}"
+               f"?from=01-2025&to=12-2025&API_KEY={key}")
+        status, _, body, _ = _req(url)
+        if status != 200:
+            out.append(f"{code}: HTTP {status}")  # never print the body: it could echo the key
+            continue
+        j = json.loads(body)
+        totals[code] = sum((j.get("offenses", {}).get("actuals", {}).get("United States Offenses") or {}).values())
+        out.append(f"{code}: {totals[code]:,}")
+        time.sleep(2)
+    if {"P", "BUR", "LAR", "MVT"} <= totals.keys():
+        three = totals["BUR"] + totals["LAR"] + totals["MVT"]
+        out.append(f"BUR+LAR+MVT = {three:,}; P - that = {totals['P'] - three:,}"
+                   + (f"; ARS = {totals['ARS']:,}" if "ARS" in totals else ""))
+    return "; ".join(out)
+
+
 # ---------------------------------------------------------------- main
 
 def main() -> int:
