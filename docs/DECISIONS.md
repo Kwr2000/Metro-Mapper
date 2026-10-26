@@ -3,6 +3,37 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-25 — P2-02 TCAD implementation choices (Codex)
+
+- The Phase 2 owner approval already covers TCAD 2/day and annual refresh. Add exactly
+  `{per_day: 2, max_minutes: 45}`, keep first live use gated, and add no layer or core/web code.
+  Source-as-of is 2026-01-01 (the value date); certified date is separately 2026-07-18.
+- Decode only the allowlisted fixed-width cells as Latin-1, never a whole line. Also enforce
+  the verified ABS_SUBD/TOTALS record lengths (50/2,491), accept CRLF/LF/final unterminated
+  records, and reject duplicate property/improvement keys, conflicting subdivision names,
+  missing improvement links and mixed improvement years rather than guess.
+- Floor count and year selection use the seven floor codes; FBSMT/RSBLW contribute living
+  area only. Ties use first source order. A positive living sum determines a dwelling and
+  coverage; no area yields null. An ADU improvement sets has_adu even without a measured
+  area. Missing monetary components make the sum null, never an invented zero.
+- The 97% living-area check uses the combined single-family/condo cohort. HVAC agreement
+  compares the stored sums within 2% of living area. Only living_area is rounded to whole
+  square feet as specified; ADU/HVAC sums retain six-decimal source precision. A zero comparison
+  denominator is reported as null (never 100%); the count denominators are included.
+- Subdivision names follow P1-02c title/small-word casing but preserve the source's plat
+  qualifiers, since these are property facts. Situs display joins the supplied address
+  pieces in number/prefix/street/suffix/unit/city/ZIP order, omitting blanks.
+- Only live mode consults the optional local P2-01 canonical file (streamed, Travis only,
+  numeric ID padding normalized). Fixture mode never consults real parcel data. Only the
+  production kept-volume check is bypassed for tiny fixtures; all other quality checks apply.
+- `partial_owner` is the explicitly required property-share boolean, and its audit count is
+  also required. These two names contain “owner”; the live privacy scan should allow these
+  exact safe fields and find no owner identities, mail or exemption fields/values. No change
+  is made to the core publication privacy guard; this task is canonical-only for P2-05.
+- Run-summary runtime/memory stop at finalization, as in P2-01; Claude must also inspect
+  complete job runtime, memory and serialization size. Annual cadence is declared by the
+  adapter; automated refresh remains manifest-driven pending later publication work.
+
 ## 2026-10-26 — Owner approvals: P1-12 and P2-02 scope
 
 - **Owner approval:** P1-12 colours demographic (ACS) and election layers by comparison too,
