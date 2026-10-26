@@ -178,3 +178,12 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
   .comparison-table td { min-width: 0; }
   .comparison-table td::before { content: attr(data-area); display: block; font-weight: 600; padding-bottom: 5px; }
 }
+
+.benchmark-line { display: block; margin-top: .3rem; color: #4b5563; font-weight: normal; }
+.benchmark-details > span { display: block; margin-bottom: .35rem; font-weight: normal; }
+.comparison-benchmarks { min-width: 14rem; }
+
+@media (max-width: 760px) {
+  .comparison-table .comparison-benchmarks { grid-column: 1 / -1; min-width: 0; }
+  .comparison-table .comparison-benchmarks:empty { display: none; }
+}

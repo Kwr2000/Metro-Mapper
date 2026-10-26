@@ -345,7 +345,7 @@ def test_transfer_limit_and_runtime_fail_closed(context, monkeypatch):
 def test_manifests_share_one_bundle_and_fixture_labels(context):
     run = runner.run("access", now=NOW)
     assert run.status == "success", run.errors
-    assert run.calls_made == 0 and run.planned_calls == 4 and run.rows_out == 5
+    assert run.calls_made == 0 and run.planned_calls == 4 and run.rows_out == 14
     layers = [l for l in registry.compile_registry().layers if l.source == "access"]
     assert len(layers) == 9 and len({l.data_url for l in layers}) == 1
     assert {l.data_bundle for l in layers} == {"access_block_group"}
@@ -385,7 +385,7 @@ def test_mocked_live_storage_and_count_only_summary(context, monkeypatch, capsys
     run = runner.run("access", mode="live", now=NOW)
     assert run.status == "success" and run.calls_made == 4, run.errors
     records = canonical.read("area_feature", "access")
-    assert {r.dataset for r in records} == {"block_group", "run_summary"}
+    assert {r.dataset for r in records} == {"block_group", "run_summary", "benchmark"}
     assert all(not privacy.personal_keys(r.properties) for r in records)
     assert not (context.adapter_dir.parents[1] / "data/raw").exists()
     spec = importlib.util.spec_from_file_location("access_live_summary", ROOT / "tools/live_summary.py")

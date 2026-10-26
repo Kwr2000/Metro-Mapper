@@ -9,6 +9,7 @@ import { normalizeLayerVariants, switchLayerVariant } from "./layer-variants";
 import { asOfLabel, initialVisible, showsTestData, type Registry } from "./registry";
 import { readLocal, readShortlist, storageAvailable, writeLocal, type SavedArea } from "./store";
 import { encodeView, readView, registryView, type Camera, type ViewState } from "./view-state";
+import { EMPTY_BENCHMARKS, type Benchmarks } from "./benchmarks";
 import { useLayerData } from "./use-layer-data";
 
 function initialView(registry: Registry): ViewState {
@@ -23,7 +24,7 @@ function initialView(registry: Registry): ViewState {
   return registryView(readView(encodeView(raw))!, registry);
 }
 
-export function Workspace({ registry, active }: { registry: Registry; active: boolean }) {
+export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: { registry: Registry; active: boolean; benchmarks?: Benchmarks }) {
   const [view, setView] = useState<ViewState>(() => initialView(registry));
   const visible = useMemo(() => normalizeLayerVariants(registry, new Set(view.visible)), [registry, view.visible]);
   const [pane, setPane] = useState("Layers"), [expanded, setExpanded] = useState(true);
@@ -108,9 +109,9 @@ export function Workspace({ registry, active }: { registry: Registry; active: bo
         </div>
       </aside>
       <div className="map-wrap">
-        {showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)])) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
+        {(benchmarks.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
         {base?.data_url && errors[base.data_url] && <p className="map-error" role="alert">{errors[base.data_url]}</p>}
-        <MapView registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
+        <MapView benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
           bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
             setSelected(id); setMessage("");
             // On a phone the tools sheet covers the lower map: fold it so the popup is visible.
@@ -124,6 +125,6 @@ export function Workspace({ registry, active }: { registry: Registry; active: bo
         </section>}
       </div>
     </div>
-    {compareOpen && <CompareTable registry={registry} areas={areas} ids={view.compare} data={data} errors={errors} onClose={() => setCompareOpen(false)} />}
+    {compareOpen && <CompareTable benchmarks={benchmarks} registry={registry} areas={areas} ids={view.compare} data={data} errors={errors} onClose={() => setCompareOpen(false)} />}
   </div>;
 }

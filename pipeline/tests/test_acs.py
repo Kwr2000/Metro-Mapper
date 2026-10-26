@@ -151,12 +151,12 @@ def test_census_codes_in_plain_words(ea, ma, fmt, display, note):
     assert result[4] == display and result[3] == note
 
 
-def test_plan_has_26_calls_and_complete_quartets_without_key(context, monkeypatch):
+def test_plan_has_30_calls_and_complete_quartets_without_key(context, monkeypatch):
     monkeypatch.setenv("CENSUS_API_KEY", TOKEN)
     requests = acs.ACS().plan(context)
-    assert len(requests) == 26 and len({req.key for req in requests}) == 26
+    assert len(requests) == 30 and len({req.key for req in requests}) == 30
     assert len(acs.metrics.NON_AGE_BASES) == 28
-    assert sum(req.params["kind"] == "acs" for req in requests) == 24
+    assert sum(req.params["kind"] == "acs" for req in requests) == 28
     assert TOKEN not in repr(requests) and '"key"' not in json.dumps([req.params for req in requests])
     for req in requests:
         assert (context.adapter_dir / "fixtures" / (req.key + ".json")).is_file()
@@ -168,6 +168,10 @@ def test_plan_has_26_calls_and_complete_quartets_without_key(context, monkeypatc
                              "outSR": 4326, "f": "geojson", "returnGeometry": "true"}
         else:
             assert req.params["url"] == acs.API
+            if req.params["scale"] == "benchmark":
+                assert set(query) == {"get", "ucgid"}
+                assert set(query["ucgid"].split(",")) == set(acs.BENCHMARK_GEOS) | set(acs.PEER_IDS)
+                continue
             assert query["for"] == ("block group:*" if req.params["scale"] == "block_group" else "tract:*")
             assert query["in"] == f"state:48 county:{req.params['county']}" + (
                 " tract:*" if req.params["scale"] == "block_group" else "")
@@ -201,7 +205,7 @@ def test_every_metric_uses_the_spec_cells():
 
 
 def test_fixture_values_and_native_annotations(context):
-    records = acs.ACS().finalize(normalized(context))
+    records = [r for r in acs.ACS().finalize(normalized(context)) if r.dataset != "benchmark"]
     assert len(records) == 12
     first = next(rec for rec in records if rec.feature_id == "484530108041")
     p = first.properties
@@ -347,8 +351,8 @@ def test_retry_is_counted_by_runner_and_budget(context, monkeypatch):
     attempts = transport_from_fixtures(context, monkeypatch, failures=1)
     run = runner.run("acs", mode="live", now=NOW)
     assert run.status == "success", run.errors
-    assert run.calls_made == 27 and run.planned_calls == 27 and run.rows_out == 12
-    assert attempts["block_group_453_age"] == 2 and sum(attempts.values()) == 27
+    assert run.calls_made == 31 and run.planned_calls == 31 and run.rows_out == 180
+    assert attempts["block_group_453_age"] == 2 and sum(attempts.values()) == 31
     assert TOKEN not in run.model_dump_json()
     for path in (context.adapter_dir.parents[1] / "web/public/data/layers").glob("acs_*.geojson"):
         assert TOKEN not in path.read_text()
@@ -413,7 +417,7 @@ def test_demographics_guard_sees_every_new_field(context):
 def test_fixture_publication_and_shared_sources(context):
     run = runner.run("acs", now=NOW)
     assert run.status == "success", run.errors
-    assert run.calls_made == 0 and run.planned_calls == 26 and run.rows_out == 12
+    assert run.calls_made == 0 and run.planned_calls == 30 and run.rows_out == 180
     layers = [layer for layer in registry.compile_registry().layers if layer.source == "acs"]
     documents = {}
     for layer in layers:
@@ -434,7 +438,7 @@ def test_fixture_publication_and_shared_sources(context):
 
 def test_budget_and_live_gate(context, monkeypatch):
     budget = config.budgets().adapters["acs"]
-    assert budget.per_day == 30 and budget.min_interval_seconds == 1
+    assert budget.per_day == 40 and budget.min_interval_seconds == 1
     # Ungated after the published re-run (run 40043682058, DECISIONS 2026-10-24).
     import yaml
     gates = yaml.safe_load((ROOT / "config/live_gates.yaml").read_text()).get("gated") or {}

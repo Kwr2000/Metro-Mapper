@@ -71,6 +71,19 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   `assessed_val`, `deed_dt` (MM-DD-YYYY), `land_acres`. `IMP_DET.TXT` has `imprv_det_type_cd`/`desc`
   (e.g. "1st Floor"), `yr_built`, `imprv_det_area`. There is no living-area field, so living area
   is the sum of main-area segment types (code list to be confirmed in Phase 2).
+- **Re-checked 2026-10-25 for P2-02** (Claude, in the browser at the publisher): layout positions
+  for `PROP.TXT`, `IMP_INFO.TXT`, `IMP_DET.TXT`, `ABS_SUBD.TXT` and `TOTALS.TXT` match real
+  records (line lengths 9,922 / 114 / 622 / 50 / 2,491, CRLF; `PROP` values zero-padded,
+  `land_acres` with 4 implied decimals). `TOTALS.TXT` entity `03` Travis County: 453,779
+  real/mobile properties, 492,900 overall, `sup_num` 0. **Living area** = segments `1ST`, `2ND`,
+  `3RD`, `4TH`, `5TH`, `1/2`, `ADDL`, `FBSMT`, `RSBLW`: on TCAD's March 2026 "Improvement Details
+  Report 2026" CSV (same codes and IDs; preliminary, not certified) it matches the `095` HVAC
+  RESIDENTIAL area within 2% for 99.1% of 319,432 residential properties. Spec
+  `docs/tasks/P2-02-tcad.md`.
+- No prior-year value in the 2026 export, and no 2025 certified export is posted; the page has
+  the 2025 EARS submission (Comptroller format, 81.9 MB zip). 2025 values need an owner decision.
+- The certified JSON special export (3.55 GB zip, 29.9 GB JSON) also carries owner, appeal,
+  sale and permit sections; we don't use it.
 - **Strip at ingest** (ground rule 5): every `*_owner_*`, `*_addr_*`, `*_confidential_*`,
   every `*_exempt` and `*_qualify_yr` field, `mortgage_*`, agent names and addresses,
   `deed_num`, `deed_book_*`.
@@ -247,6 +260,39 @@ published in 2027.
   - City limits for agency areas: TIGERweb **Current** layer 28 "Incorporated Places" (public
     domain), not 2020, since cities have annexed since 2020.
   - FBI Crime Data Explorer remains an alternative (API key needed).
+
+## Benchmarks (P1-11)
+
+Publisher checks and probe results supplied by Claude in `docs/tasks/P1-11-benchmarks.md`,
+2026-10-25; Codex used synthetic fixtures only.
+
+- **Census ACS 2020–2024 5-year**: the same variables, annotations, margins of error and
+  definitions as the map. Four requests to <https://api.census.gov/data/2024/acs/acs5> use
+  `ucgid` for US, Texas, current Austin metro (`310M700US12420`), Austin city and the three
+  counties, plus the twelve named 700,000–1.5 million-population cities in the task. Census
+  public-domain terms/credit are unchanged. Direct Census medians are used, not averages of
+  block-group medians. The peer value is the plain mean of all twelve city values, not a
+  pooled median; no peer value is emitted if any city's estimate is missing or capped.
+- **Texas DPS UCR report 633**, "Crime Rate by Offense": same XLSX portal, user agent and
+  Q1 publication decision as the agency tables above. The sheet supplies previous/current
+  year rates per 100,000. Sum the seven Part I categories (exclude arson/trafficking), then
+  divide by 100 for rates per 1,000. Report 615 also supplies combined counts/population of
+  all included city agencies; ORIs can contain letters. No budget increase for DPS.
+- **FBI Crime Data API / Crime Data Explorer**: <https://cde.ucr.cjis.gov/> and documented
+  API base <https://api.usa.gov/crime/fbi/cde>. Public-domain U.S. government data; credit
+  "FBI Crime Data API". `summarized/national/V` and `/P`, with January–December of the same
+  full year as DPS. `offenses.actuals["United States Offenses"]` are monthly reported
+  offenses; `populations.participated_population["United States"]` is participating
+  population. Use annual total / mean participating population, not FBI estimates; about
+  97% coverage. Checked 2026-10-25 (probe run 40232292906): P includes arson exactly (P = burglary + larceny
+  + motor vehicle theft + arson), so the adapter also reads `ARS` (3 calls a run) and removes it,
+  matching DPS Part I. An API key is required and is supplied only at transport.
+  The FBI permits a city-to-state and state-to-national perspective and asks users not to
+  rank/compare peer cities for crime; therefore there are no peer-city crime benchmarks.
+- Schools use rated statewide campus/district rows already fetched from the TEA open-data
+  source; access uses existing OSM/GTFS values weighted by populated Census blocks; elections
+  use statewide totals from the same TLC files. Their original licenses/attributions remain
+  unchanged. These benchmarks make no additional source requests.
 
 ## Elections
 

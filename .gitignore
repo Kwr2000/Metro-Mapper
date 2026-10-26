@@ -28,3 +28,5 @@ web/public/registry.json
 web/public/health.json
 web/public/validation.json
 *.tsbuildinfo
+
+web/public/benchmarks.json

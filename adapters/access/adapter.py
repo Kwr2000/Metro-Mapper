@@ -25,6 +25,7 @@ from mm import config
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.paths import paths
 from mm.schemas import AreaFeature
+from mm.benchmarks import record as benchmark
 from pyproj import Transformer
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import dijkstra
@@ -576,6 +577,16 @@ class Access(SourceAdapter):
             runtime_seconds=round(time.monotonic() - self.started, 2), peak_memory_mb=round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1))
         print("access: run note: " + "; ".join(f"{key}={value}" for key, value in stats.items()), file=sys.stderr)
         output.append(AreaFeature(dataset="run_summary", feature_id=str(self.as_of), geometry=EMPTY, properties=stats, source_as_of=self.as_of))
+        populations = [b["population"] for b in blocks]
+        for field in MEASURES:
+            median = weighted_median(values[field], populations)
+            if median != 61:
+                output.append(benchmark(field, "three_county", "Three-county typical home", round(median),
+                    osm["osm_as_of"], "OpenStreetMap contributors; 2020 Census population",
+                    note="Population-weighted median over populated blocks", as_of=self.as_of))
+        count = weighted_median(transit, populations)
+        output.append(benchmark("transit_per_hour", "three_county", "Three-county typical home", round(count / 2, 1),
+            day.isoformat(), "CapMetro GTFS; 2020 Census population", note=TRANSIT_SCOPE, as_of=self.as_of))
         return output
 
     def source_as_of(self, raws):

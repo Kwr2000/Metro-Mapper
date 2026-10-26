@@ -42,6 +42,8 @@ export type Freshness = "fresh" | "stale" | "never_run" | "failing" | "not_sched
 export type Geometry = "point" | "line" | "polygon" | "raster" | "none";
 export type Group = string;
 export type AnnotationField = string | null;
+export type BenchmarkField = string | null;
+export type BenchmarkFormat = ("text" | "number" | "currency" | "percent") | null;
 export type DisplayField = string | null;
 export type Field = string;
 export type Format = "text" | "number" | "currency" | "date" | "percent" | "link";
@@ -129,6 +131,8 @@ export interface CompiledLayer {
 }
 export interface PopupField {
   annotation_field: AnnotationField;
+  benchmark_field: BenchmarkField;
+  benchmark_format: BenchmarkFormat;
   display_field: DisplayField;
   field: Field;
   format: Format;

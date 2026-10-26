@@ -18,7 +18,7 @@ export function LayerPanel({
     <aside className="panel" aria-label="Layers">
       <h2 className="panel-title">Layers</h2>
       {registry.layers.length === 0 && <p className="muted">No layers yet.</p>}
-      {contextGroups(registry).map(([group, allLayers]) => {
+      {contextGroups(registry, registry.layers.filter((l) => l.publish !== "none")).map(([group, allLayers]) => {
         const variants = [...new Map(allLayers.filter((l) => l.variant).map((l) => [l.variant!.key, l.variant!])).values()];
         const registryGroup = allLayers[0].group;
         const active = allLayers.find((l) => l.variant && visible.has(l.id))?.variant?.key ?? choices[registryGroup] ?? variants[0]?.key;

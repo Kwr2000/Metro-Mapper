@@ -476,6 +476,36 @@
           "default": null,
           "title": "Annotation Field"
         },
+        "benchmark_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmark Field"
+        },
+        "benchmark_format": {
+          "anyOf": [
+            {
+              "enum": [
+                "text",
+                "number",
+                "currency",
+                "percent"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmark Format"
+        },
         "display_field": {
           "anyOf": [
             {
@@ -541,6 +571,8 @@
       },
       "required": [
         "field",
+        "benchmark_field",
+        "benchmark_format",
         "label",
         "format",
         "moe_field",

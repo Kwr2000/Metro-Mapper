@@ -32,7 +32,19 @@ def main():
                         rows.append([COUNTIES[county], str(county), vtd, str(county) + vtd, key,
                                      "President", "Another synthetic write-in", party, "", str(min(count, 1))])
         members[filename] = rows
-    (root / "election_data.json").write_text(json.dumps({"status": 200, "body": {"members": members}}, indent=2) + "\n")
+    statewide = {}
+    for filename, table in members.items():
+        if "Returns" in filename:
+            counts = {party: 0 for party in ("D", "R", "L", "G", "W")}
+            for row in table[1:]:
+                counts[row[7]] += int(row[9])
+            counts["D"] += 100
+            counts["R"] += 200
+            statewide[filename] = [["Party", "Votes"]] + [[k, str(v)] for k, v in counts.items()]
+        else:
+            statewide[filename] = [["TotalVR", "TotalTO"], [str(sum(int(r[1]) for r in table[1:]) + 1000),
+                                                                  str(sum(int(r[2]) for r in table[1:]) + 500)]]
+    (root / "election_data.json").write_text(json.dumps({"status": 200, "body": {"members": members, "statewide": statewide}}, indent=2) + "\n")
     features = []
     for i, county in enumerate(counties):
         vtd = f"{i + 1:04d}"

@@ -71,6 +71,7 @@ Record the owner's approvals in `docs/DECISIONS.md` ("Owner approval: …").
 - **CI** runs once per PR, skips docs-only changes, cancels superseded runs, and runs a fast
   test subset; slow full-rebuild tests are marked `slow` and run locally before merge. Watch
   for major dependency releases that break builds (DuckDB 2.0 did this before); pin or adapt.
+- **Reviews and first live checks** follow `docs/REVIEW.md` (any Claude model).
 - **GitHub API:** use `gh api` REST; GraphQL may be unavailable.
 - **Verify facts at the publisher.** Earlier AI reviews stated licenses, data grain and field
   meanings wrongly. Check the publisher's own page or file before relying on a fact, and

@@ -390,7 +390,7 @@ def test_runner_shared_publication_and_saved_count_only_summary(context, monkeyp
     live = runner.run("elections", "live", now=NOW)
     assert live.status == "success" and live.calls_made == 2, live.errors
     records = canonical.read("area_feature", "elections")
-    assert {r.dataset for r in records} == {"precinct", "run_summary"}
+    assert {r.dataset for r in records} == {"precinct", "run_summary", "benchmark"}
     spec = importlib.util.spec_from_file_location("elections_live_summary", ROOT / "tools/live_summary.py")
     summary = importlib.util.module_from_spec(spec); spec.loader.exec_module(summary)
     summary.main("elections")

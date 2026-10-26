@@ -15,6 +15,8 @@ from pathlib import Path
 
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.schemas import AreaFeature
+from mm.benchmarks import record as benchmark
+import sys
 from pyproj import Transformer
 from shapely import transform
 from shapely.geometry import mapping, shape
@@ -31,6 +33,18 @@ CELL_IDS = {base: str(i) for i, base in enumerate(metrics.BASES)}
 EMPTY_GEOMETRY = {"type": "GeometryCollection", "geometries": []}
 TO_AREA = Transformer.from_crs(4326, 5070, always_xy=True).transform
 TO_WGS84 = Transformer.from_crs(5070, 4326, always_xy=True).transform
+
+BENCHMARK_GEOS = {
+    "0100000US": ("us", "US"), "0400000US48": ("texas", "Texas"),
+    "310M700US12420": ("austin_metro", "Austin metro"), "1600000US4805000": ("austin_city", "Austin city"),
+    "0500000US48453": ("travis", "Travis County"), "0500000US48491": ("williamson", "Williamson County"),
+    "0500000US48209": ("hays", "Hays County"),
+}
+PEERS = dict(zip(("0666000", "0667000", "0668000", "0820000", "1235000", "1836003", "3712000",
+                  "3918000", "4819000", "4827000", "4865000", "5363000"),
+                 ("San Diego", "San Francisco", "San Jose", "Denver", "Jacksonville", "Indianapolis (balance)",
+                  "Charlotte", "Columbus", "Dallas", "Fort Worth", "San Antonio", "Seattle")))
+PEER_IDS = {"1600000US" + geoid: name for geoid, name in PEERS.items()}
 
 
 def number(value):
@@ -193,6 +207,11 @@ class ACS(SourceAdapter):
                             "for": "block group:*" if scale == "block_group" else "tract:*",
                             "in": f"state:48 county:{county}" + (" tract:*" if scale == "block_group" else ""),
                         }}))
+        for part, bases in metrics.PARTS.items():
+            requests.append(Request(f"benchmarks_{part}", {"kind": "acs", "scale": "benchmark", "part": part,
+                "attempt": 0, "url": API, "query": {
+                    "get": "group(B01001)" if part == "age" else ",".join(metrics.variables(bases)),
+                    "ucgid": ",".join([*BENCHMARK_GEOS, *PEER_IDS])}}))
         return requests
 
     def fetch(self, req, ctx):
@@ -255,19 +274,24 @@ class ACS(SourceAdapter):
             raise ValueError("duplicate Census columns")
         part = raw.request.params["part"]
         bases = metrics.PARTS[part]
-        geography = ["state", "county", "tract"] + (["block group"] if scale == "block_group" else [])
+        geography = (["ucgid"] if "ucgid" in header else ["GEO_ID"]) if scale == "benchmark" else ["state", "county", "tract"] + (["block group"] if scale == "block_group" else [])
         if not set(metrics.variables(bases) + geography) <= set(header):
             raise ValueError("missing Census columns")
         for values in body[1:]:
             if not isinstance(values, list) or len(values) != len(header):
                 raise ValueError("malformed Census row")
             row = dict(zip(header, values))
-            if (not all(isinstance(row[field], str) for field in geography)
+            if scale == "benchmark":
+                geoid = row[geography[0]]
+                if geoid not in BENCHMARK_GEOS and geoid not in PEER_IDS:
+                    raise ValueError("unexpected Census benchmark geography")
+            elif (not all(isinstance(row[field], str) for field in geography)
                     or row["state"] != "48" or row["county"] != raw.request.params["county"]
                     or not re.fullmatch(r"\d{6}", row["tract"])
                     or (scale == "block_group" and not re.fullmatch(r"\d", row["block group"]))):
                 raise ValueError("invalid Census geography columns")
-            geoid = valid_geoid("".join(row[field] for field in geography), scale, raw.request.params["county"])
+            if scale != "benchmark":
+                geoid = valid_geoid("".join(row[field] for field in geography), scale, raw.request.params["county"])
             cells = {CELL_IDS[base]: {
                 "estimate": number(row[base + "E"]), "moe": number(row[base + "M"]),
                 "estimate_annotation": annotation(row[base + "EA"]), "moe_annotation": annotation(row[base + "MA"]),
@@ -275,7 +299,44 @@ class ACS(SourceAdapter):
             yield AreaFeature(dataset="acs_values", feature_id=geoid, geometry=EMPTY_GEOMETRY,
                               properties={"scale": scale, "geoid": geoid, "part": part, "cells": cells})
 
+    def comparison_records(self, records):
+        grouped = {part: {} for part in metrics.PARTS}
+        for rec in records:
+            p = rec.properties
+            if p["geoid"] in grouped[p["part"]]:
+                raise ValueError("duplicate Census benchmark geography/part")
+            grouped[p["part"]][p["geoid"]] = p["cells"]
+        if any(not BENCHMARK_GEOS.keys() <= rows.keys() for rows in grouped.values()):
+            raise ValueError("missing Census base benchmark geography")
+        calculated = {}
+        for geoid in [*BENCHMARK_GEOS, *PEER_IDS]:
+            if any(geoid not in rows for rows in grouped.values()):
+                continue
+            cells = {k: v for rows in grouped.values() for k, v in rows[geoid].items()}
+            calculated[geoid] = {field: measure(cells, numerator, denominator, fmt)
+                for field, (_, fmt, numerator, denominator, _) in metrics.METRICS.items()}
+        output = []
+        for geoid, (geo, label) in BENCHMARK_GEOS.items():
+            for field, (value, moe, flag, note, display) in calculated[geoid].items():
+                if value is not None:
+                    output.append(benchmark(field, geo, label, value, "2020–2024", "U.S. Census Bureau, ACS 5-year",
+                        moe=moe, note="; ".join(n for n in (note, flag if flag != "MOE ≤30% of estimate" else None) if n) or None,
+                        display=display, as_of=AS_OF))
+        for geoid in PEER_IDS:
+            pop = calculated.get(geoid, {}).get("population", (None,))[0]
+            if pop is None or not 700000 <= pop <= 1500000:
+                print("acs: run note: peer population outside range or unavailable", file=sys.stderr)
+        for field in metrics.METRICS:
+            values = [calculated.get(g, {}).get(field) for g in PEER_IDS]
+            if all(v is not None and v[0] is not None and v[4] is None for v in values):
+                output.append(benchmark(field, "peer_cities", "Similar-size cities", sum(v[0] for v in values) / 12,
+                    "2020–2024", "U.S. Census Bureau, ACS 5-year", note=
+                    "Average of 12 US cities with 700,000–1.5 million people: " + ", ".join(PEER_IDS.values()), as_of=AS_OF))
+        return output
+
     def finalize(self, records):
+        comparisons = [r for r in records if r.properties.get("scale") == "benchmark"]
+        records = [r for r in records if r.properties.get("scale") != "benchmark"]
         boundaries = {scale: {} for scale in metrics.SCALES}
         parts = {scale: {part: {} for part in metrics.PARTS} for scale in metrics.SCALES}
         for record in records:
@@ -305,7 +366,7 @@ class ACS(SourceAdapter):
                         props[metric + "_display"] = display  # only capped medians carry it
                 output.append(AreaFeature(dataset=scale, feature_id=geoid, geometry=polygon.geometry,
                                           properties=props, source_as_of=AS_OF))
-        return output
+        return output + self.comparison_records(comparisons)
 
     def source_as_of(self, raws):
         return AS_OF
