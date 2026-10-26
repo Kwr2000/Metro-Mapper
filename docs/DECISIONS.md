@@ -3,6 +3,13 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — Owner approvals: P1-12 and P2-02 scope
+
+- **Owner approval:** P1-12 colours demographic (ACS) and election layers by comparison too,
+  with neutral colours and "lower/higher than" wording only, never better/worse
+  (`docs/tasks/P1-12-colour-by-comparison.md`, rule 2).
+- **Owner decision:** P2-02 covers TCAD 2026 values only; no 2025 values for now.
+
 ## 2026-10-26 — P1-11 comparisons reviewed, merged and live-checked (Claude)
 
 - PR #82 reviewed against the spec (705 pipeline + 41 web tests, e2e at 1440×900 and 390×844, CI
