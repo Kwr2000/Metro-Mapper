@@ -52,6 +52,8 @@ DERIVED = {"land_value", "improvement_value", "abs_subdv_desc", "living_area", "
            "year_built", "floors", "dwelling_count", "has_adu"}
 SPLITS = {"land_hstd_val", "land_non_hstd_val", "imprv_hstd_val", "imprv_non_hstd_val"}
 COMPACT_FIELDS = (RANGES["PROP.TXT"].keys() - SPLITS) | DERIVED
+SAFE_NOTE = re.compile(r"[A-Za-z0-9 ,.()/+%–-]{1,100}")
+ERROR_TEXT = re.compile(r"TCAD download/parse failed \(\w+(: [A-Za-z0-9 ,.()/+%–-]{1,100})?\)")
 INPUT_COUNTS = {"records_read", "real_mobile", "skipped_by_state", "totals_num_real_mobile"}
 
 
@@ -188,8 +190,10 @@ def parse_export(path, check_time=lambda: None):
         for r in rows(archive, members["IMP_INFO.TXT"], "IMP_INFO.TXT", check_time):
             year(r)
             key = (identifier(r["prop_id"]), identifier(r["imprv_id"]))
-            if key in improvements or not r["imprv_type_cd"]:
-                raise ValueError("duplicate or missing TCAD improvement")
+            # One real 2026 row has a blank type code. It is not ADU, garage apartment or detail
+            # only, so it stays a dwelling improvement (the spec's rule), not a failed run.
+            if key in improvements:
+                raise ValueError("duplicate TCAD improvement")
             improvements[key] = [r["imprv_type_cd"], 0., None, -1., None, 0]
         for r in rows(archive, members["IMP_DET.TXT"], "IMP_DET.TXT", check_time):
             year(r)
@@ -341,11 +345,18 @@ class TCAD(SourceAdapter):
         except urllib.error.HTTPError as exc:
             return RawPayload(req, None, status=exc.code)
         except Exception as exc:
-            # Suppress automatic re-download and never echo source cells or exception text.
-            return RawPayload(req, {"error": f"TCAD download/parse failed ({type(exc).__name__})"}, status=502)
+            # Suppress automatic re-download and never echo source cells. Only this adapter's own
+            # static messages (always naming TCAD, no quotes or colons) are passed on, so a failed
+            # first check says which check failed without a probe. Any other text is dropped.
+            note = str(exc) if isinstance(exc, ValueError) and "TCAD" in str(exc) and SAFE_NOTE.fullmatch(str(exc)) else ""
+            detail = f"{type(exc).__name__}: {note}" if note else type(exc).__name__
+            return RawPayload(req, {"error": f"TCAD download/parse failed ({detail})"}, status=502)
 
     def follow_up(self, raw, ctx):
         if raw.status != 200:
+            error = raw.body.get("error") if isinstance(raw.body, dict) else None
+            if isinstance(error, str) and ERROR_TEXT.fullmatch(error):
+                raise ValueError(f"TCAD HTTP {raw.status}; {error}")
             raise ValueError(f"TCAD HTTP {raw.status}; response withheld")
         return []
 
