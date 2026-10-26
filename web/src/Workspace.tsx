@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { chooseColour } from "./colour";
 import { LayerPanel } from "./LayerPanel";
 import { MapView } from "./MapView";
 import { FiltersPanel } from "./FiltersPanel";
@@ -12,20 +13,20 @@ import { encodeView, readView, registryView, type Camera, type ViewState } from 
 import { EMPTY_BENCHMARKS, type Benchmarks } from "./benchmarks";
 import { useLayerData } from "./use-layer-data";
 
-function initialView(registry: Registry): ViewState {
+function initialView(registry: Registry, benchmarks: Benchmarks): ViewState {
   const shared = readView(window.location.hash);
-  if (shared) return registryView(shared, registry);
+  if (shared) return registryView(shared, registry, benchmarks);
   const saved = readLocal<unknown>("visible", null);
   const known = new Set(registry.layers.map((l) => l.id));
   const visible = Array.isArray(saved) ? saved.filter((id) => typeof id === "string" && known.has(id)) :
     [...initialVisible(registry)].filter((id) => !registry.layers.find((l) => l.id === id)?.demographic);
   const raw: ViewState = { camera: readLocal<Camera>("camera", { center: registry.basemap.center as [number, number], zoom: registry.basemap.zoom }),
-    visible, variants: {}, filters: {}, compare: [] };
-  return registryView(readView(encodeView(raw))!, registry);
+    visible, variants: {}, filters: {}, compare: [], colour: {} };
+  return registryView(readView(encodeView(raw))!, registry, benchmarks);
 }
 
 export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: { registry: Registry; active: boolean; benchmarks?: Benchmarks }) {
-  const [view, setView] = useState<ViewState>(() => initialView(registry));
+  const [view, setView] = useState<ViewState>(() => initialView(registry, benchmarks));
   const visible = useMemo(() => normalizeLayerVariants(registry, new Set(view.visible)), [registry, view.visible]);
   const [pane, setPane] = useState("Layers"), [expanded, setExpanded] = useState(true);
   const [selected, setSelected] = useState<string | null>(null), [message, setMessage] = useState("");
@@ -58,10 +59,10 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: {
   }, [base, registry, visible, view.filters, compareOpen, ensure]);
 
   useEffect(() => {
-    const restore = () => { const shared = readView(window.location.hash); if (shared) setView(registryView(shared, registry)); };
+    const restore = () => { const shared = readView(window.location.hash); if (shared) setView(registryView(shared, registry, benchmarks)); };
     window.addEventListener("hashchange", restore);
     return () => window.removeEventListener("hashchange", restore);
-  }, [registry]);
+  }, [registry, benchmarks]);
   useEffect(() => {
     if (active) window.history.replaceState(null, "", encodeView({ ...view, visible: [...visible] }));
   }, [active, view, visible]);
@@ -94,7 +95,7 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: {
         <nav className="tool-tabs" aria-label="Area tools tabs">{["Layers", "Filters", "Compare", "Shortlist"].map((name) =>
           <button key={name} aria-pressed={pane === name && expanded} onClick={() => { setExpanded(pane === name ? !expanded : true); setPane(name); }}>{name}{name === "Compare" && view.compare.length ? ` (${view.compare.length})` : ""}</button>)}</nav>
         <div className="tool-body">
-          <div hidden={pane !== "Layers"}><LayerPanel registry={registry} visible={visible} onToggle={toggle} choices={view.variants}
+          <div hidden={pane !== "Layers"}><LayerPanel colour={view.colour} benchmarks={benchmarks} onColour={(layer, geo) => update({ colour: chooseColour(registry, view.colour, layer, geo) })} registry={registry} visible={visible} onToggle={toggle} choices={view.variants}
             onSwitchVariant={(group, key) => { update({ visible: [...switchLayerVariant(registry, visible, group, key)], variants: { ...view.variants, [group]: key } }); }} /></div>
           <div hidden={pane !== "Filters"}><FiltersPanel registry={registry} filters={view.filters} data={data} errors={errors} missing={result.missing} onChange={(filters) => update({ filters })} /></div>
           <div hidden={pane !== "Compare"}><CompareTray areas={areas} ids={view.compare} onRemove={(id) => update({ compare: view.compare.filter((x) => x !== id) })} onOpen={() => setCompareOpen(true)} />
@@ -111,7 +112,7 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: {
       <div className="map-wrap">
         {(benchmarks.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
         {base?.data_url && errors[base.data_url] && <p className="map-error" role="alert">{errors[base.data_url]}</p>}
-        <MapView benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
+        <MapView colour={view.colour} benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
           bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
             setSelected(id); setMessage("");
             // On a phone the tools sheet covers the lower map: fold it so the popup is visible.

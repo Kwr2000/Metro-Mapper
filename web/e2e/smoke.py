@@ -143,9 +143,76 @@ def smoke(browser, registry, base, chosen_filter, width, height):
     print(f"PASS {width}×{height}: filter, map click, compare, private shortlist, reload, shared view, no overflow")
 
 
+def colour_smoke(browser, registry, width, height):
+    benchmarks = json.loads((DIST / "benchmarks.json").read_text())
+    assert benchmarks["test_data"], "Comparison smoke requires synthetic benchmarks"
+    eligible = [l for l in registry["layers"] if l.get("compare") and l.get("data_url")
+                and benchmarks.get(l["source"], {}).get(l["compare"].get("benchmark_field") or l["compare"]["field"])]
+    directional = next(l for l in eligible if l["compare"]["direction"] == "lower_is_better"
+                       and l["geometry"] == "polygon" and any(r["geography"] == "texas" for r in
+                       benchmarks[l["source"]][l["compare"].get("benchmark_field") or l["compare"]["field"]]))
+    neutral = next(l for l in eligible if l["demographic"] and l["compare"]["unit"] == "pp")
+    context = browser.new_context(viewport={"width": width, "height": height}, reduced_motion="reduce")
+    context.route("**/*", lambda route: route.continue_() if urlparse(route.request.url).hostname == "127.0.0.1" else
+                  route.fulfill(status=200, content_type="application/json", body=json.dumps(PLAIN_STYLE)))
+    page = context.new_page()
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.on("console", lambda msg: errors.append(msg.text) if msg.type == "error" else None)
+    for layer, name in [(directional, "directional"), (neutral, "neutral")]:
+        field = layer["compare"]["field"]
+        feature = next(f for f in read_data(layer) if isinstance(f["properties"].get(field), (int, float)))
+        coords = feature["geometry"]["coordinates"]
+        while isinstance(coords[0][0], list):
+            coords = coords[0]
+        view = {"version": 1, "camera": {"center": [(min(p[0] for p in coords)+max(p[0] for p in coords))/2,
+                                                      (min(p[1] for p in coords)+max(p[1] for p in coords))/2], "zoom": 12},
+                "visible": [layer["id"]], "variants": {}, "filters": {}, "compare": [], "colour": {}}
+        page.goto(URL + "/#/?v=" + quote(json.dumps(view)), wait_until="networkidle")
+        expect(page.get_by_test_id("map")).to_have_attribute("data-map-ready", "true")
+        tab(page, "Layers")
+        panel_row = page.locator(f'[data-layer-id="{layer["id"]}"]')
+        group = panel_row.locator("xpath=ancestor::details[1]")
+        if group.get_attribute("open") is None:
+            group.locator("summary").click()
+        control = panel_row.get_by_role("group", name=layer["title"] + " colour")
+        control.scroll_into_view_if_needed()
+        expect(control.get_by_role("button", name="Values", exact=True)).to_have_attribute("aria-pressed", "true")
+        no_overflow(page)
+        page.screenshot(path=str(ARTIFACTS / f"colour-{name}-values-{width}x{height}.png"))
+        control.get_by_role("button", name="Compared with", exact=True).click()
+        if name == "directional":
+            control.get_by_role("combobox").select_option("texas")
+        expect(control.get_by_role("button", name="Compared with", exact=True)).to_have_attribute("aria-pressed", "true")
+        expect(panel_row.locator(".comparison-header")).to_contain_text("Test data · Compared with")
+        expect(panel_row.get_by_role("list", name=layer["title"] + " legend")).to_contain_text("About the same")
+        legend = panel_row.get_by_role("list", name=layer["title"] + " legend").inner_text()
+        if name == "neutral":
+            assert "better" not in legend and "worse" not in legend
+            assert "within margin of error" in legend
+        else:
+            assert "(better)" in legend and "(worse)" in legend
+        no_overflow(page)
+        page.wait_for_timeout(300)  # Let the map finish its paint transition for the evidence image.
+        page.screenshot(path=str(ARTIFACTS / f"colour-{name}-compared-{width}x{height}.png"))
+        chosen = control.get_by_role("combobox").input_value()
+        page.reload(wait_until="networkidle")
+        tab(page, "Layers")
+        group = panel_row.locator("xpath=ancestor::details[1]")
+        if group.get_attribute("open") is None:
+            group.locator("summary").click()
+        expect(control.get_by_role("button", name="Compared with", exact=True)).to_have_attribute("aria-pressed", "true")
+        expect(control.get_by_role("combobox")).to_have_value(chosen)
+        control.get_by_role("button", name="Values", exact=True).click()
+        expect(panel_row.locator(".comparison-header")).to_have_count(0)
+        assert not errors, errors
+    context.close()
+    print(f"PASS {width}×{height}: directional/neutral Values and Compared with, legends, shared mode/reload, no map errors or overflow")
+
+
 def main():
     registry = json.loads((DIST / "registry.json").read_text())
-    assert all(l["freshness"] == "fixture_only" for l in registry["layers"]), "Run make test first: smoke requires fixture data"
+    assert all(l["freshness"] == "fixture_only" for l in registry["layers"] if l["publish"] != "none"), "Run make test first: smoke requires fixture data"
     base = next(l for l in registry["layers"] if l["join"] == "block_group" and any(p["field"] == "name" for p in l["popup"]))
     candidates = [l for l in registry["layers"] if l["join"] == "block_group" and l["popup"] and l["popup"][0]["format"] in {"number","percent","currency"}]
     chosen = next(l for l in candidates if len({f["properties"].get(l["popup"][0]["field"]) for f in read_data(l)
@@ -170,6 +237,7 @@ def main():
                     args=["--no-sandbox","--enable-unsafe-swiftshader","--use-gl=angle","--use-angle=swiftshader"])
                 for width,height in [(1440,900),(390,844)]:
                     smoke(browser,registry,base,chosen,width,height)
+                    colour_smoke(browser,registry,width,height)
                 browser.close()
         finally:
             server.terminate()

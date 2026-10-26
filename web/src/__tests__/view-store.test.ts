@@ -5,7 +5,7 @@ import { ids, layer, registry } from "./workspace-fixtures";
 
 afterEach(() => { vi.restoreAllMocks(); localStorage.clear(); });
 const view: ViewState = { camera: { center: [-97.7,30.3], zoom: 10 }, visible: ["example"], variants: { Environment: "bg" },
-  filters: { example: { min: 0, max: 5 } }, compare: ids.slice(0,2) };
+  filters: { example: { min: 0, max: 5 } }, colour: {}, compare: ids.slice(0,2) };
 describe("share links", () => {
   it("round trips view state while preserving page routes", () => {
     const hash = encodeView(view);
