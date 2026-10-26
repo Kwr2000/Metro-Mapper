@@ -187,3 +187,9 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
   .comparison-table .comparison-benchmarks { grid-column: 1 / -1; min-width: 0; }
   .comparison-table .comparison-benchmarks:empty { display: none; }
 }
+
+.colour-control { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin-top: .5rem; }
+.colour-control select { max-width: 100%; min-width: 0; }
+.colour-control button[aria-pressed="true"] { background: #173d63; color: white; }
+.comparison-header { overflow-wrap: anywhere; }
+.comparison-class { display: block; margin-top: .25rem; }

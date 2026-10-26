@@ -1,8 +1,9 @@
+import { areaClassLabel, comparisonPaint, selectedBenchmark } from "./colour";
 import { benchmarkHtml, type Benchmarks } from "./benchmarks";
 import { useEffect, useRef } from "react";
 import maplibregl, { type GeoJSONSource, type StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { asOfLabel, buildMapLayers, drawable, freshnessLabel, sourceFor, type CompiledLayer, type Registry } from "./registry";
+import { asOfLabel, buildMapLayers, drawable, freshnessLabel, sourceFor, type CompiledLayer, type Registry, mapLayerId } from "./registry";
 import { buildPolygonIndexIdle, type PolygonIndex } from "./map-polygons";
 import { bindPopupClose, escapeHtml as esc, popupContent, popupFieldHtml, shownFields } from "./popup";
 import type { LayerData } from "./areas";
@@ -20,9 +21,10 @@ async function resolveBasemap(url: string): Promise<StyleSpecification | string>
 }
 
 /** One layer's section of a popup: values, then source, as-of and freshness. */
-export function featureHtml(meta: CompiledLayer, properties: Record<string, unknown> | null, fields = meta.popup, benchmarks?: Benchmarks): string {
+export function featureHtml(meta: CompiledLayer, properties: Record<string, unknown> | null, fields = meta.popup, benchmarks?: Benchmarks, geography?: string): string {
+  const benchmark = selectedBenchmark(meta, geography ? { [meta.id]: geography } : {}, benchmarks);
   const rows = shownFields(fields, properties)
-    .map((p) => `<tr><th>${esc(p.label)}</th><td>${popupFieldHtml(p, properties)}${benchmarkHtml(meta, p, benchmarks)}</td></tr>`).join("");
+    .map((p) => `<tr><th>${esc(p.label)}</th><td>${popupFieldHtml(p, properties)}${benchmarkHtml(meta, p, benchmarks)}${benchmark && p.field === meta.compare?.field ? `<small class="comparison-class">${esc(areaClassLabel(meta, properties, benchmark))}</small>` : ""}</td></tr>`).join("");
   return `<section class="inspection-layer"><div class="popup-title">${esc(meta.popup_title ?? meta.title)}</div>` +
     `<table>${rows}</table>` +
     `<div class="popup-foot">Source: ${esc(meta.attribution)} · ${esc(asOfLabel(meta))} · ${esc(freshnessLabel(meta))}</div>` +
@@ -31,6 +33,7 @@ export function featureHtml(meta: CompiledLayer, properties: Record<string, unkn
 
 export interface MapViewProps {
   registry: Registry;
+  colour?: Record<string, string>;
   benchmarks?: Benchmarks;
   visible: ReadonlySet<string>;
   camera: { center: [number, number]; zoom: number } | null;
@@ -66,14 +69,14 @@ export function MapView(props: MapViewProps) {
       if (!map || !inspection || !inspectPoint) return;
       const seen = new Set<string>(), point = [inspectPoint.lng, inspectPoint.lat];
       let html = "", pending = 0, unavailable = 0;
-      if (clicked && clicked.meta.geometry !== "polygon" && layerIsVisible(clicked.meta)) html += featureHtml(clicked.meta, clicked.properties, clicked.meta.popup, latest.current.benchmarks);
+      if (clicked && clicked.meta.geometry !== "polygon" && layerIsVisible(clicked.meta)) html += featureHtml(clicked.meta, clicked.properties, clicked.meta.popup, latest.current.benchmarks, latest.current.colour?.[clicked.meta.id]);
       for (const [group, layers] of contextGroups(registry, polygonMetas.filter(layerIsVisible))) {
         let section = "";
         for (const meta of layers) {
           const id = sourceFor(meta), index = indexes.get(id);
           if (seen.has(meta.id)) continue; seen.add(meta.id);
           if (!index) { if (failed.has(id)) unavailable++; else pending++; continue; }
-          for (const feature of index.query(point).features) section += featureHtml(meta, feature.properties as Record<string, unknown>, meta.popup, latest.current.benchmarks);
+          for (const feature of index.query(point).features) section += featureHtml(meta, feature.properties as Record<string, unknown>, meta.popup, latest.current.benchmarks, latest.current.colour?.[meta.id]);
         }
         html += section && group === PEOPLE ? `<section><h3>${esc(PEOPLE)}</h3><p>${esc(PEOPLE_NOTE)}</p>${section}</section>` : section;
       }
@@ -108,6 +111,12 @@ export function MapView(props: MapViewProps) {
       if (map.getSource("area-filter")) {
         (map.getSource("area-filter") as GeoJSONSource).setData({ type: "FeatureCollection", features: areas.map((f) => ({ ...f, properties: { matches: matches?.has(featureId(f)) ?? true } })) });
         for (const id of ["area-filter-dim", "area-filter-outline"]) map.setLayoutProperty(id, "visibility", matches ? "visible" : "none");
+      }
+      for (const meta of drawable(registry)) {
+        const property = meta.style?.type === "circle" ? "circle-color" : "fill-color";
+        const id = mapLayerId(meta.id), benchmark = selectedBenchmark(meta, latest.current.colour ?? {}, latest.current.benchmarks);
+        if (meta.compare && map.getLayer(id)) map.setPaintProperty(id, property,
+          benchmark ? comparisonPaint(meta, benchmark) : meta.style!.paint[property]);
       }
       indexSources(); renderInspection();
     };
@@ -183,7 +192,7 @@ export function MapView(props: MapViewProps) {
     for (const layer of buildMapLayers(registry, visible).layers) if (map.getLayer(layer.id))
       map.setLayoutProperty(layer.id, "visibility", visible.has(layer.metadata.mmLayer) ? "visible" : "none");
     refresh.current?.();
-  }, [visible, registry, props.data, props.areas, props.matches, props.benchmarks]);
+  }, [visible, registry, props.data, props.areas, props.matches, props.benchmarks, props.colour]);
 
   useEffect(() => {
     const map = mapRef.current, camera = props.camera;

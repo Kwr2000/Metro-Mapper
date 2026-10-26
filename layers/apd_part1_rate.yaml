@@ -94,3 +94,12 @@ attribution: City of Austin, Texas - data.austintexas.gov (APD Crime Reports); U
 license: Public domain
 default_visible: false
 order: 60
+compare:
+  field: rate_part1
+  method: ratio
+  breaks:
+  - 0.67
+  - 0.9
+  - 1.1
+  - 1.5
+  direction: lower_is_better

@@ -5,7 +5,7 @@ import type { CompiledLayer, Registry } from "../registry";
 const layer = (id: string, family: string, key: string): CompiledLayer => ({
   id, title: id, group: "People", description: "", source: "acs", geometry: "polygon", join: "block_group", publish: "geojson",
   style: { type: "fill", paint: {}, layout: {}, minzoom: null, maxzoom: null }, popup: [], popup_title: null, hover: [],
-  variant: { family, key, label: key }, data_bundle: null, legend: [], dataset: null, where: {}, as_of_field: null,
+  variant: { family, key, label: key }, data_bundle: null, compare: null, legend: [], dataset: null, where: {}, as_of_field: null,
   coverage: "x", refresh: "annual", attribution: "x", license: "", disclaimer: "", demographic: true, default_visible: false,
   order: 1, data_url: "x", as_of: null, last_success: null, freshness: "fixture_only",
 });

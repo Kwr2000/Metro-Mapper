@@ -52,3 +52,12 @@ license: ''
 disclaimer: Figures as reported to DPS by each agency; DPS updates them as agencies revise reports.
 default_visible: false
 order: 62
+compare:
+  field: rate_part1
+  method: ratio
+  breaks:
+  - 0.67
+  - 0.9
+  - 1.1
+  - 1.5
+  direction: lower_is_better

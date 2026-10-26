@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-26 (P1-11 and P2-01 reviewed, merged and live-checked)._
+_Last updated 2026-10-25 (P1-12)._
 
 ## Phase
 
@@ -129,11 +129,18 @@ are decided (`DECISIONS.md`).
   county; 0.02% of points outside the study block groups; 116 s; 13.9 MB; no personal fields.
   Ungated. Acreage is unreliable in this source (see Open issues).
 
+- **P1-12** (Codex): manifest-driven Values / Compared with colours, validated neutral
+  ACS/election directions, ratio/difference classes, area-MOE middle class, benchmark legends
+  and popup labels, family choices and version-1 shared links. Three generators and schemas/
+  web types regenerated. Synthetic fixtures only; `make test` passes (759 pipeline, 51 web
+  tests and builds); local Chromium passes at 1440×900 and 390×844, outside CI. Awaiting
+  Claude's live crime, access, school, ACS share and election-margin colour checks.
+
 ## Next
 
 1. Owner: decide what to do about parcel `acres` (see Waiting on the owner).
-2. Codex: P1-12 (colour by comparison, `docs/tasks/P1-12-colour-by-comparison.md`) and P2-02
-   (TCAD, `docs/tasks/P2-02-tcad.md`) specs are ready; Claude gives the owner the Codex prompts.
+2. Claude: review P1-12 and check colours against real benchmarks. P2-02
+   (TCAD, `docs/tasks/P2-02-tcad.md`) spec is ready for the owner's next Codex prompt.
 3. Check the 2026-11-03 refresh report (expect nothing due; FBI and parcels are annual).
 
 ## Open issues
