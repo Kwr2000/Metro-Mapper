@@ -294,6 +294,55 @@ def _():
     return "; ".join(out)
 
 
+@check("tcad_shapes", "TCAD export: cell shapes in samples of PROP and IMP_DET (shapes and counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    def member(name):
+        return next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == name)
+    def sample(name, max_comp):
+        m = member(name)
+        lh = range_get(final, m.offset, m.offset + 29)
+        nl, el = struct.unpack("<HH", lh[26:30])
+        start = m.offset + 30 + nl + el
+        data = range_get(final, start, start + min(m.comp, max_comp) - 1)
+        raw = zlib.decompressobj(-15).decompress(data)
+        return [l.removesuffix(b"\r") for l in raw.split(b"\n")[:-1]]
+    def shape(v):
+        v = v.strip()
+        return re.sub(r"[A-Za-z]", "A", re.sub(r"\d", "9", v)) or "(blank)"
+    cell = lambda l, a, b: l[a - 1:b].decode("latin-1")
+    out = []
+    # IMP_INFO keys, to look for orphan segments in the IMP_DET sample.
+    m = member("IMP_INFO.TXT")
+    lh = range_get(final, m.offset, m.offset + 29)
+    nl, el = struct.unpack("<HH", lh[26:30])
+    start = m.offset + 30 + nl + el
+    info = zlib.decompress(range_get(final, start, start + m.comp - 1), -15).split(b"\n")
+    keys = {(l[0:12], l[16:28]) for l in info if l.strip()}
+    det = sample("IMP_DET.TXT", 6_000_000)
+    orphans = sum((l[0:12], l[16:28]) not in keys for l in det)
+    fields = {"year": (13, 16), "yr_built": (86, 89), "area": (94, 108)}
+    parts = [f"IMP_DET sample {len(det):,} rows, orphan segments {orphans}, lengths {dict(Counter(len(l) for l in det).most_common(2))}"]
+    for k, (a, b) in fields.items():
+        parts.append(f"{k} shapes {dict(Counter(shape(cell(l, a, b)) for l in det).most_common(4))}")
+    parts.append(f"segment codes {dict(Counter(cell(l, 41, 50).strip() for l in det).most_common(14))}")
+    out.append("; ".join(parts))
+    prop = sample("PROP.TXT", 6_000_000)
+    pf = {"prop_type": (13, 17), "val_yr": (18, 22), "sup_num": (23, 34), "partial_owner": (679, 679), "udi": (680, 691),
+          "land_hstd": (1796, 1810), "land_non": (1811, 1825), "imprv_hstd": (1826, 1840), "imprv_non": (1841, 1855),
+          "deed_dt": (2034, 2058), "land_acres": (2772, 2791), "market": (4214, 4227), "situs_num": (4460, 4474)}
+    parts = [f"PROP sample {len(prop):,} rows, lengths {dict(Counter(len(l) for l in prop).most_common(2))}"]
+    for k, (a, b) in pf.items():
+        parts.append(f"{k} shapes {dict(Counter(shape(cell(l, a, b)) for l in prop).most_common(4))}")
+    parts.append(f"prop types {dict(Counter(cell(l, 13, 17).strip() for l in prop).most_common(6))}")
+    parts.append(f"imprv state {dict(Counter(cell(l, 2732, 2741).strip() for l in prop).most_common(12))}")
+    parts.append(f"land state {dict(Counter(cell(l, 2742, 2751).strip() for l in prop).most_common(6))}")
+    out.append("; ".join(parts))
+    return " || ".join(out)
+
+
 @check("wcad_socrata_parcels", "WCAD open data: parcel polygons (count + 1 geometry)")
 def _():
     n = socrata("data.wcad.org", "an3x-cnmw", "SELECT count(*) AS n")[0]["n"]
