@@ -9,6 +9,7 @@ EXPORTED_MODELS (`mm schema`, then `npm run gen:types` in web/).
 from __future__ import annotations
 
 from datetime import date, datetime
+import math
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -80,6 +81,28 @@ class LayerVariant(Strict):
     label: str
 
 
+class LayerCompare(Strict):
+    field: str
+    benchmark_field: str | None = None
+    method: Literal["ratio", "difference"]
+    breaks: list[float] = Field(min_length=4, max_length=4)
+    direction: Literal["lower_is_better", "higher_is_better", "neutral"]
+    unit: str = ""
+
+    @model_validator(mode="after")
+    def _breaks(self) -> "LayerCompare":
+        if not all(math.isfinite(x) for x in self.breaks) or not all(
+            a < b for a, b in zip(self.breaks, self.breaks[1:])
+        ):
+            raise ValueError("compare breaks must be finite and strictly increasing")
+        if self.method == "difference" and not all(
+            math.isclose(a, -b, rel_tol=1e-9, abs_tol=1e-12)
+            for a, b in zip(self.breaks, reversed(self.breaks))
+        ):
+            raise ValueError("difference breaks must be symmetric around zero")
+        return self
+
+
 class LayerManifest(Strict):
     id: str = Field(pattern=SLUG_PATTERN)
     title: str
@@ -96,6 +119,7 @@ class LayerManifest(Strict):
     variant: LayerVariant | None = None
     data_bundle: str | None = Field(None, pattern=SLUG_PATTERN,
                                     description="Layers that share one published data file")
+    compare: LayerCompare | None = None
     legend: list[LegendItem] = Field(default_factory=list)
     dataset: str | None = Field(None, description="Which of the source's datasets; None = all")
     where: dict[str, str | int | float | bool] = Field(
@@ -132,6 +156,17 @@ class LayerManifest(Strict):
                 f"style type '{self.style.type}' does not fit geometry '{self.geometry}' "
                 f"(allowed: {sorted(allowed)})"
             )
+        return self
+
+    @model_validator(mode="after")
+    def _valid_compare(self) -> "LayerManifest":
+        if self.compare:
+            if self.publish == "none":
+                raise ValueError("compare is not allowed on publish: none")
+            if self.compare.field not in {row.field for row in self.popup}:
+                raise ValueError("compare field must already be shown in the popup")
+            if self.demographic and self.compare.direction != "neutral":
+                raise ValueError("demographic comparison direction must be neutral")
         return self
 
     def fields(self) -> set[str]:

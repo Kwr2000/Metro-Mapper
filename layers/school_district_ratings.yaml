@@ -42,3 +42,14 @@ attribution: Texas Education Agency via data.texas.gov; U.S. Census Bureau, TIGE
 license: No license stated (TEA on data.texas.gov); public domain (boundaries)
 default_visible: false
 order: 299
+compare:
+  field: overall_score
+  method: difference
+  breaks:
+  - -10
+  - -3
+  - 3
+  - 10
+  direction: higher_is_better
+  benchmark_field: district_overall_score
+  unit: points

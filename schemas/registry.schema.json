@@ -66,6 +66,17 @@
           "title": "Attribution",
           "type": "string"
         },
+        "compare": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LayerCompare"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "coverage": {
           "title": "Coverage",
           "type": "string"
@@ -320,6 +331,7 @@
         "hover",
         "variant",
         "data_bundle",
+        "compare",
         "legend",
         "dataset",
         "where",
@@ -338,6 +350,68 @@
         "freshness"
       ],
       "title": "CompiledLayer",
+      "type": "object"
+    },
+    "LayerCompare": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmark Field"
+        },
+        "breaks": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Breaks",
+          "type": "array"
+        },
+        "direction": {
+          "enum": [
+            "lower_is_better",
+            "higher_is_better",
+            "neutral"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "ratio",
+            "difference"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "unit": {
+          "default": "",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "benchmark_field",
+        "method",
+        "breaks",
+        "direction",
+        "unit"
+      ],
+      "title": "LayerCompare",
       "type": "object"
     },
     "LayerStyle": {

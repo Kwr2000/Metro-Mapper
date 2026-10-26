@@ -18,6 +18,16 @@ export type Groups = string[];
 export type AsOf = string | null;
 export type AsOfField = string | null;
 export type Attribution1 = string;
+export type BenchmarkField = string | null;
+/**
+ * @minItems 4
+ * @maxItems 4
+ */
+export type Breaks = [number, number, number, number];
+export type Direction = "lower_is_better" | "higher_is_better" | "neutral";
+export type Field = string;
+export type Method = "ratio" | "difference";
+export type Unit = string;
 export type Coverage = string;
 /**
  * Layers that share one published data file
@@ -42,10 +52,10 @@ export type Freshness = "fresh" | "stale" | "never_run" | "failing" | "not_sched
 export type Geometry = "point" | "line" | "polygon" | "raster" | "none";
 export type Group = string;
 export type AnnotationField = string | null;
-export type BenchmarkField = string | null;
+export type BenchmarkField1 = string | null;
 export type BenchmarkFormat = ("text" | "number" | "currency" | "percent") | null;
 export type DisplayField = string | null;
-export type Field = string;
+export type Field1 = string;
 export type Format = "text" | "number" | "currency" | "date" | "percent" | "link";
 export type HideIfEmpty = boolean;
 export type Label = string;
@@ -101,6 +111,7 @@ export interface CompiledLayer {
   as_of: AsOf;
   as_of_field: AsOfField;
   attribution: Attribution1;
+  compare: LayerCompare | null;
   coverage: Coverage;
   data_bundle: DataBundle;
   data_url: DataUrl;
@@ -129,12 +140,20 @@ export interface CompiledLayer {
   variant: LayerVariant | null;
   where: Where;
 }
+export interface LayerCompare {
+  benchmark_field: BenchmarkField;
+  breaks: Breaks;
+  direction: Direction;
+  field: Field;
+  method: Method;
+  unit: Unit;
+}
 export interface PopupField {
   annotation_field: AnnotationField;
-  benchmark_field: BenchmarkField;
+  benchmark_field: BenchmarkField1;
   benchmark_format: BenchmarkFormat;
   display_field: DisplayField;
-  field: Field;
+  field: Field1;
   format: Format;
   hide_if_empty: HideIfEmpty;
   label: Label;

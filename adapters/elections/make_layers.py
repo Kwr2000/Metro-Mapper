@@ -44,7 +44,9 @@ def manifests():
         step = ["step", ["get", field], colors[0]]
         for threshold, color in zip(breaks, colors[1:]):
             step.extend([threshold, color])
-        yield {"id": f"elections_{name}_2024", "title": title, **common,
+        yield {"compare": {"field": field, "method": "difference", "direction": "neutral",
+                   "breaks": [-.2, -.05, .05, .2] if name == "president" else [-.1, -.03, .03, .1],
+                   "unit": "pts" if name == "president" else "pp"}, "id": f"elections_{name}_2024", "title": title, **common,
                "style": {"type": "fill", "paint": {"fill-opacity": .55,
                          "fill-color": ["case", ["==", ["get", field], None], "#bdbdbd", step]}},
                "legend": [{"label": label, "color": color} for label, color in zip(labels, colors)] +

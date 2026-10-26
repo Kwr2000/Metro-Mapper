@@ -3,6 +3,22 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-25 — P1-12 comparison display choices (Codex)
+
+- The comparison's MOE rule reads `moe_field` from the existing popup row matching
+  `compare.field`; no duplicate manifest setting is needed. It includes both endpoints of
+  the area's interval, ignores a null MOE, and does not combine the benchmark's MOE.
+- Election lead wording follows the existing canonical convention: a percent-formatted
+  `*_margin` field with comparison unit `pts` is a Republican-positive margin. This selects
+  the specified Democratic/Republican shift labels without naming a layer ID in app code.
+- A variant family's choice is stored under each member's layer ID in the existing version-1
+  share-link format. Changing either variant updates the family; an unavailable geography
+  falls back to Values for that member. Selecting a geography in Values mode enters
+  Compared with; pressing Compared with again keeps the current geography.
+- Palettes, cut points and legend wording follow the task. The middle legend adds the
+  specified margin-of-error note whenever the matching popup row declares an MOE field.
+  Comparison classes remain display-only; filter and comparison-table calculations are unchanged.
+
 ## 2026-10-25 — P2-02 TCAD implementation choices (Codex)
 
 - The Phase 2 owner approval already covers TCAD 2/day and annual refresh. Add exactly

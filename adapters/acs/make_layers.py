@@ -25,7 +25,16 @@ def manifests():
             step = ["step", ["get", metric], BLUE[0]]
             for threshold, color in zip(breaks, BLUE[1:]):
                 step += [threshold, color]
-            yield layer_id, {
+            compare = {}
+            if metric != "population":
+                compare = {"compare": {"field": metric, "benchmark_field": metric,
+                    "method": "ratio" if fmt == "currency" else "difference",
+                    "breaks": [0.67, 0.9, 1.1, 1.5] if fmt == "currency" else
+                        ([-5, -2, 2, 5] if metric == "median_age" else
+                         [-15, -5, 5, 15] if metric == "median_year_built" else [-.10, -.03, .03, .10]),
+                    "direction": "neutral", "unit": "" if fmt == "currency" else
+                        ("pp" if fmt == "percent" else "years")}}
+            yield layer_id, {**compare,
                 "id": layer_id, "title": title + " estimate", "group": "People",
                 "description": VINTAGE + ". Whole-area estimates on 2020 Census boundaries. "
                     "Block groups are finer but noisier; tracts are steadier. Context and filters only.",

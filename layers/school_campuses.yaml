@@ -46,3 +46,14 @@ attribution: NCES EDGE; Texas Education Agency via data.texas.gov
 license: Public domain (NCES); no license stated (TEA on data.texas.gov)
 default_visible: false
 order: 301
+compare:
+  field: overall_score
+  method: difference
+  breaks:
+  - -10
+  - -3
+  - 3
+  - 10
+  direction: higher_is_better
+  benchmark_field: campus_overall_score
+  unit: points

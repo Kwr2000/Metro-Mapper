@@ -23,7 +23,8 @@ def manifest(identity, field, title, breaks, colors, order):
     for threshold, color in zip(breaks, colors[1:]):
         steps.extend((threshold, color))
     labels = [f"Below {breaks[0]}", *[f"{a} to below {b}" for a, b in zip(breaks, breaks[1:])], f"{breaks[-1]} or more"]
-    return {"id": identity, "title": title, "group": "Access", "description": DESCRIPTION, "source": "access", "geometry": "polygon", "join": "block_group",
+    return {"compare": {"field": field, "method": "ratio", "breaks": [.67, .9, 1.1, 1.5],
+            "direction": "higher_is_better" if field == "transit_per_hour" else "lower_is_better"}, "id": identity, "title": title, "group": "Access", "description": DESCRIPTION, "source": "access", "geometry": "polygon", "join": "block_group",
         "dataset": "block_group", "data_bundle": "access_block_group", "publish": "geojson", "default_visible": False,
         "style": {"type": "fill", "paint": {"fill-opacity": .55, "fill-color": ["case", ["==", ["get", field], None], "#bdbdbd", steps]}},
         "popup": popup, "legend": [{"label": label, "color": color} for label, color in zip(labels, colors)] + [{"label": "Not available", "color": "#bdbdbd"}],

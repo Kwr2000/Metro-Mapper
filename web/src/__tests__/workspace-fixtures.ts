@@ -4,7 +4,7 @@ import type { CompiledLayer, Registry } from "../registry";
 export function layer(id: string, patch: Partial<CompiledLayer> = {}): CompiledLayer {
   return { id, title: id, group: "Environment", description: "Description", source: "synthetic", geometry: "polygon", join: "block_group", publish: "geojson",
     style: { type: "fill", paint: {}, layout: {}, minzoom: null, maxzoom: null }, popup: [{ field: "measure", label: "Measure", format: "number", moe_field: null, reliability_field: null, annotation_field: null, display_field: null, benchmark_field: null, benchmark_format: null, hide_if_empty: false }],
-    popup_title: null, hover: [], variant: null, data_bundle: null, legend: [], dataset: null, where: {}, as_of_field: null, coverage: "test", refresh: "annual",
+    popup_title: null, hover: [], variant: null, data_bundle: null, compare: null, legend: [], dataset: null, where: {}, as_of_field: null, coverage: "test", refresh: "annual",
     attribution: "Synthetic source", license: "Public domain", disclaimer: "", demographic: false, default_visible: false, order: 1,
     data_url: `data/layers/${id}.geojson`, as_of: "2026-01-01", last_success: null, freshness: "fixture_only", ...patch };
 }
