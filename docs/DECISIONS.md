@@ -3,6 +3,36 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — P1-12 colour by comparison reviewed, merged and checked (Claude)
+
+- PR #98: every Rules/Tests/Other item checked. The schema validator rejects any `compare` on a
+  `demographic: true` layer unless `direction` is `neutral`; all 44 ACS and election layers are
+  demographic and neutral, and only the crime, access and school layers (15) are directional.
+  `make test` (759 pipeline, 51 web) and the e2e at both sizes pass; CI green; merged.
+- Live-data check on a local build of the deployed site (`mm publish` + `vite build` on the
+  committed data, because the agent sandbox cannot reach github.io): the five layers' legends,
+  headers, colours and popup class labels agree with an independent classification of every area,
+  including the margin-of-error middle class (ACS) and grey for missing areas. No score, rank or
+  filter uses the classes. Two cosmetic header nits are in STATUS.
+
+## 2026-10-26 — P2-02 TCAD reviewed and merged; first live check fixes (Claude)
+
+- PR #99 reviewed against the spec: the parser slices only the listed byte ranges (a test fails on
+  any other slice and on any whole-line decode), canaries sit in the owner, mailing, confidential,
+  exemption and qualify-year ranges and in unused members, record lengths 9,922/114/622/50/2,491,
+  CRLF, 4 implied decimals, zero-padded IDs and MM-DD-YYYY dates match the spec; 828 tests; merged.
+- The fixtures missed two real shapes, found by live runs and counts-only probes (the agent cannot
+  call the source itself): (1) one `IMP_INFO` row has a blank `imprv_type_cd` (run 40265353275 failed
+  in 4 s) — it is now a dwelling improvement, as the spec's rule says (#100); (2) `PROP.TXT` repeats
+  a property on adjacent rows when `partial_owner` is T with the same `udi_group` (run 40266259475
+  failed in 33 s) — the first row is kept and the rest are counted as `repeated_rows`, and any
+  other repeat still fails (#101). The adapter now reports its own static failure message (never
+  source text) so a failed check says which check failed.
+- Probes (40265498631, 40265585555, 40265679662, 40266384937, 40266455000, 40266597630): layout
+  and lengths match the spec; no orphan segments; cell shapes as expected; about 84% of rows would
+  be kept (about 380,000 properties); mobile homes are coded `MH`.
+- Both of 2026-10-26's two `tcad` calls are used. Run again after 00:00 UTC on 2026-10-27.
+
 ## 2026-10-25 — P1-12 comparison display choices (Codex)
 
 - The comparison's MOE rule reads `moe_field` from the existing popup row matching
