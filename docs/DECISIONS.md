@@ -3,6 +3,23 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — P1-11 comparisons reviewed, merged and live-checked (Claude)
+
+- PR #82 reviewed against the spec (705 pipeline + 41 web tests, e2e at 1440×900 and 390×844, CI
+  green) and merged. The owner's budget approvals for P1-11 are recorded once, in the
+  "Owner approvals: P1-11 budgets; Phase 2 plan" entry (a duplicate by Codex was removed).
+- Live runs (one at a time, inside budgets; `access` and `elections` waited for the next UTC day
+  because their daily calls were used up on 2026-10-25): dps_agency 40232299790 (Texas 21.6 /
+  3.4; Texas cities over 100,000 25.3 / 4.1), acs 40232390317 (income US 80,734, Texas 78,476,
+  Austin 93,658; 21 measures × 8 geographies), apd 40232586636 (32.7 / 3.7 per 1,000; density
+  102), schools 40232775313 (campus mean 81.0, 59.5% A or B; district 80.0, 55.7%), access
+  40248194811 (walk to grocery 32 min, bike 10; walking basket median over 60 min so no
+  reference; transit 0 trips/hour), elections 40249589136 (2024 Democratic 42.4%, Republican
+  56.1%, turnout 61.3%; 2020 46.5% / 52.0% / 67.0%), fbi_national 40249786937 (see its entry).
+  Existing records were unchanged by each run except the newer OSM date and three values in
+  access. Nothing was edited by hand.
+- Combined `benchmarks.json`: 7 sources, 199 records, not test data, no personal fields.
+
 ## 2026-10-26 — P2-01 parcels first live check passed; ungated (Claude)
 
 - Run 40250516420: 4 calls, 116 s runtime (limit 30 min), peak memory 1.8 GB, stored file
@@ -64,14 +81,6 @@ why, and (for approvals) that the owner approved it in writing.
   Ungated. Only the first run's log line was merged (#90).
 - A live run of a layer with `publish: none` made the web test "fixture builds are labeled
   Test data" fail (freshness comes from the run log); that test now checks published layers only.
-
-## 2026-10-25 — Owner approvals: P1-11 benchmark budgets
-
-- **Owner approval:** raise `acs` from 30 to 40 calls per day for its four comparison
-  requests, approved in writing in the owner's P1-11 build request.
-- **Owner approval:** `fbi_national: {per_day: 4, min_interval_seconds: 2}`, refreshed annually,
-  approved in writing in the same request; gated "awaiting Claude's first live check".
-  The `dps_agency` budget remains unchanged.
 
 ## 2026-10-25 — P1-11 implementation choices (Codex)
 

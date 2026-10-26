@@ -3,11 +3,11 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (P1-11; Phase 2 approved, P2-01 spec)._
+_Last updated 2026-10-26 (P1-11 and P2-01 reviewed, merged and live-checked)._
 
 ## Phase
 
-**Phase 2 — approved 2026-10-25, in progress** (P2-01 built on fixtures). Phase 1 is complete.
+**Phase 2 — approved 2026-10-25, in progress** (P2-01 parcel base live). Phase 1 is complete.
 
 **Phase 1 — done 2026-10-25** (approved 2026-10-23). Phase 0 is done. All owner questions (Q1–Q3)
 are decided (`DECISIONS.md`).
@@ -114,29 +114,27 @@ are decided (`DECISIONS.md`).
 - **Phase 1 closing review** (Claude, 2026-10-25): every layer checked on real data at desktop
   and phone sizes; layout fixes; methodology page complete.
 
-- **P1-11 Part 1** (Codex): validated benchmark publisher and fixture labeling; ACS
-  geographies/12-city averages, APD/DPS/FBI, statewide schools/elections and population-weighted
-  access comparisons. Popup and comparison-table details include sources, periods and MOEs;
-  no rankings or colour mode. Approved budgets and FBI workflow secret/gate recorded.
-  `make test` passes (705 pipeline, 41 web tests and builds); local e2e passes at 1440×900
-  and 390×844. Synthetic data only. Awaiting Claude's live benchmark/probe and FBI checks.
+- **P1-11** (Codex, PR #82; Claude fixes PRs #86, #90): comparisons (benchmarks) for ACS, DPS, APD,
+  schools, access, elections and the new FBI national source. Merged 2026-10-25, then live
+  checks (data PRs #85, #87–#89, #92–#94): ACS median household income US 80,734, Texas 78,476,
+  Austin city 93,658 (exact, 168 records, all 12 peer cities); DPS Texas Part I 21.6 and violent
+  3.4 per 1,000; FBI US violent 3.3, Part I 18.7; Austin PD area 32.7 / 3.7; schools Texas campus
+  mean score 81.0 (59.5% A or B); access three-county medians; Texas election and turnout totals.
+  `benchmarks.json` has no personal fields and is not test data. FBI's property series includes
+  arson (probe 40232292906), so the adapter now removes it (3 calls a run). `fbi_national` ungated
+  (run 40249786937). Web test fixed for layers that publish no file.
 
-
-- **P2-01** (Codex): canonical-only StratMap parcel base for three counties, safe DBF
-  field selection, streamed temporary ZIPs, repeated-ID unions/interior points, Census
-  assignments and count-only audit. Approved budget and first-live-check gate added; no
-  core/web changes or layer. `make test` passes (723 pipeline, 35 web tests and builds).
-  Synthetic fixtures only. Awaiting Claude's live kept/skip/coverage counts, file size,
-  runtime/memory and stored-field privacy check.
-
+- **P2-01** (Codex, PR #83): StratMap parcel base (canonical records only, no layer). First live
+  check passed (run 40250516420, PR #95): 793,461 kept IDs, exactly the expected counts per
+  county; 0.02% of points outside the study block groups; 116 s; 13.9 MB; no personal fields.
+  Ungated. Acreage is unreliable in this source (see Open issues).
 
 ## Next
 
-1. Claude: review P1-11 PR #82 and run live benchmark checks. FBI key/probe are ready
-   (run 40226938290); verify P's arson definition before ungating the adapter.
-2. Owner: after P1-11's PR, paste the P2-01 prompt (parcel base) into Codex.
-3. After P1-11 is live: Claude specs P1-12 (colour by comparison); P2-02 (TCAD) spec next.
-4. Check the 2026-11-03 refresh report (expect nothing due).
+1. Owner: decide what to do about parcel `acres` (see Waiting on the owner).
+2. Codex: P1-12 (colour by comparison, `docs/tasks/P1-12-colour-by-comparison.md`) and P2-02
+   (TCAD, `docs/tasks/P2-02-tcad.md`) specs are ready; Claude gives the owner the Codex prompts.
+3. Check the 2026-11-03 refresh report (expect nothing due; FBI and parcels are annual).
 
 ## Open issues
 
@@ -147,6 +145,11 @@ are decided (`DECISIONS.md`).
 - Schools: four checked finder links; other districts link to their AskTED website or show
   Not available.
 - Transit covers CapMetro only; other agencies are labeled as not included.
+- Parcels: StratMap `acres` is unreliable (Williamson 0 for every parcel, Hays about twice the county
+  area) and Williamson has no `GEO_ID`; one Williamson ID is the text "PRIVATE ROAD". Not used by
+  anything yet.
+- The test-data banner appears whenever any comparison came from fixtures; all comparison sources
+  are live now, so it is off. A source that is ever re-gated would bring it back for that source.
 
 ## Ideas from the owner (not started; need a spec and approval)
 
@@ -154,7 +157,8 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Nothing right now.
+- Parcel `acres`: drop it from the parcel record, or publish it as "not available" where the
+  source is 0 (small follow-up fix plus one re-run of `parcels`, 4 calls).
 
 ## Working notes for agents
 
