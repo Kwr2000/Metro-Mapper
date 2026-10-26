@@ -220,9 +220,10 @@ def test_approved_budgets_gate_and_annual_schedule_secrets_workflows(repo):
     assert budgets["acs"].per_day == 40 and budgets["dps_agency"].per_day == 10
     assert budgets["fbi_national"].per_day == 4 and budgets["fbi_national"].min_interval_seconds == 2
     assert layers_due.layer_adapters()["fbi_national"].days == 365
+    # Ungated after its first live check (run 40249786937, 2026-10-26).
     (paths().config / "live_gates.yaml").write_text((ROOT / "config/live_gates.yaml").read_text()); config.clear_cache()
-    assert config.live_gates()["fbi_national"] == "awaiting Claude's first live check"
-    assert "fbi_national" not in layers_due.layer_adapters()
+    assert "fbi_national" not in config.live_gates()
+    assert "fbi_national" in layers_due.layer_adapters()
     for file in ("live-run.yml", "refresh.yml"):
         assert "FBI_API_KEY: ${{ secrets.FBI_API_KEY }}" in (ROOT / ".github/workflows" / file).read_text()
 

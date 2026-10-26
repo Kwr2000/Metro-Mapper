@@ -3,6 +3,18 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — P1-11 FBI national check passed; ungated (Claude)
+
+- First run 40232207700 (2025: violent 3.3, Part I 18.8 per 1,000) was held back: probe run
+  40232292906 showed the summarized property series `P` includes arson exactly (P 5,174,662 =
+  burglary 650,580 + larceny 3,824,966 + motor vehicle theft 666,315 + arson 32,801). DPS Part I
+  excludes arson, so the adapter now also reads `ARS` (3 calls a run, inside the unchanged
+  4/day budget) and uses violent + (P − ARS) (PR #86).
+- Re-run 40249786937: 3 calls; US 2025 reported offenses: violent 3.3, Part I 18.7 per 1,000.
+  Ungated. Only the first run's log line was merged (#90).
+- A live run of a layer with `publish: none` made the web test "fixture builds are labeled
+  Test data" fail (freshness comes from the run log); that test now checks published layers only.
+
 ## 2026-10-25 — Owner approvals: P1-11 benchmark budgets
 
 - **Owner approval:** raise `acs` from 30 to 40 calls per day for its four comparison

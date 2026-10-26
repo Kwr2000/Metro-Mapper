@@ -1,5 +1,4 @@
 # Adapters listed here never run live (`mm run --mode live` records a skipped run).
 # Fixtures are unaffected. Remove an entry only after the source probe has confirmed
 # the source, and record that in docs/DECISIONS.md.
-gated:
-  fbi_national: "awaiting Claude's first live check"
+gated: {}
