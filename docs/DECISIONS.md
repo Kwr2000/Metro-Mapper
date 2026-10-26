@@ -3,6 +3,27 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — P2-01 parcels first live check passed; ungated (Claude)
+
+- Run 40250516420: 4 calls, 116 s runtime (limit 30 min), peak memory 1.8 GB, stored file
+  13.9 MB compressed (244 MB as text; limit 100 MB). Kept unique IDs: Travis 386,240,
+  Williamson 286,776, Hays 120,445 (793,461 in all), exactly the expected counts. Records
+  read 386,752 / 287,194 / 121,110, matching the spec; skipped and merged counts match too
+  (Travis 407 "0" and 46 repeated IDs; Williamson 132 blank and 284 repeated; Hays 257 blank,
+  292 "0" and 100 repeated). 159 points (0.02%) fall outside every study block group
+  (Travis 144, Williamson 10, Hays 5). `DATE_ACQ` 2026-07-01 (Travis, Williamson) and
+  2026-02-01 (Hays); `TAX_YEAR` 2026. Stored properties are exactly county, prop_id, geo_id,
+  acres, block_group, tract, parcel_as_of; all geometry is Point. A case-insensitive search of
+  the stored file for owner, mail, care, legal, mkt, exempt and homestead found nothing.
+- **Acreage is not reliable in this source; do not use `acres` yet.** Williamson's `GIS_AREA` is
+  0 for all 286,776 parcels, and Williamson parcels also have no `GEO_ID` (Travis 6,633 and
+  Hays 959 lack one). Hays acres total 870,356, about twice the county's land area. Travis
+  (611,641) looks right. Nothing planned needs it: the CAD tasks take `land_acres` from the
+  appraisal files. Owner decision needed: drop `acres` from the parcel record, or publish it as
+  "not available" where the source is 0 (a follow-up fix, then one re-run).
+- One Williamson property ID is the text "PRIVATE ROAD" (not a real property ID); P2-04 should
+  ignore IDs that do not match the WCAD pattern.
+
 ## 2026-10-25 — P2-01 parcel-base implementation choices (Codex)
 
 - Phase 2 and parcels 6/day are already approved in the owner's 2026-10-25 entry below.

@@ -270,9 +270,8 @@ def test_budget_live_gate_and_no_map_layer(context):
     assert (budget.per_day,budget.min_interval_seconds,budget.max_minutes)==(6,5,30)
     assert not any(l.source=="parcels" for l in load_layers())
     (paths().config/"live_gates.yaml").write_text((ROOT/"config/live_gates.yaml").read_text());config.clear_cache()
-    assert config.live_gates()["parcels"]=="awaiting Claude's first live check"
-    run=runner.run("parcels","live",now=NOW)
-    assert run.status=="skipped" and run.calls_made==0
+    # Ungated after its first live check (run 40250516420, 2026-10-26).
+    assert "parcels" not in config.live_gates()
 
 
 def test_mocked_live_storage_canaries_absent_saved_summary_and_failure_keeps_previous(context,tmp_path,monkeypatch,capsys):
