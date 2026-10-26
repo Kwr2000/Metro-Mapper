@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-26 (P1-12 live-checked; P2-02 merged, first live check pending)._
+_Last updated 2026-10-26 (fresh-clone verification; TCAD remains gated at its daily limit)._
 
 ## Phase
 
@@ -145,9 +145,20 @@ are decided (`DECISIONS.md`).
   40266259475 failed on partial-owner repeat rows in `PROP.TXT` (fixed, #101). Both of the day's
   2 calls are used; the next run is due after 00:00 UTC on 2026-10-27. `tcad` is still gated.
 
+- **Review verification 2026-10-26** (Codex, fresh clone): confirmed PRs #98/#99 were
+  already merged with green CI. Current `make test`: 831 pipeline + 51 web tests and build;
+  fixture e2e passes at 1440×900 and 390×844. Rechecked the five real-data comparison UIs at
+  both sizes on a local copy of the deployed inputs (github.io is blocked): all 4,767 feature
+  classes/paint match an independent calculation, including 375 ACS MOE middle cases. All
+  42 demographic comparison layers are neutral (the two population layers have no compare).
+  TCAD byte-range/canary/native-ZIP checks pass. No source calls made: today's two failed
+  calls are already logged, budget remaining is 0, and no TCAD canonical file exists yet.
+  Live metrics and the five stored-property examples remain pending the next successful run.
+
 ## Next
 
-1. Claude: re-run the TCAD first live check (`adapter=tcad`, `first_check=true`) on 2026-10-27 UTC;
+1. Re-run the TCAD first live check (`adapter=tcad`, `first_check=true`) after 00:00 UTC on
+   2026-10-27 (7 p.m. Central on October 26);
    if it passes, merge its data, ungate `tcad`, and list five kept properties for the browser spot
    check against TCAD's own pages (the owner or a chat session with a browser does that).
 2. Owner: decide what to do about parcel `acres` (see Waiting on the owner).

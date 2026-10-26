@@ -3,6 +3,30 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — Fresh-clone verification; TCAD daily-budget hold (Codex)
+
+- The requested PRs were already merged when this session started: #98 at `c9311d1`, #99 at
+  `dcf644c`, followed by TCAD fixes #100/#101. Verified both original PR heads had green CI;
+  no second merge or source run was needed to establish that state. Current full tests pass
+  (831 pipeline, 51 web, schemas/types/build); local fixture e2e passes at both requested sizes.
+- Pages deployment 40266966217 succeeded at `e1b4190`. Current main differs only in docs and
+  the probe script, so the app/manifests/canonical inputs match that deployment. Direct
+  github.io access is blocked by the environment; rebuilt those inputs locally without source
+  calls and checked crime vs Texas 21.6/1,000, grocery walk vs three-county 32 minutes, campus
+  score vs Texas 81.033, bachelor's share vs Texas 33.8%, and election margin vs Texas 13.7
+  points. All five headers/legends/popup classes passed at 1440×900 and 390×844; all 4,767
+  features matched an independent classification and MapLibre paint evaluation. The ACS
+  MOE rule moved 375 estimates to the middle class. All 42 demographic comparisons have
+  neutral palettes/wording; both directional mutations were rejected for every such manifest.
+- Rechecked TCAD's exact byte allowlist, independent slice guard, forbidden-cell canaries,
+  ZIP member restrictions and native fixed-width formats against the spec, including the
+  already-merged blank-type and partial-owner-repeat regressions. No core/web changes made.
+- Committed run log contains the two failed TCAD calls on 2026-10-26 (40265353275 and
+  40266259475). The runner confirms 0 calls remaining; no successful canonical TCAD file
+  exists, so live quality/resource numbers and five stored-property examples are unavailable.
+  Keep the gate. No source calls/probes were made in this session. Next eligible first check:
+  00:00 UTC on 2026-10-27 (19:00 America/Chicago on October 26), using the existing budget.
+
 ## 2026-10-26 — P1-12 colour by comparison reviewed, merged and checked (Claude)
 
 - PR #98: every Rules/Tests/Other item checked. The schema validator rejects any `compare` on a
