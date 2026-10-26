@@ -161,7 +161,8 @@ are decided (`DECISIONS.md`).
    2026-10-27 (7 p.m. Central on October 26);
    if it passes, merge its data, ungate `tcad`, and list five kept properties for the browser spot
    check against TCAD's own pages (the owner or a chat session with a browser does that).
-2. Owner: decide what to do about parcel `acres` (see Waiting on the owner).
+2. Claude: re-run `parcels` (4 calls; it used 4 of its 6 on 2026-10-26) after 00:00 UTC on 2026-10-27, to
+   store the records without `acres` (owner decision 2026-10-26; code merged), then merge its data.
 3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
 
 ## Open issues
@@ -173,17 +174,16 @@ are decided (`DECISIONS.md`).
 - Schools: four checked finder links; other districts link to their AskTED website or show
   Not available.
 - Transit covers CapMetro only; other agencies are labeled as not included.
-- Parcels: StratMap `acres` is unreliable (Williamson 0 for every parcel, Hays about twice the county
-  area) and Williamson has no `GEO_ID`; one Williamson ID is the text "PRIVATE ROAD". Not used by
-  anything yet.
+- Parcels: `acres` is dropped from the record (owner decision 2026-10-26; the source values were
+  unusable) but the stored file still has it until the re-run. Williamson has no `GEO_ID`; one
+  Williamson ID is the text "PRIVATE ROAD".
 - The test-data banner appears whenever any comparison came from fixtures; all comparison sources
   are live now, so it is off. A source that is ever re-gated would bring it back for that source.
 
-- TCAD: mobile homes are coded `MH` in the real file, not the spec's `M` (about 0.03% of rows), so
-  they are skipped; the R+M count check ignores them. Decide later whether to keep them.
-- The live workflow job times out at 30 minutes, but `tcad` is allowed 45 (`max_minutes`). The first
-  parse runs in well under a minute for the small members, so it should finish earlier; if a run is
-  cut off, raise the workflow `timeout-minutes` (owner approval needed for a schedule/budget change).
+- TCAD: mobile homes coded `MH` (about 130 records, usually on rented land) stay skipped, by owner
+  decision 2026-10-26; mobile homes recorded as real property (A2) are kept.
+- The live workflow job times out at 30 minutes while `tcad` is allowed 45. Owner decision
+  2026-10-26: leave it; raise the workflow `timeout-minutes` only if a run is cut off.
 - P1-12 header nits: school score header shows 81.033 (three decimals) and the election header shows
   "13.7%" for a margin (a Republican lead in points). Cosmetic.
 - The tcad probe checks (`tcad_layout`, `tcad_small_members`, `tcad_shapes`, `tcad_dups`,
@@ -195,8 +195,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Parcel `acres`: drop it from the parcel record, or publish it as "not available" where the
-  source is 0 (small follow-up fix plus one re-run of `parcels`, 4 calls).
+- Nothing right now.
 
 ## Working notes for agents
 

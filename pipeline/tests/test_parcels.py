@@ -122,8 +122,8 @@ def test_parser_reads_only_allowlist_unions_duplicates_first_geo_and_sums(contex
     assert set(p.suffix for p in extracted.iterdir()) == {".shp", ".shx", ".dbf", ".prj"}
     assert len(body["parcels"]) == 2
     first = next(row for row in body["parcels"] if row[0] == "123")
-    assert first[1] == "GEO-FIRST" and first[2] == 8.889
-    assert any(g.covers(Point(first[3:])) for g in (geometries[0], geometries[2], geometries[3]))
+    assert first[1] == "GEO-FIRST" and len(first) == 4  # no acreage: GIS_AREA is not read
+    assert any(g.covers(Point(first[2:])) for g in (geometries[0], geometries[2], geometries[3]))
     assert not any(c in json.dumps(body) for c in (*CANARIES, *PRIVATE_FIELDS))
     assert body["skipped"] == {"records_read":6, "blank_ids":1, "zero_ids":1,
         "repeated_ids_merged":1, "repeated_records_merged":2, "geo_id_conflicts":1}
@@ -131,9 +131,7 @@ def test_parser_reads_only_allowlist_unions_duplicates_first_geo_and_sums(contex
 
 
 @pytest.mark.parametrize("change, match", [
-    (lambda rows, g: rows[0].__setitem__(3, "Meters"), "Acres"),
     (lambda rows, g: rows[0].__setitem__(4, 48491), "FIPS"),
-    (lambda rows, g: rows[0].__setitem__(2, -1), "acreage"),
     (lambda rows, g: rows[0].__setitem__(5, None), "acquisition date"),
     (lambda rows, g: rows[0].__setitem__(6, "2025"), "TAX_YEAR"),
     (lambda rows, g: rows[0].__setitem__(5, date(2026, 1, 1)), "DATE_ACQ"),
@@ -142,6 +140,18 @@ def test_parser_metadata_failures(tmp_path, change, match):
     data, _ = tiny_zip(tmp_path, change=change)
     archive=tmp_path/"source.zip"; archive.write_bytes(data)
     with pytest.raises(ValueError, match=match): parcels.parse_parcels(archive, tmp_path, "48453")
+
+
+def test_source_acreage_is_never_read_or_stored(tmp_path):
+    # The owner dropped acres (2026-10-26): a nonsense unit or negative area must not matter.
+    def break_area(rows, geometries):
+        rows[0][2], rows[0][3] = -1, "Meters"
+    data, _ = tiny_zip(tmp_path, change=break_area)
+    archive = tmp_path / "archive.zip"; archive.write_bytes(data)
+    extracted = tmp_path / "extract"; extracted.mkdir()
+    body = parcels.parse_parcels(archive, extracted, "48453")
+    assert all(len(row) == 4 for row in body["parcels"])
+    assert "GIS_AREA" not in parcels.FIELDS and "GIS_AREA_U" not in parcels.FIELDS
 
 
 def test_non_wgs84_projection_and_missing_dbf_field_fail(tmp_path):
@@ -199,7 +209,7 @@ def test_points_identifiers_tract_latest_date_and_count_only_summary(context, ca
     assert len(rows)==6
     for rec in rows:
         props=rec.properties
-        assert set(props)=={"county","prop_id","geo_id","acres","block_group","tract","parcel_as_of"}
+        assert set(props)=={"county","prop_id","geo_id","block_group","tract","parcel_as_of"}
         assert rec.feature_id==next(f for f,c in parcels.COUNTIES.items() if c==props["county"])+":"+props["prop_id"]
         assert props["block_group"].startswith(rec.feature_id[:5]) and props["tract"]==props["block_group"][:11]
         assert rec.geometry["type"]=="Point" and all(v==round(v,6) for v in rec.geometry["coordinates"])
@@ -219,16 +229,16 @@ def hundred_points(raws, outside=1):
     for fips,count in (("48453",98),("48491",1),("48209",1)):
         body=raws["stratmap_"+fips].body
         base=body["parcels"][0]
-        body["parcels"]=[[str(i+1),None,1,base[3],base[4]] for i in range(count)]
+        body["parcels"]=[[str(i+1),None,base[2],base[3]] for i in range(count)]
         body["skipped"]={**dict.fromkeys(parcels.COUNTERS,0),"records_read":count}
-    for i in range(outside):raws["stratmap_48453"].body["parcels"][i][3:]=[-99,32]
+    for i in range(outside):raws["stratmap_48453"].body["parcels"][i][2:]=[-99,32]
 
 
 def test_outside_count_exact_99_percent_and_county_crossing(context):
     def modify(raws):
         hundred_points(raws)
         # A Travis record whose interior point falls in a Williamson BG keeps that real BG.
-        raws["stratmap_48453"].body["parcels"][1][3:]=raws["stratmap_48491"].body["parcels"][0][3:]
+        raws["stratmap_48453"].body["parcels"][1][2:]=raws["stratmap_48491"].body["parcels"][0][2:]
     result=output(context,modify)
     outside=next(r for r in result if r.feature_id=="48453:1")
     assert outside.properties["block_group"] is outside.properties["tract"] is None
@@ -240,8 +250,7 @@ def test_outside_count_exact_99_percent_and_county_crossing(context):
 
 
 @pytest.mark.parametrize("modify, match", [
-    (lambda r:r["stratmap_48453"].body["parcels"].__setitem__(0,["0",None,1,-97.79,30.31]),"property ID"),
-    (lambda r:r["stratmap_48453"].body["parcels"][0].__setitem__(2,-1),"acreage"),
+    (lambda r:r["stratmap_48453"].body["parcels"].__setitem__(0,["0",None,-97.79,30.31]),"property ID"),
     (lambda r:r["stratmap_48453"].body["parcels"][0].__setitem__(3,float("nan")),"coordinates"),
     (lambda r:r["stratmap_48453"].body["skipped"].__setitem__("records_read",100),"reconcile"),
     (lambda r:r["stratmap_48453"].body.__setitem__("OWNER_NAME","CANARY_OWNER"),"compact parcel response"),
@@ -337,7 +346,7 @@ def test_boundary_point_is_covered_and_smallest_geoid_breaks_tie(context):
         features[0]["geometry"]=mapping(box(-97.8,30.3,-97.79,30.35))
         features.append({"type":"Feature","properties":{"GEOID":"484530000001"},
                          "geometry":mapping(box(-97.79,30.3,-97.75,30.35))})
-        raws["stratmap_48453"].body["parcels"][0][3]=-97.79
+        raws["stratmap_48453"].body["parcels"][0][2]=-97.79
     result=output(context,modify)
     assert next(r for r in result if r.feature_id=="48453:00123").properties["block_group"]=="484530000001"
 

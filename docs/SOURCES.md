@@ -171,7 +171,7 @@ published in 2027.
 
   Read only the matching `stratmap-2026-land-parcels-<county>_<FIPS>.shp/.shx/.dbf/.prj`;
   require WGS84 (`GCS_WGS_1984`) from the PRJ. Only DBF fields `PROP_ID`, `GEO_ID`,
-  `GIS_AREA`, `GIS_AREA_U` (Acres), `FIPS`, `DATE_ACQ`, `TAX_YEAR` are unpacked/decoded.
+  `FIPS`, `DATE_ACQ`, `TAX_YEAR` are unpacked/decoded (`GIS_AREA`/`GIS_AREA_U` no longer: Williamson's is 0 for every parcel and Hays's totals twice the county; checked 2026-10-26, owner dropped `acres`).
   Never parse/retain `OWNER_NAME`, `NAME_CARE`, `MAIL_*`, `LEGAL_DESC` or any other
   attribute; even legal descriptions can contain names. The ZIP and extracted DBF are
   temporary, deleted before fetch returns; raw retention and recording are disabled.
