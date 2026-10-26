@@ -218,6 +218,47 @@ def _():
             f"IMP_DET.TXT {mb(names.get('IMP_DET.TXT'))} uncompressed")
 
 
+@check("tcad_layout", "TCAD export: member names, record lengths and terminators (lengths only, no cell contents)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    out = [f"final host {urllib.parse.urlparse(final).netloc}"]
+    wanted = {"TOTALS.TXT": 2491, "ABS_SUBD.TXT": 50, "IMP_INFO.TXT": 114, "IMP_DET.TXT": 622, "PROP.TXT": 9922}
+    spans = {"IMP_INFO.TXT": (12, 16), "IMP_DET.TXT": (12, 16), "PROP.TXT": (17, 22)}
+    for name, expect in wanted.items():
+        match = [m for m in members if m.name.rsplit("/", 1)[-1].upper() == name]
+        if len(match) != 1:
+            out.append(f"{name}: {len(match)} matches {[m.name for m in match]}")
+            continue
+        m = match[0]
+        head_bytes = zip_member_head(url, m, 1_000_000)
+        lines = head_bytes.split(b"\n")[:-1]
+        lens = Counter(len(l.removesuffix(b"\r")) for l in lines)
+        crlf = sum(l.endswith(b"\r") for l in lines)
+        est = m.uncomp / (expect + 2)
+        text = f"{name}: uncompressed {m.uncomp:,} B (~{est:,.0f} lines if {expect}+CRLF); head {len(lines)} lines, lengths {dict(lens.most_common(3))}, CRLF {crlf}/{len(lines)}"
+        if name in spans:
+            a, b = spans[name]
+            text += f", year cells {dict(Counter(l[a:b].decode('latin-1').strip() for l in lines).most_common(3))}"
+        if name == "PROP.TXT":
+            text += f", sup_num cells {dict(Counter(l[22:34].decode('latin-1').strip() for l in lines).most_common(2))}"
+        if name == "TOTALS.TXT":
+            for l in lines:
+                if l[12:17].decode("latin-1").strip() == "03":
+                    text += f", county row: num_real_mobile {l[282:294].decode('latin-1').strip()} sup_num {l[808:820].decode('latin-1').strip()}"
+        out.append(text)
+    # The adapter's own GET: same headers, first 1 MiB only.
+    req = urllib.request.Request(url, headers={"User-Agent": "metro-mapper/0.1 (+https://github.com/Kwr2000/metro-mapper)", "Accept-Encoding": "identity"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            first = resp.read(1 << 20)
+            out.append(f"adapter-style GET: HTTP {resp.status}, content-length {resp.headers.get('Content-Length')}, type {resp.headers.get('Content-Type')}, first bytes {first[:4]!r}")
+    except Exception as e:
+        out.append(f"adapter-style GET failed: {type(e).__name__} {str(e)[:100]}")
+    return "; ".join(out)
+
+
 @check("wcad_socrata_parcels", "WCAD open data: parcel polygons (count + 1 geometry)")
 def _():
     n = socrata("data.wcad.org", "an3x-cnmw", "SELECT count(*) AS n")[0]["n"]
