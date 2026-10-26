@@ -3,6 +3,19 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — Owner decisions after the P1-12 / P2-02 review
+
+- **Owner decision:** TCAD mobile homes coded `MH` (about 130 records, usually on rented land) stay
+  skipped; mobile homes recorded as real property (state code A2) are kept. The spec's R and M
+  rule is unchanged.
+- **Owner decision:** leave the live workflow's 30-minute job limit as is (TCAD is allowed 45);
+  raise it only if a run is cut off.
+- **Owner decision:** drop `acres` from the parcel record. Williamson's `GIS_AREA` is 0 for every
+  parcel and Hays's totals twice the county; lot size comes from the appraisal districts (TCAD
+  `land_acres`, and the Williamson and Hays tasks). The parcels adapter no longer reads `GIS_AREA`
+  or `GIS_AREA_U` (rows are `[prop_id, geo_id, lon, lat]`; test added that bad area values are
+  ignored). The stored file keeps `acres` until `parcels` is re-run after 00:00 UTC on 2026-10-27.
+
 ## 2026-10-26 — Fresh-clone verification; TCAD daily-budget hold (Codex)
 
 - The requested PRs were already merged when this session started: #98 at `c9311d1`, #99 at

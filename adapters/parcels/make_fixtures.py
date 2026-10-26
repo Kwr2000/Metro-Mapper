@@ -12,7 +12,7 @@ def main():
     for i, fips in enumerate(COUNTIES):
         west = -97.8 + i * .1
         identifiers = ["R070302", "R000123"] if fips == "48491" else ["00123", "456"]
-        points = [[identity, f"TEST-GEO-{i}-{j}", 1.111 + j, round(west + .01 + .01 * j, 6), 30.31]
+        points = [[identity, f"TEST-GEO-{i}-{j}", round(west + .01 + .01 * j, 6), 30.31]
                   for j, identity in enumerate(identifiers)]
         stats = {**dict.fromkeys(COUNTERS, 0), "records_read": 5, "blank_ids": 1,
                  "zero_ids": 1, "repeated_ids_merged": 1, "repeated_records_merged": 1}

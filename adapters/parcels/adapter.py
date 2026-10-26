@@ -24,7 +24,8 @@ from shapely.geometry import MultiPolygon, Point, shape
 
 COUNTIES = {"48453": "Travis", "48491": "Williamson", "48209": "Hays"}
 EXPECTED = {"48453": 386240, "48491": 286776, "48209": 120445}
-FIELDS = ("PROP_ID", "GEO_ID", "GIS_AREA", "GIS_AREA_U", "FIPS", "DATE_ACQ", "TAX_YEAR")
+# GIS_AREA/GIS_AREA_U are deliberately not read: the source acreage is unusable (owner decision 2026-10-26).
+FIELDS = ("PROP_ID", "GEO_ID", "FIPS", "DATE_ACQ", "TAX_YEAR")
 COUNTERS = ("records_read", "blank_ids", "zero_ids", "repeated_ids_merged", "repeated_records_merged", "geo_id_conflicts")
 S3 = "https://tnris-data-warehouse.s3.us-east-1.amazonaws.com/LCD/collection/stratmap-2026-land-parcels/items/shp/stratmap-2026-land-parcels_{}_shp.zip"
 TIGER = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/8/query"
@@ -56,12 +57,6 @@ def text(value):
     if not isinstance(value, str):
         raise ValueError("expected a text parcel identifier")
     return value.strip()
-
-
-def area(value):
-    if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value) or value < 0:
-        raise ValueError("invalid parcel acreage")
-    return float(value)
 
 
 def reproject(geom, operation):
@@ -129,9 +124,6 @@ def parse_parcels(archive, folder, fips, check_time=lambda: None):
             counts["records_read"] += 1
             if integer(props["FIPS"]) != int(fips):
                 raise ValueError("parcel FIPS does not match requested county")
-            if text(props["GIS_AREA_U"]) != "Acres":
-                raise ValueError("parcel area unit must be Acres")
-            acres = area(props["GIS_AREA"])
             dates.add(iso_date(props["DATE_ACQ"]))
             year = text(props["TAX_YEAR"])
             if len(year) != 4 or not year.isdigit():
@@ -146,27 +138,24 @@ def parse_parcels(archive, folder, fips, check_time=lambda: None):
                 counts["blank_ids" if not identity else "zero_ids"] += 1
                 continue
             if identity not in states:
-                states[identity] = [geo, acres, row.oid, False]
+                states[identity] = [geo, row.oid, False]
                 continue
             state = states[identity]
-            state[1] += acres
-            if not math.isfinite(state[1]):
-                raise ValueError("nonfinite summed parcel acreage")
-            if not isinstance(state[2], list):
-                state[2] = [state[2]]
+            if not isinstance(state[1], list):
+                state[1] = [state[1]]
                 counts["repeated_ids_merged"] += 1
-            state[2].append(row.oid)
+            state[1].append(row.oid)
             counts["repeated_records_merged"] += 1
             if geo:
                 if not state[0]:
                     state[0] = geo
-                elif state[0] != geo and not state[3]:
-                    state[3] = True
+                elif state[0] != geo and not state[2]:
+                    state[2] = True
                     counts["geo_id_conflicts"] += 1
         if not states or not dates or not years:
             raise ValueError("empty parcel county")
         parcels = []
-        for index, (identity, (geo, acres, indices, conflict)) in enumerate(sorted(states.items())):
+        for index, (identity, (geo, indices, conflict)) in enumerate(sorted(states.items())):
             if index % 1000 == 0:
                 check_time()
             indices = indices if isinstance(indices, list) else [indices]
@@ -181,7 +170,7 @@ def parse_parcels(archive, folder, fips, check_time=lambda: None):
             lon, lat = round(point.x, 6), round(point.y, 6)
             if not math.isfinite(lon) or not math.isfinite(lat):
                 raise ValueError("invalid parcel interior point")
-            parcels.append([identity, geo or None, round(acres, 3), lon, lat])
+            parcels.append([identity, geo or None, lon, lat])
     return {"parcels": parcels, "skipped": counts, "date_acq": next(iter(dates)), "tax_year": next(iter(years))}
 
 
@@ -283,19 +272,18 @@ class Parcels(SourceAdapter):
         if stats["records_read"] != stats["ids_kept"] + stats["blank_ids"] + stats["zero_ids"] + stats["repeated_records_merged"]:
             raise ValueError("parcel read/skip/merge counts do not reconcile")
         for row in body["parcels"]:
-            if not isinstance(row, list) or len(row) != 5:
+            if not isinstance(row, list) or len(row) != 4:
                 raise ValueError("invalid compact parcel row")
-            identity, geo, acres, lon, lat = row
+            identity, geo, lon, lat = row
             if not isinstance(identity, str) or identity != text(identity) or identity in {"", "0"}:
                 raise ValueError("invalid compact property ID")
             if geo is not None and (not isinstance(geo, str) or not geo or geo != text(geo)):
                 raise ValueError("invalid compact geographic ID")
-            area(acres)
             if (any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in (lon, lat)) or
                     not -180 <= lon <= 180 or not -90 <= lat <= 90):
                 raise ValueError("invalid compact parcel coordinates")
             yield AreaFeature(dataset="parcel", feature_id=f"{fips}:{identity}", geometry={"type": "Point", "coordinates": [round(lon, 6), round(lat, 6)]},
-                properties={"county": COUNTIES[fips], "prop_id": identity, "geo_id": geo, "acres": round(acres, 3),
+                properties={"county": COUNTIES[fips], "prop_id": identity, "geo_id": geo,
                             "block_group": None, "tract": None, "parcel_as_of": acquired})
         yield AreaFeature(dataset="parcel_input_summary", feature_id=fips, geometry=EMPTY,
             properties={**stats, "date_acq": acquired, "tax_year": body["tax_year"]})

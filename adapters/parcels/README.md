@@ -17,8 +17,9 @@ The temporary archive/components are deleted before fetch returns, including on 
 Raw retention and recording stay disabled. A failed download/parse returns a sanitized failed
 payload, preventing the core's generic retry from downloading a large private DBF twice.
 
-Use pyshp's selected-field reader with exactly `PROP_ID`, `GEO_ID`, `GIS_AREA`, `GIS_AREA_U`,
-`FIPS`, `DATE_ACQ`, `TAX_YEAR`. Only selected fields are unpacked/decoded; all other DBF
+Use pyshp's selected-field reader with exactly `PROP_ID`, `GEO_ID`,
+`FIPS`, `DATE_ACQ`, `TAX_YEAR`. (`GIS_AREA`/`GIS_AREA_U` are not read: the source acreage is
+unusable, and the owner dropped `acres` on 2026-10-26; lot size comes from the appraisal districts.) Only selected fields are unpacked/decoded; all other DBF
 columns are padding, never parsed or retained. Owner, care-of, mailing, legal-description
 and all other attribute values never enter a retained body, record, log or publication.
 Tests also put invalid UTF-8 in an unselected owner cell to prove it is not decoded.
@@ -26,8 +27,7 @@ Tests also put invalid UTF-8 in an unselected owner cell to prove it is not deco
 The first pass streams safe DBF attributes and groups shape indices by trimmed property ID.
 Blank and exact "0" IDs are skipped; other IDs retain case and leading zeros (including
 Williamson IDs such as R070302). Use the first nonblank GEO_ID, count each conflicting
-property once, and sum declared GIS_AREA before rounding to three decimals. Units must be
-exactly Acres. Repeated-ID and extra-record counts are distinct and reconcile read totals.
+property once. Repeated-ID and extra-record counts are distinct and reconcile read totals.
 
 The second pass reads one property's shapes at a time. Unique-ID polygons are discarded
 immediately after computing their point; only a repeated property's pieces are held for its

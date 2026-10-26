@@ -10,6 +10,10 @@
 - **No map layer and no site change in this task.** P2-05 publishes the lookup; this task only
   produces stored canonical records that P2-02..P2-05 join to.
 
+> **Update 2026-10-26 (owner decision):** the parcel record has no `acres`; `GIS_AREA` and
+> `GIS_AREA_U` are no longer read (the source values are unusable). Lot size comes from the
+> appraisal districts (TCAD `land_acres`; WCAD and Hays CAD in their tasks).
+
 ## Rules
 
 - **Nothing about people (ground rule 5).** Read only the DBF fields listed below. Never read,
