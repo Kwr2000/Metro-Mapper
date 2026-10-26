@@ -58,19 +58,26 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   The TCAD FAQ "Can I get a copy of the appraisal roll?" says a full electronic copy is free on
   the website. The **maps** page (<https://traviscad.org/maps>) says "Data mining is
   prohibited". It reads as applying to the online maps and property search, which we won't use.
-- **2026 Certified Appraisal Export (Supp 0, 07/18/2026)**: 557.2 MB zip, Last-Modified
+- **2026 Certified Appraisal Export (Supp 0, 07/18/2026)**:
+  <https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip>
+  (557,228,168 bytes), Last-Modified
   2026-07-22, byte ranges supported. 21 fixed-width files, including `PROP.TXT` (4.9 GB, record
   length 9,922, ≈ 493k records), `IMP_DET.TXT` (2.07 GB), `IMP_INFO.TXT`, `IMP_ATR.TXT`,
   `LAND_DET.TXT`, `ABS_SUBD.TXT`, `SKETCH_INFO.TXT`.
 - Also: a 2026 certified JSON special export (3.55 GB zip, 29.9 GB JSON), supplemental exports
   (the latest JSON supplement is dated 10/06/2026), EARS submissions 2022–2026, and totals PDFs 2022–2026.
 - Layout: `Legacy8.0.33-AppraisalExportLayout` (PDF + XLSX, dated 06/18/2026).
-- Fields confirmed in the layout and in 33 sampled records: `prop_id`, `prop_type_cd`,
-  `prop_val_yr`, `geo_id`, situs (`situs_num`, `situs_street`, `situs_zip`; `situs_city` often
-  blank), `hood_cd`, `abs_subdv_cd`, `market_value` (cols 4214–4227), `appraised_val`,
-  `assessed_val`, `deed_dt` (MM-DD-YYYY), `land_acres`. `IMP_DET.TXT` has `imprv_det_type_cd`/`desc`
-  (e.g. "1st Floor"), `yr_built`, `imprv_det_area`. There is no living-area field, so living area
-  is the sum of main-area segment types (code list to be confirmed in Phase 2).
+- **P2-02 fields actually read:** only the byte ranges in
+  `docs/tasks/P2-02-tcad.md` (implemented as `adapters/tcad/adapter.py:RANGES`). PROP:
+  `prop_id`, `prop_type_cd`, `prop_val_yr`, `sup_num`, `geo_id`, the required `partial_owner`
+  boolean and `udi_group`, situs number/prefix/street/suffix/unit/city/ZIP, `abs_subdv_cd`,
+  `hood_cd`, `land_hstd_val` + `land_non_hstd_val` and `imprv_hstd_val` + `imprv_non_hstd_val`
+  (**only their sums are retained**), `deed_dt`, `imprv_state_cd`, `land_state_cd`, `land_acres`
+  and `market_value`. IMP_INFO: property/year/improvement ID and type code only. IMP_DET:
+  property/year/improvement ID, segment type code, `yr_built`, `imprv_det_area`. ABS_SUBD:
+  code and description. TOTALS: entity code, real/mobile count, supplement. Source single-byte
+  cells are decoded as Latin-1; all other bytes pass through the line buffer without being
+  sliced or decoded. No whole-line text, extracted member files or source ZIP is retained.
 - **Re-checked 2026-10-25 for P2-02** (Claude, in the browser at the publisher): layout positions
   for `PROP.TXT`, `IMP_INFO.TXT`, `IMP_DET.TXT`, `ABS_SUBD.TXT` and `TOTALS.TXT` match real
   records (line lengths 9,922 / 114 / 622 / 50 / 2,491, CRLF; `PROP` values zero-padded,
@@ -81,12 +88,22 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   RESIDENTIAL area within 2% for 99.1% of 319,432 residential properties. Spec
   `docs/tasks/P2-02-tcad.md`.
 - No prior-year value in the 2026 export, and no 2025 certified export is posted; the page has
-  the 2025 EARS submission (Comptroller format, 81.9 MB zip). 2025 values need an owner decision.
+  the 2025 EARS submission (Comptroller format, 81.9 MB zip). The owner approved 2026-only
+  scope for P2-02 (DECISIONS, 2026-10-26); no 2025 values are stored.
 - The certified JSON special export (3.55 GB zip, 29.9 GB JSON) also carries owner, appeal,
   sale and permit sections; we don't use it.
-- **Strip at ingest** (ground rule 5): every `*_owner_*`, `*_addr_*`, `*_confidential_*`,
-  every `*_exempt` and `*_qualify_yr` field, `mortgage_*`, agent names and addresses,
-  `deed_num`, `deed_book_*`.
+- **Never read/slice at ingest** (ground rule 5): owner name/ID/address (597–678,
+  694–1012), confidential name (4931–5000), `hs_exempt` (2609), any `*_qualify_yr` (5464
+  onward), mortgage, `ten_percent_cap`, `assessed_val`, DBA, entity, agent, deed-number/book
+  cells and every unlisted range. `imprv_homesite` (IMP_INFO 69) is also never read.
+  Only the five named members are opened; never owner, agent, ARB, lawsuit, deferral or sketch
+  members. The explicitly required `partial_owner` property-share boolean is not an owner
+  identity. No bedroom/bathroom inference from undocumented 250/251/252 segments.
+- Adapter credit: **Travis Central Appraisal District, 2026 Certified Appraisal Export,
+  Supplement 0, 2026-07-18**. No license stated; publication follows the owner's Q1 approval
+  for public government exports, with attribution. Source value date 2026-01-01; annual
+  cadence and first-live-check gate. Codex used synthetic fixtures only; the publisher checks
+  above are Claude's 2026-10-25 checks, not a new source call.
 - No sale price.
 
 ### WCAD — Williamson Central Appraisal District

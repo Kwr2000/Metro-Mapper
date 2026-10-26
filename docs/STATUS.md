@@ -136,6 +136,13 @@ are decided (`DECISIONS.md`).
   tests and builds); local Chromium passes at 1440×900 and 390×844, outside CI. Awaiting
   Claude's live crime, access, school, ACS share and election-margin colour checks.
 
+- **P2-02** (Codex): TCAD 2026 canonical property facts, fixed-width byte allowlist,
+  temporary streaming ZIP, living/ADU/HVAC aggregates, count-only audit and optional local
+  parcel-match report. Native synthetic fixtures plus tiny ZIP/slice-guard/canary tests;
+  approved 2/day budget and first-live-check gate. No core/web changes or layer. `make test`
+  passes (812 pipeline, 41 web tests and builds). Awaiting Claude's live TOTALS/kept/coverage,
+  HVAC, parcel-match, five-property, resource/size and stored-field privacy checks.
+
 ## Next
 
 1. Owner: decide what to do about parcel `acres` (see Waiting on the owner).
