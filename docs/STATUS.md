@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-25 (P1-12)._
+_Last updated 2026-10-26 (P1-12 live-checked; P2-02 merged, first live check pending)._
 
 ## Phase
 
@@ -129,26 +129,29 @@ are decided (`DECISIONS.md`).
   county; 0.02% of points outside the study block groups; 116 s; 13.9 MB; no personal fields.
   Ungated. Acreage is unreliable in this source (see Open issues).
 
-- **P1-12** (Codex): manifest-driven Values / Compared with colours, validated neutral
-  ACS/election directions, ratio/difference classes, area-MOE middle class, benchmark legends
-  and popup labels, family choices and version-1 shared links. Three generators and schemas/
-  web types regenerated. Synthetic fixtures only; `make test` passes (759 pipeline, 51 web
-  tests and builds); local Chromium passes at 1440×900 and 390×844, outside CI. Awaiting
-  Claude's live crime, access, school, ACS share and election-margin colour checks.
+- **P1-12** (Codex, PR #98): colour by comparison. Reviewed (schema forces `neutral` on all 44 ACS
+  and election layers; 759 pipeline + 51 web tests; e2e at 1440×900 and 390×844), merged 2026-10-26,
+  then checked on a local build of the deployed site with the real committed data (github.io is
+  blocked from the agent sandbox): crime vs Texas 21.6, access vs three-county 32 min, school
+  campuses vs Texas 81.0, ACS bachelor's share vs Texas 33.8%, 2024 margin vs Texas 13.7 points.
+  Every sampled area's popup class matched an independent classification; better/worse words and
+  green–red colours appear only on crime, access and school layers; ACS and elections are brown–teal
+  with "lower/higher than" wording.
 
-- **P2-02** (Codex): TCAD 2026 canonical property facts, fixed-width byte allowlist,
-  temporary streaming ZIP, living/ADU/HVAC aggregates, count-only audit and optional local
-  parcel-match report. Native synthetic fixtures plus tiny ZIP/slice-guard/canary tests;
-  approved 2/day budget and first-live-check gate. No core/web changes or layer. `make test`
-  passes (812 pipeline, 41 web tests and builds). Awaiting Claude's live TOTALS/kept/coverage,
-  HVAC, parcel-match, five-property, resource/size and stored-field privacy checks.
+- **P2-02** (Codex, PR #99; Claude fixes #100, #101): TCAD 2026 property facts. Reviewed and merged
+  2026-10-26 (byte-range allowlist enforced by a slice-guard test, canaries in owner/mail/
+  confidential/exemption/qualify-year ranges, 830 pipeline tests). **First live check not passed
+  yet:** run 40265353275 failed on one real row with a blank improvement type (fixed, #100); run
+  40266259475 failed on partial-owner repeat rows in `PROP.TXT` (fixed, #101). Both of the day's
+  2 calls are used; the next run is due after 00:00 UTC on 2026-10-27. `tcad` is still gated.
 
 ## Next
 
-1. Owner: decide what to do about parcel `acres` (see Waiting on the owner).
-2. Claude: review P1-12 and check colours against real benchmarks. P2-02
-   (TCAD, `docs/tasks/P2-02-tcad.md`) spec is ready for the owner's next Codex prompt.
-3. Check the 2026-11-03 refresh report (expect nothing due; FBI and parcels are annual).
+1. Claude: re-run the TCAD first live check (`adapter=tcad`, `first_check=true`) on 2026-10-27 UTC;
+   if it passes, merge its data, ungate `tcad`, and list five kept properties for the browser spot
+   check against TCAD's own pages (the owner or a chat session with a browser does that).
+2. Owner: decide what to do about parcel `acres` (see Waiting on the owner).
+3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
 
 ## Open issues
 
@@ -164,6 +167,16 @@ are decided (`DECISIONS.md`).
   anything yet.
 - The test-data banner appears whenever any comparison came from fixtures; all comparison sources
   are live now, so it is off. A source that is ever re-gated would bring it back for that source.
+
+- TCAD: mobile homes are coded `MH` in the real file, not the spec's `M` (about 0.03% of rows), so
+  they are skipped; the R+M count check ignores them. Decide later whether to keep them.
+- The live workflow job times out at 30 minutes, but `tcad` is allowed 45 (`max_minutes`). The first
+  parse runs in well under a minute for the small members, so it should finish earlier; if a run is
+  cut off, raise the workflow `timeout-minutes` (owner approval needed for a schedule/budget change).
+- P1-12 header nits: school score header shows 81.033 (three decimals) and the election header shows
+  "13.7%" for a margin (a Republican lead in points). Cosmetic.
+- The tcad probe checks (`tcad_layout`, `tcad_small_members`, `tcad_shapes`, `tcad_dups`,
+  `tcad_estimate`) are in `tools/probe/probe.py`; they print shapes and counts only.
 
 ## Ideas from the owner (not started; need a spec and approval)
 

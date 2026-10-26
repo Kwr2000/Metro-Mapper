@@ -218,6 +218,208 @@ def _():
             f"IMP_DET.TXT {mb(names.get('IMP_DET.TXT'))} uncompressed")
 
 
+@check("tcad_layout", "TCAD export: member names, record lengths and terminators (lengths only, no cell contents)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    out = [f"final host {urllib.parse.urlparse(final).netloc}"]
+    wanted = {"TOTALS.TXT": 2491, "ABS_SUBD.TXT": 50, "IMP_INFO.TXT": 114, "IMP_DET.TXT": 622, "PROP.TXT": 9922}
+    spans = {"IMP_INFO.TXT": (12, 16), "IMP_DET.TXT": (12, 16), "PROP.TXT": (17, 22)}
+    for name, expect in wanted.items():
+        match = [m for m in members if m.name.rsplit("/", 1)[-1].upper() == name]
+        if len(match) != 1:
+            out.append(f"{name}: {len(match)} matches {[m.name for m in match]}")
+            continue
+        m = match[0]
+        head_bytes = zip_member_head(url, m, 1_000_000)
+        lines = head_bytes.split(b"\n")[:-1]
+        lens = Counter(len(l.removesuffix(b"\r")) for l in lines)
+        crlf = sum(l.endswith(b"\r") for l in lines)
+        est = m.uncomp / (expect + 2)
+        text = f"{name}: uncompressed {m.uncomp:,} B (~{est:,.0f} lines if {expect}+CRLF); head {len(lines)} lines, lengths {dict(lens.most_common(3))}, CRLF {crlf}/{len(lines)}"
+        if name in spans:
+            a, b = spans[name]
+            text += f", year cells {dict(Counter(l[a:b].decode('latin-1').strip() for l in lines).most_common(3))}"
+        if name == "PROP.TXT":
+            text += f", sup_num cells {dict(Counter(l[22:34].decode('latin-1').strip() for l in lines).most_common(2))}"
+        if name == "TOTALS.TXT":
+            for l in lines:
+                if l[12:17].decode("latin-1").strip() == "03":
+                    text += f", county row: num_real_mobile {l[282:294].decode('latin-1').strip()} sup_num {l[808:820].decode('latin-1').strip()}"
+        out.append(text)
+    # The adapter's own GET: same headers, first 1 MiB only.
+    req = urllib.request.Request(url, headers={"User-Agent": "metro-mapper/0.1 (+https://github.com/Kwr2000/metro-mapper)", "Accept-Encoding": "identity"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            first = resp.read(1 << 20)
+            out.append(f"adapter-style GET: HTTP {resp.status}, content-length {resp.headers.get('Content-Length')}, type {resp.headers.get('Content-Type')}, first bytes {first[:4]!r}")
+    except Exception as e:
+        out.append(f"adapter-style GET failed: {type(e).__name__} {str(e)[:100]}")
+    return "; ".join(out)
+
+
+@check("tcad_small_members", "TCAD export: whole ABS_SUBD and IMP_INFO content checks (counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    def whole(name):
+        m = next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == name)
+        lh = range_get(final, m.offset, m.offset + 29)
+        nl, el = struct.unpack("<HH", lh[26:30])
+        start = m.offset + 30 + nl + el
+        data = range_get(final, start, start + m.comp - 1)
+        raw = data if m.method == 0 else zlib.decompress(data, -15)
+        return [l.removesuffix(b"\r") for l in raw.split(b"\n") if l], m
+    out = []
+    lines, m = whole("ABS_SUBD.TXT")
+    codes, descs = Counter(), {}
+    for l in lines:
+        c = l[0:10].decode("latin-1").strip(); d = l[10:50].decode("latin-1").strip()
+        codes[c] += 1; descs.setdefault(c, set()).add(d)
+    dup = [c for c, n in codes.items() if n > 1]
+    conflict = [c for c in dup if len(descs[c]) > 1]
+    out.append(f"ABS_SUBD {len(lines):,} rows, {len(codes):,} codes, blank codes {codes.get('', 0)}, duplicate codes {len(dup)}, "
+               f"duplicates with different descriptions {len(conflict)} (e.g. {conflict[:3]}), blank descriptions {sum(1 for c in descs if '' in descs[c])}")
+    lines, m = whole("IMP_INFO.TXT")
+    keys, types, years, bad_ids = Counter(), Counter(), Counter(), 0
+    for l in lines:
+        pid, yr, iid, typ = (l[0:12].decode("latin-1").strip(), l[12:16].decode("latin-1").strip(),
+                             l[16:28].decode("latin-1").strip(), l[28:38].decode("latin-1").strip())
+        keys[(pid, iid)] += 1; types[typ] += 1; years[yr] += 1
+        bad_ids += not (pid.isdigit() and iid.isdigit())
+    out.append(f"IMP_INFO {len(lines):,} rows, duplicate (prop,imprv) keys {sum(1 for n in keys.values() if n > 1)}, blank type codes {types.get('', 0)}, "
+               f"non-numeric ids {bad_ids}, years {dict(years)}, top types {dict(types.most_common(6))}")
+    return "; ".join(out)
+
+
+@check("tcad_shapes", "TCAD export: cell shapes in samples of PROP and IMP_DET (shapes and counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    def member(name):
+        return next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == name)
+    def sample(name, max_comp):
+        m = member(name)
+        lh = range_get(final, m.offset, m.offset + 29)
+        nl, el = struct.unpack("<HH", lh[26:30])
+        start = m.offset + 30 + nl + el
+        data = range_get(final, start, start + min(m.comp, max_comp) - 1)
+        raw = zlib.decompressobj(-15).decompress(data)
+        return [l.removesuffix(b"\r") for l in raw.split(b"\n")[:-1]]
+    def shape(v):
+        v = v.strip()
+        return re.sub(r"[A-Za-z]", "A", re.sub(r"\d", "9", v)) or "(blank)"
+    cell = lambda l, a, b: l[a - 1:b].decode("latin-1")
+    out = []
+    # IMP_INFO keys, to look for orphan segments in the IMP_DET sample.
+    m = member("IMP_INFO.TXT")
+    lh = range_get(final, m.offset, m.offset + 29)
+    nl, el = struct.unpack("<HH", lh[26:30])
+    start = m.offset + 30 + nl + el
+    info = zlib.decompress(range_get(final, start, start + m.comp - 1), -15).split(b"\n")
+    keys = {(l[0:12], l[16:28]) for l in info if l.strip()}
+    det = sample("IMP_DET.TXT", 6_000_000)
+    orphans = sum((l[0:12], l[16:28]) not in keys for l in det)
+    fields = {"year": (13, 16), "yr_built": (86, 89), "area": (94, 108)}
+    parts = [f"IMP_DET sample {len(det):,} rows, orphan segments {orphans}, lengths {dict(Counter(len(l) for l in det).most_common(2))}"]
+    for k, (a, b) in fields.items():
+        parts.append(f"{k} shapes {dict(Counter(shape(cell(l, a, b)) for l in det).most_common(4))}")
+    parts.append(f"segment codes {dict(Counter(cell(l, 41, 50).strip() for l in det).most_common(14))}")
+    out.append("; ".join(parts))
+    prop = sample("PROP.TXT", 6_000_000)
+    pf = {"prop_type": (13, 17), "val_yr": (18, 22), "sup_num": (23, 34), "partial_owner": (679, 679), "udi": (680, 691),
+          "land_hstd": (1796, 1810), "land_non": (1811, 1825), "imprv_hstd": (1826, 1840), "imprv_non": (1841, 1855),
+          "deed_dt": (2034, 2058), "land_acres": (2772, 2791), "market": (4214, 4227), "situs_num": (4460, 4474)}
+    parts = [f"PROP sample {len(prop):,} rows, lengths {dict(Counter(len(l) for l in prop).most_common(2))}"]
+    for k, (a, b) in pf.items():
+        parts.append(f"{k} shapes {dict(Counter(shape(cell(l, a, b)) for l in prop).most_common(4))}")
+    parts.append(f"prop types {dict(Counter(cell(l, 13, 17).strip() for l in prop).most_common(6))}")
+    parts.append(f"imprv state {dict(Counter(cell(l, 2732, 2741).strip() for l in prop).most_common(12))}")
+    parts.append(f"land state {dict(Counter(cell(l, 2742, 2751).strip() for l in prop).most_common(6))}")
+    out.append("; ".join(parts))
+    return " || ".join(out)
+
+
+@check("tcad_dups", "TCAD PROP.TXT: repeated property IDs in the first part of the file (codes and counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    m = next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == "PROP.TXT")
+    lh = range_get(final, m.offset, m.offset + 29)
+    nl, el = struct.unpack("<HH", lh[26:30])
+    start = m.offset + 30 + nl + el
+    data = range_get(final, start, start + 40_000_000 - 1)
+    raw = zlib.decompressobj(-15).decompress(data)
+    lines = [l.removesuffix(b"\r") for l in raw.split(b"\n")[:-1]]
+    cell = lambda l, a, b: l[a - 1:b].decode("latin-1").strip()
+    fields = {"prop_type": (13, 17), "val_yr": (18, 22), "sup_num": (23, 34), "geo_id": (547, 596), "imprv_state": (2732, 2741),
+              "land_state": (2742, 2751), "market": (4214, 4227), "hood": (1686, 1695), "situs_num": (4460, 4474),
+              "situs_street": (1050, 1099), "deed": (2034, 2058), "land_acres": (2772, 2791), "abs": (1676, 1685)}
+    byid = {}
+    for i, l in enumerate(lines):
+        byid.setdefault(cell(l, 1, 12), []).append(i)
+    dups = {k: v for k, v in byid.items() if len(v) > 1}
+    differ, types, states, gaps = Counter(), Counter(), Counter(), Counter()
+    for k, idx in dups.items():
+        rows = [lines[i] for i in idx]
+        for f, (a, b) in fields.items():
+            if len({cell(r, a, b) for r in rows}) > 1:
+                differ[f] += 1
+        types[tuple(cell(r, 13, 17) for r in rows)] += 1
+        states[tuple(cell(r, 2732, 2741) or cell(r, 2742, 2751) for r in rows)] += 1
+        gaps[idx[1] - idx[0] if len(idx) > 1 else 0] += 1
+    detail = []
+    for k, idx in list(dups.items())[:8]:
+        rows = [lines[i] for i in idx]
+        detail.append({"partial": [cell(r, 679, 679) for r in rows], "udi": [cell(r, 680, 691).lstrip("0") or "0" for r in rows],
+                       "market": [int(cell(r, 4214, 4227) or 0) for r in rows],
+                       "land+imprv": [sum(int(cell(r, a, b) or 0) for a, b in ((1796, 1810), (1811, 1825), (1826, 1840), (1841, 1855))) for r in rows],
+                       "acres": [int(cell(r, 2772, 2791) or 0) / 10000 for r in rows]})
+    partial = Counter(cell(l, 679, 679) for l in lines)
+    udi_nonzero = sum(1 for l in lines if cell(l, 680, 691).strip("0"))
+    return (f"partial_owner flags over all rows {dict(partial)}, rows with a nonzero udi_group {udi_nonzero}; repeat detail {detail}; "
+            f"first {len(lines):,} rows, {len(byid):,} distinct IDs, repeated IDs {len(dups)}, max repeats {max((len(v) for v in dups.values()), default=1)}; "
+            f"fields that differ between repeats {dict(differ)}; type pairs {dict(types.most_common(5))}; state pairs {dict(states.most_common(6))}; "
+            f"row gaps {dict(gaps.most_common(4))}")
+
+
+@check("tcad_estimate", "TCAD PROP.TXT: kept-count estimate from the first part of the file (codes and counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    m = next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == "PROP.TXT")
+    lh = range_get(final, m.offset, m.offset + 29)
+    nl, el = struct.unpack("<HH", lh[26:30])
+    start = m.offset + 30 + nl + el
+    data = range_get(final, start, start + 40_000_000 - 1)
+    raw = zlib.decompressobj(-15).decompress(data)
+    lines = [l.removesuffix(b"\r") for l in raw.split(b"\n")[:-1]]
+    cell = lambda l, a, b: l[a - 1:b].decode("latin-1").strip()
+    kept_codes = {"A1", "A4", "A2", "B2", "B3", "B4", "E1", "E2", "O1", "A3", "A5", "A9"}
+    types, kept, by_state, ids = Counter(), Counter(), Counter(), set()
+    for l in lines:
+        pid = cell(l, 1, 12)
+        if pid in ids:
+            continue
+        ids.add(pid)
+        t = cell(l, 13, 17); types[t] += 1
+        st = cell(l, 2732, 2741) or cell(l, 2742, 2751)
+        if t in ("R", "M") and st in kept_codes:
+            kept[st] += 1
+        elif t in ("R", "M"):
+            by_state[st] += 1
+    n, k = len(ids), sum(kept.values())
+    ratio = 453_779 / max(1, sum(v for t, v in types.items() if t in ("R", "M")))
+    return (f"first {n:,} distinct IDs (of ~493,000); prop types {dict(types.most_common(6))}; kept so far {k:,} ({k / n:.1%} of rows); "
+            f"kept by state {dict(kept.most_common(12))}; skipped R/M states {dict(by_state.most_common(8))}; "
+            f"naive extrapolation of kept to the whole file: {int(k / n * 492_900):,}")
+
+
 @check("wcad_socrata_parcels", "WCAD open data: parcel polygons (count + 1 geometry)")
 def _():
     n = socrata("data.wcad.org", "an3x-cnmw", "SELECT count(*) AS n")[0]["n"]
