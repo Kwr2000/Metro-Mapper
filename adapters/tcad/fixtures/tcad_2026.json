@@ -76,7 +76,8 @@
         "B1": 1,
         "J1": 1
       },
-      "totals_num_real_mobile": 3
+      "totals_num_real_mobile": 3,
+      "repeated_rows": 0
     }
   }
 }
