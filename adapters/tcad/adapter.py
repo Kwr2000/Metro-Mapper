@@ -54,7 +54,7 @@ SPLITS = {"land_hstd_val", "land_non_hstd_val", "imprv_hstd_val", "imprv_non_hst
 COMPACT_FIELDS = (RANGES["PROP.TXT"].keys() - SPLITS) | DERIVED
 SAFE_NOTE = re.compile(r"[A-Za-z0-9 ,.()/+%–-]{1,100}")
 ERROR_TEXT = re.compile(r"TCAD download/parse failed \(\w+(: [A-Za-z0-9 ,.()/+%–-]{1,100})?\)")
-INPUT_COUNTS = {"records_read", "real_mobile", "skipped_by_state", "totals_num_real_mobile"}
+INPUT_COUNTS = {"records_read", "real_mobile", "skipped_by_state", "totals_num_real_mobile", "repeated_rows"}
 
 
 def read_fields(line, member):
@@ -233,8 +233,9 @@ def parse_export(path, check_time=lambda: None):
                     if living > fact[7]:
                         fact[3], fact[4], fact[7] = built, floors.bit_count(), living
         del improvements
-        output, seen = [], set()
-        summary = {"records_read": 0, "real_mobile": 0, "skipped_by_state": {}, "totals_num_real_mobile": totals[0]}
+        output, seen = [], {}
+        summary = {"records_read": 0, "real_mobile": 0, "skipped_by_state": {}, "totals_num_real_mobile": totals[0],
+                   "repeated_rows": 0}
         skipped = Counter()
         for r in rows(archive, members["PROP.TXT"], "PROP.TXT", check_time):
             summary["records_read"] += 1
@@ -242,9 +243,16 @@ def parse_export(path, check_time=lambda: None):
             if integer(r["sup_num"]) != 0:
                 raise ValueError("TCAD PROP supplement must be zero")
             pid = identifier(r["prop_id"])
+            signature = (r["partial_owner"], r["prop_type_cd"], r["imprv_state_cd"] or r["land_state_cd"], r["udi_group"])
             if pid in seen:
-                raise ValueError("duplicate TCAD property ID")
-            seen.add(pid)
+                # The real PROP.TXT repeats a property once per undivided-interest row (partial_owner T,
+                # the same udi_group; probe 2026-10-26: adjacent rows, same type and state, same values
+                # or within 0.03%). Keep the first row and count the rest; any other repeat still fails.
+                if signature[0] != "T" or seen[pid] != signature:
+                    raise ValueError("duplicate TCAD property ID")
+                summary["repeated_rows"] += 1
+                continue
+            seen[pid] = signature
             real_mobile = r["prop_type_cd"] in {"R", "M"}
             summary["real_mobile"] += real_mobile
             state = r["imprv_state_cd"] or r["land_state_cd"]
@@ -386,7 +394,7 @@ class TCAD(SourceAdapter):
         if len(summaries) != 1 or len(records) != len(properties)+1 or not properties or len({r.feature_id for r in properties}) != len(properties):
             raise ValueError("missing or duplicate TCAD property/summary input")
         counts = summaries[0].properties
-        if (counts["records_read"] != len(properties)+sum(counts["skipped_by_state"].values())
+        if (counts["records_read"] != len(properties)+sum(counts["skipped_by_state"].values())+counts["repeated_rows"]
                 or not len(properties) <= counts["real_mobile"] <= counts["records_read"]):
             raise ValueError("TCAD read/kept/skipped counts do not reconcile")
         check_counts(counts, len(properties), self.live)

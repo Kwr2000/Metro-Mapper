@@ -286,6 +286,22 @@ def test_missing_or_duplicate_required_member_fails(kind):
         tcad.parse_export(BytesIO(tiny_zip(**{'omit' if kind=='missing' else 'duplicate':'IMP_DET.TXT'})))
 
 
+def test_partial_owner_repeat_rows_keep_the_first_and_are_counted():
+    # Real shape (probe 2026-10-26): adjacent rows for one property, partial_owner T, same udi_group,
+    # same facts (the market value can differ slightly).
+    source = source_rows()
+    again = copy.deepcopy(source['PROP.TXT'][0]); again['market_value'] = '00000001111000'
+    source['PROP.TXT'].insert(1, again)
+    body = tcad.parse_export(BytesIO(tiny_zip(source)))
+    assert [p['prop_id'] for p in body['properties']] == ['123', '456'] and body['summary']['repeated_rows'] == 1
+    assert body['summary']['records_read'] == 3 and body['properties'][0]['market_value'] == '00000001111114'
+    # A skipped (non-residential) repeat is counted too, and the counts reconcile in finalize.
+    for change in [{'imprv_state_cd': 'A4'}, {'udi_group': '000000000008'}, {'prop_type_cd': 'M'}]:
+        source = source_rows(); other = copy.deepcopy(source['PROP.TXT'][0]); other.update(change)
+        source['PROP.TXT'].insert(1, other)
+        with pytest.raises(ValueError, match='duplicate'): tcad.parse_export(BytesIO(tiny_zip(source)))
+
+
 def test_blank_improvement_type_is_a_dwelling_not_a_failure():
     # Real shape: one 2026 IMP_INFO row has a blank imprv_type_cd (found in the first live check).
     source = source_rows()
@@ -298,6 +314,7 @@ def test_blank_improvement_type_is_a_dwelling_not_a_failure():
 def test_duplicate_properties_improvements_and_missing_improvement_fail():
     for member in ['PROP.TXT','IMP_INFO.TXT']:
         source=source_rows();source[member].append(copy.deepcopy(source[member][0]))
+        if member=='PROP.TXT': source[member][-1]['partial_owner']='F'  # only partial-owner repeats are allowed
         with pytest.raises(ValueError,match='duplicate'): tcad.parse_export(BytesIO(tiny_zip(source)))
     source=source_rows();source['IMP_DET.TXT'][0]['imprv_id']='999'
     with pytest.raises(ValueError,match='no improvement'): tcad.parse_export(BytesIO(tiny_zip(source)))
