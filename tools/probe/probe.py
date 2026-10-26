@@ -343,6 +343,40 @@ def _():
     return " || ".join(out)
 
 
+@check("tcad_dups", "TCAD PROP.TXT: repeated property IDs in the first part of the file (codes and counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    m = next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == "PROP.TXT")
+    lh = range_get(final, m.offset, m.offset + 29)
+    nl, el = struct.unpack("<HH", lh[26:30])
+    start = m.offset + 30 + nl + el
+    data = range_get(final, start, start + 40_000_000 - 1)
+    raw = zlib.decompressobj(-15).decompress(data)
+    lines = [l.removesuffix(b"\r") for l in raw.split(b"\n")[:-1]]
+    cell = lambda l, a, b: l[a - 1:b].decode("latin-1").strip()
+    fields = {"prop_type": (13, 17), "val_yr": (18, 22), "sup_num": (23, 34), "geo_id": (547, 596), "imprv_state": (2732, 2741),
+              "land_state": (2742, 2751), "market": (4214, 4227), "hood": (1686, 1695), "situs_num": (4460, 4474),
+              "situs_street": (1050, 1099), "deed": (2034, 2058), "land_acres": (2772, 2791), "abs": (1676, 1685)}
+    byid = {}
+    for i, l in enumerate(lines):
+        byid.setdefault(cell(l, 1, 12), []).append(i)
+    dups = {k: v for k, v in byid.items() if len(v) > 1}
+    differ, types, states, gaps = Counter(), Counter(), Counter(), Counter()
+    for k, idx in dups.items():
+        rows = [lines[i] for i in idx]
+        for f, (a, b) in fields.items():
+            if len({cell(r, a, b) for r in rows}) > 1:
+                differ[f] += 1
+        types[tuple(cell(r, 13, 17) for r in rows)] += 1
+        states[tuple(cell(r, 2732, 2741) or cell(r, 2742, 2751) for r in rows)] += 1
+        gaps[idx[1] - idx[0] if len(idx) > 1 else 0] += 1
+    return (f"first {len(lines):,} rows, {len(byid):,} distinct IDs, repeated IDs {len(dups)}, max repeats {max((len(v) for v in dups.values()), default=1)}; "
+            f"fields that differ between repeats {dict(differ)}; type pairs {dict(types.most_common(5))}; state pairs {dict(states.most_common(6))}; "
+            f"row gaps {dict(gaps.most_common(4))}")
+
+
 @check("wcad_socrata_parcels", "WCAD open data: parcel polygons (count + 1 geometry)")
 def _():
     n = socrata("data.wcad.org", "an3x-cnmw", "SELECT count(*) AS n")[0]["n"]
