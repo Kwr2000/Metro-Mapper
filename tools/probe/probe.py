@@ -372,7 +372,17 @@ def _():
         types[tuple(cell(r, 13, 17) for r in rows)] += 1
         states[tuple(cell(r, 2732, 2741) or cell(r, 2742, 2751) for r in rows)] += 1
         gaps[idx[1] - idx[0] if len(idx) > 1 else 0] += 1
-    return (f"first {len(lines):,} rows, {len(byid):,} distinct IDs, repeated IDs {len(dups)}, max repeats {max((len(v) for v in dups.values()), default=1)}; "
+    detail = []
+    for k, idx in list(dups.items())[:8]:
+        rows = [lines[i] for i in idx]
+        detail.append({"partial": [cell(r, 679, 679) for r in rows], "udi": [cell(r, 680, 691).lstrip("0") or "0" for r in rows],
+                       "market": [int(cell(r, 4214, 4227) or 0) for r in rows],
+                       "land+imprv": [sum(int(cell(r, a, b) or 0) for a, b in ((1796, 1810), (1811, 1825), (1826, 1840), (1841, 1855))) for r in rows],
+                       "acres": [int(cell(r, 2772, 2791) or 0) / 10000 for r in rows]})
+    partial = Counter(cell(l, 679, 679) for l in lines)
+    udi_nonzero = sum(1 for l in lines if cell(l, 680, 691).strip("0"))
+    return (f"partial_owner flags over all rows {dict(partial)}, rows with a nonzero udi_group {udi_nonzero}; repeat detail {detail}; "
+            f"first {len(lines):,} rows, {len(byid):,} distinct IDs, repeated IDs {len(dups)}, max repeats {max((len(v) for v in dups.values()), default=1)}; "
             f"fields that differ between repeats {dict(differ)}; type pairs {dict(types.most_common(5))}; state pairs {dict(states.most_common(6))}; "
             f"row gaps {dict(gaps.most_common(4))}")
 
