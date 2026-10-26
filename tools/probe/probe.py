@@ -259,6 +259,41 @@ def _():
     return "; ".join(out)
 
 
+@check("tcad_small_members", "TCAD export: whole ABS_SUBD and IMP_INFO content checks (counts only)")
+def _():
+    from collections import Counter
+    url = "https://traviscad.org/wp-content/largefiles/2026%20Certified%20Appraisal%20Export%20Supp%200_07182026.zip"
+    size, lm, members, final = zip_members(url)
+    def whole(name):
+        m = next(m for m in members if m.name.rsplit("/", 1)[-1].upper() == name)
+        lh = range_get(final, m.offset, m.offset + 29)
+        nl, el = struct.unpack("<HH", lh[26:30])
+        start = m.offset + 30 + nl + el
+        data = range_get(final, start, start + m.comp - 1)
+        raw = data if m.method == 0 else zlib.decompress(data, -15)
+        return [l.removesuffix(b"\r") for l in raw.split(b"\n") if l], m
+    out = []
+    lines, m = whole("ABS_SUBD.TXT")
+    codes, descs = Counter(), {}
+    for l in lines:
+        c = l[0:10].decode("latin-1").strip(); d = l[10:50].decode("latin-1").strip()
+        codes[c] += 1; descs.setdefault(c, set()).add(d)
+    dup = [c for c, n in codes.items() if n > 1]
+    conflict = [c for c in dup if len(descs[c]) > 1]
+    out.append(f"ABS_SUBD {len(lines):,} rows, {len(codes):,} codes, blank codes {codes.get('', 0)}, duplicate codes {len(dup)}, "
+               f"duplicates with different descriptions {len(conflict)} (e.g. {conflict[:3]}), blank descriptions {sum(1 for c in descs if '' in descs[c])}")
+    lines, m = whole("IMP_INFO.TXT")
+    keys, types, years, bad_ids = Counter(), Counter(), Counter(), 0
+    for l in lines:
+        pid, yr, iid, typ = (l[0:12].decode("latin-1").strip(), l[12:16].decode("latin-1").strip(),
+                             l[16:28].decode("latin-1").strip(), l[28:38].decode("latin-1").strip())
+        keys[(pid, iid)] += 1; types[typ] += 1; years[yr] += 1
+        bad_ids += not (pid.isdigit() and iid.isdigit())
+    out.append(f"IMP_INFO {len(lines):,} rows, duplicate (prop,imprv) keys {sum(1 for n in keys.values() if n > 1)}, blank type codes {types.get('', 0)}, "
+               f"non-numeric ids {bad_ids}, years {dict(years)}, top types {dict(types.most_common(6))}")
+    return "; ".join(out)
+
+
 @check("wcad_socrata_parcels", "WCAD open data: parcel polygons (count + 1 geometry)")
 def _():
     n = socrata("data.wcad.org", "an3x-cnmw", "SELECT count(*) AS n")[0]["n"]
