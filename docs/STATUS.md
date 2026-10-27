@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (TCAD live and ungated; parcels re-run pending)._
+_Last updated 2026-10-27 (TCAD live and ungated; parcels re-run without acres)._
 
 ## Phase
 
@@ -164,10 +164,8 @@ are decided (`DECISIONS.md`).
    1,498 sq ft, 1999) and 554861 (4412 BUCKS RUN 78744: 1,032, 1997); condo 233087 (8805 NEWPORT LN
    78754: 1,226, 1973); two-to-four units 264771 (12403 WILLOW WILD DR 78758: 2,379, 1976); rural home
    355999 (22419 HAZY HOLLOW CV 78669: 1,285, 1983, 6.9 acres).
-2. Claude: re-run `parcels` (4 calls; 0 used on 2026-10-27) to store the records without `acres`
-   (owner decision; code merged), then merge its data.
-3. Claude: spec the next Phase 2 task (WCAD and Hays CAD facts; place condos, see Open issues).
-4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
+2. Claude: spec the next Phase 2 task (WCAD and Hays CAD facts; place condos, see Open issues).
+3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
 
 ## Open issues
 
@@ -178,9 +176,8 @@ are decided (`DECISIONS.md`).
 - Schools: four checked finder links; other districts link to their AskTED website or show
   Not available.
 - Transit covers CapMetro only; other agencies are labeled as not included.
-- Parcels: `acres` is dropped from the record (owner decision 2026-10-26; the source values were
-  unusable) but the stored file still has it until the re-run. Williamson has no `GEO_ID`; one
-  Williamson ID is the text "PRIVATE ROAD".
+- Parcels: `acres` is dropped (owner decision 2026-10-26); the stored file was re-run without it (run
+  40425928158, same counts). Williamson has no `GEO_ID`; one Williamson ID is the text "PRIVATE ROAD".
 - The test-data banner appears whenever any comparison came from fixtures; all comparison sources
   are live now, so it is off. A source that is ever re-gated would bring it back for that source.
 
