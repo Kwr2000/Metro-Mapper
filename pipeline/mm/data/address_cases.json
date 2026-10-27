@@ -1,0 +1,2230 @@
+{
+  "v": 1,
+  "test_data": true,
+  "cases": [
+    {
+      "id": "address-001",
+      "county": "Travis",
+      "query": "1008 S 8th St #2, Austin, TX 78704",
+      "expected": {
+        "number": "1008",
+        "street_key": "S 8TH ST",
+        "unit": "2",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "1008",
+        "situs_prefix": "S",
+        "situs_street": "8TH",
+        "situs_suffix": "ST",
+        "situs_unit": "2",
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-002",
+      "county": "Travis",
+      "query": "001008 South Eighth Street Apartment 0002, Austin TX 78704",
+      "expected": {
+        "number": "1008",
+        "street_key": "S 8TH ST",
+        "unit": "2",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "1008",
+        "situs_prefix": "South",
+        "situs_street": "Eighth",
+        "situs_suffix": "Street",
+        "situs_unit": "2",
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-003",
+      "county": "Travis",
+      "query": "105 North Lamar Boulevard, Austin, Texas 78701",
+      "expected": {
+        "number": "105",
+        "street_key": "N LAMAR BLVD",
+        "unit": "",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "105",
+        "situs_prefix": "N",
+        "situs_street": "LAMAR",
+        "situs_suffix": "BLVD",
+        "situs_unit": "",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-004",
+      "county": "Travis",
+      "query": "105 N Lamar Blvd Austin TX 78701",
+      "expected": {
+        "number": "105",
+        "street_key": "N LAMAR BLVD",
+        "unit": "",
+        "zip": "78701"
+      }
+    },
+    {
+      "id": "address-005",
+      "county": "Williamson",
+      "query": "30 Northland Drive, Round Rock, TX 78664",
+      "expected": {
+        "number": "30",
+        "street_key": "NORTHLAND DR",
+        "unit": "",
+        "zip": "78664"
+      },
+      "cad": {
+        "situs_number": "30",
+        "situs_prefix": "",
+        "situs_street": "NORTHLAND",
+        "situs_suffix": "DR",
+        "situs_unit": "",
+        "situs_zip": "78664"
+      }
+    },
+    {
+      "id": "address-006",
+      "county": "Williamson",
+      "query": "30 NORTHLAND DR Round Rock 78664",
+      "expected": {
+        "number": "30",
+        "street_key": "NORTHLAND DR",
+        "unit": "",
+        "zip": "78664"
+      }
+    },
+    {
+      "id": "address-007",
+      "county": "Hays",
+      "query": "7 Main Road Northeast, Kyle TX 78640",
+      "expected": {
+        "number": "7",
+        "street_key": "MAIN RD NE",
+        "unit": "",
+        "zip": "78640"
+      },
+      "cad": {
+        "situs_number": "7",
+        "situs_prefix": "",
+        "situs_street": "MAIN",
+        "situs_suffix": "ROAD NORTHEAST",
+        "situs_unit": "",
+        "situs_zip": "78640"
+      }
+    },
+    {
+      "id": "address-008",
+      "county": "Travis",
+      "query": "12 NORTH TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "N TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "NORTH",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-009",
+      "county": "Travis",
+      "query": "12 SOUTH TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "S TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "SOUTH",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-010",
+      "county": "Travis",
+      "query": "12 EAST TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "E TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "EAST",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-011",
+      "county": "Travis",
+      "query": "12 WEST TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "W TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "WEST",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-012",
+      "county": "Travis",
+      "query": "12 NORTHEAST TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "NE TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "NORTHEAST",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-013",
+      "county": "Travis",
+      "query": "12 NORTHWEST TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "NW TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "NORTHWEST",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-014",
+      "county": "Travis",
+      "query": "12 SOUTHEAST TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "SE TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "SOUTHEAST",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-015",
+      "county": "Travis",
+      "query": "12 SOUTHWEST TEST DRIVE",
+      "expected": {
+        "number": "12",
+        "street_key": "SW TEST DR",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "12",
+        "situs_prefix": "SOUTHWEST",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-016",
+      "county": "Williamson",
+      "query": "42 TEST AVENUE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST AVE",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "AVENUE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-017",
+      "county": "Williamson",
+      "query": "42 TEST BOULEVARD, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST BLVD",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "BOULEVARD",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-018",
+      "county": "Williamson",
+      "query": "42 TEST CIRCLE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST CIR",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "CIRCLE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-019",
+      "county": "Williamson",
+      "query": "42 TEST COURT, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST CT",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "COURT",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-020",
+      "county": "Williamson",
+      "query": "42 TEST COVE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST CV",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "COVE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-021",
+      "county": "Williamson",
+      "query": "42 TEST CROSSING, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST XING",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "CROSSING",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-022",
+      "county": "Williamson",
+      "query": "42 TEST DRIVE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "DRIVE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-023",
+      "county": "Williamson",
+      "query": "42 TEST EXPRESSWAY, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST EXPY",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "EXPRESSWAY",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-024",
+      "county": "Williamson",
+      "query": "42 TEST FREEWAY, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST FWY",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "FREEWAY",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-025",
+      "county": "Williamson",
+      "query": "42 TEST HIGHWAY, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST HWY",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "HIGHWAY",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-026",
+      "county": "Williamson",
+      "query": "42 TEST LANE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST LN",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LANE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-027",
+      "county": "Williamson",
+      "query": "42 TEST LOOP, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST LOOP",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LOOP",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-028",
+      "county": "Williamson",
+      "query": "42 TEST PARKWAY, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST PKWY",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "PARKWAY",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-029",
+      "county": "Williamson",
+      "query": "42 TEST PASS, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST PASS",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "PASS",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-030",
+      "county": "Williamson",
+      "query": "42 TEST PATH, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST PATH",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "PATH",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-031",
+      "county": "Williamson",
+      "query": "42 TEST PLACE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST PL",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "PLACE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-032",
+      "county": "Williamson",
+      "query": "42 TEST PLAZA, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST PLZ",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "PLAZA",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-033",
+      "county": "Williamson",
+      "query": "42 TEST POINT, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST PT",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "POINT",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-034",
+      "county": "Williamson",
+      "query": "42 TEST RANCH RD, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST RANCH RD",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST RANCH",
+        "situs_suffix": "RD",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-035",
+      "county": "Williamson",
+      "query": "42 TEST ROAD, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST RD",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "ROAD",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-036",
+      "county": "Williamson",
+      "query": "42 TEST RUN, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST RUN",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "RUN",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-037",
+      "county": "Williamson",
+      "query": "42 TEST SQUARE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST SQ",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "SQUARE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-038",
+      "county": "Williamson",
+      "query": "42 TEST STREET, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST ST",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-039",
+      "county": "Williamson",
+      "query": "42 TEST TERRACE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST TER",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "TERRACE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-040",
+      "county": "Williamson",
+      "query": "42 TEST TRACE, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST TRCE",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "TRACE",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-041",
+      "county": "Williamson",
+      "query": "42 TEST TRAIL, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST TRL",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "TRAIL",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-042",
+      "county": "Williamson",
+      "query": "42 TEST VIEW, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST VW",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "VIEW",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-043",
+      "county": "Williamson",
+      "query": "42 TEST WAY, Georgetown TX 78626",
+      "expected": {
+        "number": "42",
+        "street_key": "TEST WAY",
+        "unit": "",
+        "zip": "78626"
+      },
+      "cad": {
+        "situs_number": "42",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "WAY",
+        "situs_unit": "",
+        "situs_zip": "78626"
+      }
+    },
+    {
+      "id": "address-044",
+      "county": "Hays",
+      "query": "23 FIRST STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "1ST ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "FIRST",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-045",
+      "county": "Hays",
+      "query": "23 SECOND STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "2ND ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "SECOND",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-046",
+      "county": "Hays",
+      "query": "23 THIRD STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "3RD ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "THIRD",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-047",
+      "county": "Hays",
+      "query": "23 FOURTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "4TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "FOURTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-048",
+      "county": "Hays",
+      "query": "23 FIFTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "5TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "FIFTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-049",
+      "county": "Hays",
+      "query": "23 SIXTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "6TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "SIXTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-050",
+      "county": "Hays",
+      "query": "23 SEVENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "7TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "SEVENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-051",
+      "county": "Hays",
+      "query": "23 EIGHTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "8TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "EIGHTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-052",
+      "county": "Hays",
+      "query": "23 NINTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "9TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "NINTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-053",
+      "county": "Hays",
+      "query": "23 TENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "10TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "TENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-054",
+      "county": "Hays",
+      "query": "23 ELEVENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "11TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "ELEVENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-055",
+      "county": "Hays",
+      "query": "23 TWELFTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "12TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "TWELFTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-056",
+      "county": "Hays",
+      "query": "23 THIRTEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "13TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "THIRTEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-057",
+      "county": "Hays",
+      "query": "23 FOURTEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "14TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "FOURTEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-058",
+      "county": "Hays",
+      "query": "23 FIFTEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "15TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "FIFTEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-059",
+      "county": "Hays",
+      "query": "23 SIXTEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "16TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "SIXTEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-060",
+      "county": "Hays",
+      "query": "23 SEVENTEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "17TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "SEVENTEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-061",
+      "county": "Hays",
+      "query": "23 EIGHTEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "18TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "EIGHTEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-062",
+      "county": "Hays",
+      "query": "23 NINETEENTH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "19TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "NINETEENTH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-063",
+      "county": "Hays",
+      "query": "23 TWENTIETH STREET, San Marcos TX 78666",
+      "expected": {
+        "number": "23",
+        "street_key": "20TH ST",
+        "unit": "",
+        "zip": "78666"
+      },
+      "cad": {
+        "situs_number": "23",
+        "situs_prefix": "",
+        "situs_street": "TWENTIETH",
+        "situs_suffix": "STREET",
+        "situs_unit": "",
+        "situs_zip": "78666"
+      }
+    },
+    {
+      "id": "address-064",
+      "county": "Hays",
+      "query": "0100 FM 1626, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "FM 1626",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "FM 1626",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-065",
+      "county": "Hays",
+      "query": "0100 F M 1626, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "FM 1626",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "F M 1626",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-066",
+      "county": "Hays",
+      "query": "0100 FARM TO MARKET 1626, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "FM 1626",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "FARM TO MARKET 1626",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-067",
+      "county": "Hays",
+      "query": "0100 RR 620, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "RR 620",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "RR 620",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-068",
+      "county": "Hays",
+      "query": "0100 RANCH ROAD 620, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "RR 620",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "RANCH ROAD 620",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-069",
+      "county": "Hays",
+      "query": "0100 RM 620, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "RR 620",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "RM 620",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-070",
+      "county": "Hays",
+      "query": "0100 STATE HIGHWAY 71, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "SH 71",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "STATE HIGHWAY 71",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-071",
+      "county": "Hays",
+      "query": "0100 SH 71, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "SH 71",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "SH 71",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-072",
+      "county": "Hays",
+      "query": "0100 HWY 71, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "SH 71",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "HWY 71",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-073",
+      "county": "Hays",
+      "query": "0100 US HIGHWAY 290, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "US 290",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "US HIGHWAY 290",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-074",
+      "county": "Hays",
+      "query": "0100 US 290, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "US 290",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "US 290",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-075",
+      "county": "Hays",
+      "query": "0100 US HWY 290, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "US 290",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "US HWY 290",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-076",
+      "county": "Hays",
+      "query": "0100 COUNTY ROAD 221, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "CR 221",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "COUNTY ROAD 221",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-077",
+      "county": "Hays",
+      "query": "0100 CR 221, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "CR 221",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "CR 221",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-078",
+      "county": "Hays",
+      "query": "0100 IH 35, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "IH 35",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "IH 35",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-079",
+      "county": "Hays",
+      "query": "0100 I 35, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "IH 35",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "I 35",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-080",
+      "county": "Hays",
+      "query": "0100 INTERSTATE 35, Buda TX 78610",
+      "expected": {
+        "number": "100",
+        "street_key": "IH 35",
+        "unit": "",
+        "zip": "78610"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "INTERSTATE 35",
+        "situs_suffix": "",
+        "situs_unit": "",
+        "situs_zip": "78610"
+      }
+    },
+    {
+      "id": "address-081",
+      "county": "Travis",
+      "query": "50 Test Lane APT 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-082",
+      "county": "Travis",
+      "query": "50 Test Lane APARTMENT 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-083",
+      "county": "Travis",
+      "query": "50 Test Lane UNIT 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-084",
+      "county": "Travis",
+      "query": "50 Test Lane STE 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-085",
+      "county": "Travis",
+      "query": "50 Test Lane SUITE 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-086",
+      "county": "Travis",
+      "query": "50 Test Lane BLDG 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-087",
+      "county": "Travis",
+      "query": "50 Test Lane # 0012C, Austin TX 78701",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "12C",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "12C",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-088",
+      "county": "Williamson",
+      "query": "50 Test Ln 1401 Round Rock TX 78664",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "1401",
+        "zip": "78664"
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "1401",
+        "situs_zip": "78664"
+      }
+    },
+    {
+      "id": "address-089",
+      "county": "Travis",
+      "query": "50 Test Ln B",
+      "expected": {
+        "number": "50",
+        "street_key": "TEST LN",
+        "unit": "B",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "50",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "B",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-090",
+      "county": "Travis",
+      "query": "00012-00014 Test Street, Austin TX 78704",
+      "expected": {
+        "number": "12-14",
+        "street_key": "TEST ST",
+        "unit": "",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "12-14",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "ST",
+        "situs_unit": "",
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-091",
+      "county": "Hays",
+      "query": "0012 1/2 Test Street, Kyle TX 78640",
+      "expected": {
+        "number": "12 1/2",
+        "street_key": "TEST ST",
+        "unit": "",
+        "zip": "78640"
+      },
+      "cad": {
+        "situs_number": "12 1/2",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "ST",
+        "situs_unit": "",
+        "situs_zip": "78640"
+      }
+    },
+    {
+      "id": "address-092",
+      "county": "Travis",
+      "query": "100 Test Lane 78701-1234",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST LN",
+        "unit": "",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LANE",
+        "situs_unit": "",
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-093",
+      "county": "Travis",
+      "query": "100 Test Lane",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST LN",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "LN",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-094",
+      "county": "Travis",
+      "query": "100 S. First St., Austin, TX 78704",
+      "expected": {
+        "number": "100",
+        "street_key": "S 1ST ST",
+        "unit": "",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "S.",
+        "situs_street": "First",
+        "situs_suffix": "St.",
+        "situs_unit": "",
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-095",
+      "county": "Travis",
+      "query": "100 Southland Trail",
+      "expected": {
+        "number": "100",
+        "street_key": "SOUTHLAND TRL",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "SOUTHLAND",
+        "situs_suffix": "TRAIL",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-096",
+      "county": "Travis",
+      "query": "100 First Place North",
+      "expected": {
+        "number": "100",
+        "street_key": "1ST PL N",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "FIRST",
+        "situs_suffix": "PLACE NORTH",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-097",
+      "county": "Travis",
+      "query": "100 Street View Lane",
+      "expected": {
+        "number": "100",
+        "street_key": "STREET VIEW LN",
+        "unit": "",
+        "zip": ""
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "STREET VIEW",
+        "situs_suffix": "LANE",
+        "situs_unit": "",
+        "situs_zip": ""
+      }
+    },
+    {
+      "id": "address-098",
+      "county": "Travis",
+      "query": "100 Test Street East Apartment 003, Austin 78704",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST ST E",
+        "unit": "3",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "100",
+        "situs_prefix": "",
+        "situs_street": "TEST",
+        "situs_suffix": "ST E",
+        "situs_unit": "3",
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-099",
+      "county": "Travis",
+      "query": "123 A Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123 A",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123 A",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-100",
+      "county": "Travis",
+      "query": "123 B2 Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123 B2",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123 B2",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-101",
+      "county": "Travis",
+      "query": "123-A Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123-A",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123-A",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-102",
+      "county": "Travis",
+      "query": "123/125 Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123/125",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123/125",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-103",
+      "county": "Travis",
+      "query": "123A/125A Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123A/125A",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123A/125A",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-104",
+      "county": "Travis",
+      "query": "123 A/B Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123 A/B",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123 A/B",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-105",
+      "county": "Travis",
+      "query": "123 125 Test Dr, Austin TX 78704",
+      "cad": {
+        "situs_number": "123 125",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      },
+      "expected": {
+        "number": "123 125",
+        "street_key": "TEST DR",
+        "unit": "",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-106",
+      "county": "Williamson",
+      "query": "123 TEST DR A-1 Round Rock TX 78664",
+      "cad": {
+        "situs_number": "123",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": "A-1",
+        "situs_zip": "78664"
+      },
+      "expected": {
+        "number": "123",
+        "street_key": "TEST DR",
+        "unit": "A-1",
+        "zip": "78664"
+      }
+    },
+    {
+      "id": "address-107",
+      "county": "Williamson",
+      "query": "123 TEST DR L204 Round Rock TX 78664",
+      "cad": {
+        "situs_number": "123",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": "L204",
+        "situs_zip": "78664"
+      },
+      "expected": {
+        "number": "123",
+        "street_key": "TEST DR",
+        "unit": "L204",
+        "zip": "78664"
+      }
+    },
+    {
+      "id": "address-108",
+      "county": "Williamson",
+      "query": "123 TEST DR A/B Round Rock TX 78664",
+      "cad": {
+        "situs_number": "123",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": "A/B",
+        "situs_zip": "78664"
+      },
+      "expected": {
+        "number": "123",
+        "street_key": "TEST DR",
+        "unit": "A/B",
+        "zip": "78664"
+      }
+    },
+    {
+      "id": "address-109",
+      "county": "Williamson",
+      "query": "123 TEST DR B-2 Round Rock TX 78664",
+      "cad": {
+        "situs_number": "123",
+        "situs_prefix": null,
+        "situs_street": "TEST",
+        "situs_suffix": "DR",
+        "situs_unit": "B-2",
+        "situs_zip": "78664"
+      },
+      "expected": {
+        "number": "123",
+        "street_key": "TEST DR",
+        "unit": "B-2",
+        "zip": "78664"
+      }
+    },
+    {
+      "id": "address-110",
+      "county": "Hays",
+      "query": "100 TEST LN Dripping Sprigns TX 78620",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST LN",
+        "unit": "",
+        "zip": "78620"
+      }
+    },
+    {
+      "id": "address-111",
+      "county": "Travis",
+      "query": "100 Test Street, Unit 0002, Austin TX 78704",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST ST",
+        "unit": "2",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-112",
+      "county": "Travis",
+      "query": "100 Test St Apartment 00002",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST ST",
+        "unit": "2",
+        "zip": ""
+      }
+    },
+    {
+      "id": "address-113",
+      "county": "Travis",
+      "query": "100 Test St #00002",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST ST",
+        "unit": "2",
+        "zip": ""
+      }
+    },
+    {
+      "id": "address-114",
+      "county": "Travis",
+      "query": "100 Test St, Unit 00002, Austin TX 78704",
+      "expected": {
+        "number": "100",
+        "street_key": "TEST ST",
+        "unit": "2",
+        "zip": "78704"
+      }
+    },
+    {
+      "id": "address-115",
+      "county": "Travis",
+      "query": "1008 S 8th St, Austin, TX 78704",
+      "expected": {
+        "number": "1008",
+        "street_key": "S 8TH ST",
+        "unit": "",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "1008",
+        "situs_prefix": "S",
+        "situs_street": "8",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-116",
+      "county": "Travis",
+      "query": "1500 E 17th St, Austin, TX 78702",
+      "expected": {
+        "number": "1500",
+        "street_key": "E 17TH ST",
+        "unit": "",
+        "zip": "78702"
+      },
+      "cad": {
+        "situs_number": "1500",
+        "situs_prefix": "E",
+        "situs_street": "17",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78702"
+      }
+    },
+    {
+      "id": "address-117",
+      "county": "Travis",
+      "query": "700 W 22nd St, Austin, TX 78705",
+      "expected": {
+        "number": "700",
+        "street_key": "W 22ND ST",
+        "unit": "",
+        "zip": "78705"
+      },
+      "cad": {
+        "situs_number": "700",
+        "situs_prefix": "W",
+        "situs_street": "22",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78705"
+      }
+    },
+    {
+      "id": "address-118",
+      "county": "Travis",
+      "query": "300 W 3rd Ave, Austin, TX 78701",
+      "expected": {
+        "number": "300",
+        "street_key": "W 3RD AVE",
+        "unit": "",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "300",
+        "situs_prefix": "W",
+        "situs_street": "3",
+        "situs_suffix": "AVE",
+        "situs_unit": null,
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-119",
+      "county": "Williamson",
+      "query": "200 17th St E, Taylor, TX 76574",
+      "expected": {
+        "number": "200",
+        "street_key": "17TH ST E",
+        "unit": "",
+        "zip": "76574"
+      },
+      "cad": {
+        "situs_number": "200",
+        "situs_prefix": null,
+        "situs_street": "17",
+        "situs_suffix": "ST E",
+        "situs_unit": null,
+        "situs_zip": "76574"
+      }
+    },
+    {
+      "id": "address-120",
+      "county": "Travis",
+      "query": "1100 E 11th St, Austin, TX 78702",
+      "expected": {
+        "number": "1100",
+        "street_key": "E 11TH ST",
+        "unit": "",
+        "zip": "78702"
+      },
+      "cad": {
+        "situs_number": "1100",
+        "situs_prefix": "E",
+        "situs_street": "11",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78702"
+      }
+    }
+  ]
+}

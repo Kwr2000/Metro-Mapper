@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (P2-04 built on synthetic fixtures)._
+_Last updated 2026-10-27 (P2-05 lookup built and published locally from stored live files)._
 
 ## Phase
 
@@ -182,9 +182,19 @@ are decided (`DECISIONS.md`).
   and values from the monthly export. Live run 40575881166: 90,157 homes kept, living area agrees
   with `MA*` segments for 97.9%, 98.4% matched to parcels. Ungated. WCAD and Hays spot checks passed.
 
+- **P2-05** (Codex): canonical-only homes publisher and address/grid lookup, 114 shared
+  synthetic address vectors, fixture provenance, exact parcel-ID joins and transactional
+  validation. `make test` passes (1,127 pipeline + 51 web tests and builds). Full local
+  `mm publish` with networking blocked: 159.3 s, 190,599,658 bytes, 664 shards (largest
+  `ME.json` 1,953,427 bytes), 6,048 grid cells, ~3.44 GiB peak RSS. Homes/placed/unplaced:
+  Travis 384,236/326,568/57,668; Williamson 236,087/234,152/1,935; Hays 90,157/88,758/1,399.
+  Round-trip misses among numbered homes: 3,084/377,311, 1,007/235,581, 440/89,687 (all <1%).
+  No source calls, adapter/web changes or generated-data commits. Unplaced condos stay
+  address-searchable; Claude should check a dozen Zillow-style addresses per county.
+
 ## Next
 
-1. Owner: paste the P2-05 (homes lookup) prompt into Codex (`docs/tasks/P2-05-homes-lookup.md`).
+1. Claude: review P2-05 and check a dozen Zillow-style addresses per county against its files.
 2. Owner decision (P2-05b): how to place about 54,000 Travis condos that have no parcel of their
    own (see Waiting on the owner).
 3. Claude: spec P2-06 (value range) while P2-05 is built.

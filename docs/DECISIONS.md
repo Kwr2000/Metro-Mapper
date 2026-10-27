@@ -3,6 +3,56 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-05 homes lookup implementation choices (Codex)
+
+- Publish only from the four local canonical files, with pure fixture adapter execution for
+  missing files (never fetch, write canonical data or spend calls). A county is Test data if
+  either its CAD records or the parcel input is from fixtures; a mixed shard/grid file is Test
+  data if any of its rows is. All three county flags roll up to `meta.json`. Real production
+  placement gates apply only to counties with both live inputs: the existing independent
+  adapter fixtures intentionally have different parcel IDs and cannot meet those gates.
+  Count reconciliation, identity, privacy, round-trip and size checks still apply to fixtures.
+- Keep the source situs display and parts in the harmonized intermediate record. Export exactly
+  the spec's 23 compact address columns (number/unit/ZIP are strings; numeric measures stay
+  numeric; missing cells are null). `address_key`, `prop_id`, situs parts and `tract` are
+  intermediate fields, not extra compact columns. Preserve observed zero numeric measures;
+  reject invalid/negative/nonfinite numbers rather than turn missing values into zero.
+  Copy parcel coordinates/block group/tract only on an exact canonical feature-ID match.
+- Use explicit unit markers before implicit trailing units, retain compound house numbers and
+  separate house-letter tokens, and do not confuse numbered highways with house letters or
+  five-digit explicit units with ZIPs. Commas delimit the locality while allowing a comma
+  before a unit marker. Unpunctuated CAD city tails use a fixed list of localities and spelling
+  variants found in the stored CAD inputs; no location source or network lookup is added.
+  Directionals remain positional, suffix conversion is terminal, and unknown/ambiguous forms
+  remain visible in count-only round-trip misses. Shared JSON vectors are explicitly synthetic.
+- Shard names strip directional prefix, suffix and postdirection before taking alphanumeric
+  street-name characters. Pad short/empty names with `0`; an oversized two-character base
+  splits once on the third character (`0` if absent). Meta maps each base to its shard IDs,
+  without `.json`; grid rows reference those actual shard IDs. Rows sort by street key,
+  natural numeric house number, natural unit, then ID. Grid envelopes contain v/test_data/rows;
+  callers check the clicked cell plus its eight neighbours before the 30 m nearest-point test.
+- Keep neighbourhood descriptions once per county/code; if a code has multiple descriptions,
+  use the lexicographically smallest observed spelling for deterministic output. Dates remain
+  source dates (no build timestamp). Count-only metrics include all/unplaced categories and
+  numbered-home round-trip misses. Do not publish private source fields or join demographics;
+  the existing privacy guard checks the fixed public property columns.
+- Stage and validate the entire homes tree, then replace it on the same filesystem, restoring
+  the previous tree if installation fails. Failures leave the previous homes build in place;
+  Pages stops before deployment on a publish error. Limits use uncompressed UTF-8 JSON bytes:
+  split bases above 2,000,000 bytes and require the whole tree below 200,000,000 bytes. All
+  generated homes/layer files stay ignored and uncommitted. Core integration is one call from
+  `mm publish`, after adapters and before registry compilation; no adapter or web code changes.
+
+- Full stored-data publish (network blocked) passed in 159.288 s, peak RSS 3,520 MiB:
+  710,480 homes, 649,478 placed, 61,002 unplaced; 190,599,658 uncompressed bytes, 664 shards,
+  largest ME.json 1,953,427 bytes and 6,048 grid cells. Travis/Williamson/Hays homes and
+  placement counts exactly match the spec. Numbered-home round-trip misses: Travis
+  3,084/377,311 (99.18% found), Williamson 1,007/235,581 (99.57%), Hays 440/89,687 (99.51%).
+  All production gates pass. Remaining ambiguous/malformed display forms are reported as
+  misses, never removed from the home rows. The 53,645 unplaced Travis condos stay unplaced;
+  P2-05b's source decision is unchanged. A separate read-back audit of every written row
+  and grid entry found zero coordinate, grid, sorting or shard-routing mismatches.
+
 ## 2026-10-27 — P2-04 Hays CAD reviewed, merged and live-checked; ungated; WCAD spot check (Claude, chat)
 
 - PR #113 reviewed against the spec (files found by header; owner and sales files never read past
