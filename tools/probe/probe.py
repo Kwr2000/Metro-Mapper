@@ -584,6 +584,63 @@ def _():
     return " ;; ".join(out + notes)
 
 
+@check("hays_monthly_detail", "Hays CAD monthly export: codes, coverage and living-area agreement (codes and counts only)")
+def _():
+    import csv, io
+    from collections import Counter, defaultdict
+    _, _, body, _ = _req("https://hayscad.com/data-downloads/")
+    url = re.findall(rb'href="(https://hayscad\.com/wp-content/uploads/[^"]*PROPERTY-DATA-EXPORT[^"]*\.zip)"', body)[0].decode()
+    _, _, data, _ = _req(url, max_bytes=120_000_000)
+    t = {}
+    for name, size, opener in _hays_members(data):
+        with opener() as f:
+            reader = csv.reader(io.TextIOWrapper(f, encoding="latin-1", newline=""))
+            header = next(reader)
+            kind = ("owner" if "OwnerName" in header or "PrevOwnerName" in header else
+                    "property" if "CurrMarketValue" in header else "land" if "LandType" in header else
+                    "segment" if "ActYrBuilt" in header else "improvement" if "ImpValue" in header else "other")
+            if kind in ("owner", "other"):
+                continue  # never read rows of owner or sales files
+            keep = {"property": ("PropertyID", "QuickRefID", "SquareFootage", "CurrMarketValue", "CurrLandValue", "CurrImprovmentValue", "MarketValue", "NbhdCode", "SitusZip", "LegalAcres"),
+                    "land": ("PropertyID", "StateCode", "Acres", "SquareFeet"),
+                    "improvement": ("PropertyID", "InstanceID", "Type", "StateCode", "ImpValue"),
+                    "segment": ("PropertyID", "InstanceID", "Type", "ActYrBuilt", "EffYrBuilt", "Area")}[kind]
+            idx = [header.index(c) for c in keep]
+            t[kind] = [dict(zip(keep, (r[i] for i in idx))) for r in reader]
+    f = lambda v: float(v) if v not in ("", None) else 0.0
+    out = []
+    P = t["property"]; ids = Counter(r["PropertyID"] for r in P)
+    out.append(f"property rows {len(P):,} distinct {len(ids):,}; QuickRefID prefixes {dict(Counter(r['QuickRefID'][:1] for r in P))}; "
+               f"SquareFootage>0 {sum(f(r['SquareFootage'])>0 for r in P):,}; CurrMarketValue>0 {sum(f(r['CurrMarketValue'])>0 for r in P):,}; "
+               f"MarketValue>0 {sum(f(r['MarketValue'])>0 for r in P):,}; land+imp==curr {sum(abs(f(r['CurrLandValue'])+f(r['CurrImprovmentValue'])-f(r['CurrMarketValue']))<1 for r in P):,}; "
+               f"LegalAcres>0 {sum(f(r['LegalAcres'])>0 for r in P):,}; nbhd {len({r['NbhdCode'] for r in P}):,}; sample QuickRefID shape {sorted({re.sub(r'[0-9]', '9', r['QuickRefID']) for r in P})[:5]}")
+    I = t["improvement"]
+    out.append(f"improvement rows {len(I):,}; StateCode {dict(Counter(r['StateCode'] for r in I).most_common(30))}; Type {dict(Counter(r['Type'] for r in I).most_common(15))}")
+    L = t["land"]
+    out.append(f"land rows {len(L):,}; StateCode {dict(Counter(r['StateCode'] for r in L).most_common(20))}; Acres>0 {sum(f(r['Acres'])>0 for r in L):,}; SquareFeet>0 {sum(f(r['SquareFeet'])>0 for r in L):,}")
+    S = t["segment"]; agg = defaultdict(lambda: [0, 0.0])
+    for r in S:
+        a = agg[r["Type"]]; a[0] += 1; a[1] += f(r["Area"])
+    out.append("segment Type (n/avg area): " + ", ".join(f"{k}={n}/{a/n:.0f}" for k, (n, a) in sorted(agg.items(), key=lambda kv: -kv[1][0])[:35]))
+    inst = {r["InstanceID"] for r in I}
+    out.append(f"segment InstanceID found among improvements: {sum(r['InstanceID'] in inst for r in S):,} of {len(S):,}")
+    ma = defaultdict(float); yr = {}
+    for r in S:
+        if re.fullmatch(r"MA\d?", r["Type"]):
+            ma[r["PropertyID"]] += f(r["Area"])
+            if f(r["ActYrBuilt"]) > 0: yr[r["PropertyID"]] = 1
+    for types in (r"MA", r"MA\d?"):
+        mm = defaultdict(float)
+        for r in S:
+            if re.fullmatch(types, r["Type"]): mm[r["PropertyID"]] += f(r["Area"])
+        both = sum(1 for r in P if f(r["SquareFootage"]) > 0 and mm.get(r["PropertyID"], 0) > 0)
+        agree = sum(1 for r in P if f(r["SquareFootage"]) > 0 and mm.get(r["PropertyID"], 0) > 0 and abs(mm[r["PropertyID"]] - f(r["SquareFootage"])) <= 1)
+        out.append(f"SquareFootage vs sum({types}) within 1 sq ft: {agree:,} of {both:,}")
+    res = {r["PropertyID"] for r in I if r["StateCode"][:1] in ("A", "B", "E", "O")}
+    out.append(f"properties with an A/B/E/O improvement {len(res):,}; of those with SquareFootage>0 {sum(1 for r in P if r['PropertyID'] in res and f(r['SquareFootage'])>0):,}; with MA year built {sum(1 for p in res if p in yr):,}")
+    return " ;; ".join(out)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
