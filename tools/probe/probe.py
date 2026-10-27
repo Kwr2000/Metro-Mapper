@@ -679,6 +679,19 @@ def _():
             f"(prefix?, suffix?) shapes {dict(shapes)} ;;  unmatched TCAD kept {dict(un)} ;; placed by address {dict(hit)} ({dict(samples)}) ;; street shape sample {example}")
 
 
+@check("fhfa_po_metro", "FHFA purchase-only HPI, 100 largest metros: format and Austin rows (public index values)")
+def _():
+    url = "https://www.fhfa.gov/hpi/download/quarterly_datasets/hpi_po_metro.txt"
+    status, hdrs, body, _ = _req(url)
+    text = body.decode("latin-1")
+    lines = text.splitlines()
+    austin = [l for l in lines if "12420" in l or "Austin" in l]
+    years = sorted({m for l in lines for m in re.findall(r"\b(20[0-9]{2})\b", l)})[-3:]
+    return (f"HTTP {status}; {len(body):,} bytes; LM {hdrs.get('last-modified', '?')}; type {hdrs.get('content-type', '?')}; "
+            f"{len(lines):,} lines; header: {lines[0][:300]!r}; second line: {lines[1][:200]!r}; latest years {years}; "
+            f"Austin rows {len(austin)}; last 12: " + " // ".join(a.strip()[:140] for a in austin[-12:]))
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
