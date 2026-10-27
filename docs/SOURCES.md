@@ -129,6 +129,16 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
     (e.g. 87.90, 94.04, 121.73; 10,605 deeds in 2025 with a ratio > 0). Combined with the
     appraised value, a per-sale ratio could reveal individual sale prices. See Q3.
 - The Socrata API allows column selection, counts and paging; SoQL `$query` works without a token.
+- **Re-checked 2026-10-26 for P2-03** (Claude, in the browser at the publisher): `ai3c-c9pf`
+  Property – Certified has no owner columns (it does have `legaldescription`, `propertycomment`,
+  `dba`, `address`: never selected); 2026 only, 323,073 rows / 319,443 distinct `propertyid`
+  (identical repeats); `quickrefid` (`R…`) matches StratMap's Williamson IDs; `totalsqftlivingarea`
+  equals the sum of main-area segments (`xs93-mfpk`, `MA`/`MA2`/`MA3`/`MA4`) within 1 sq ft for
+  99.62% of 230,113 homes. State codes are per improvement (`2huh-jk3y` `fsptb`); meanings checked
+  on search.wcad.org (A8 condominium, A9 duplex-style single family, A5 mobile homes – permanent,
+  A3 misc. residential, A7 community property). Lot size (`bens-i2m7` `faclandsize`/`fsftlandsize`)
+  exists for about 30% of homes (most lots are priced per lot). Responses: all values are strings,
+  nulls omitted; `$limit` of 100,000 works. Spec `docs/tasks/P2-03-wcad.md`.
 
 ### Hays CAD
 - Page: <https://hayscad.com/data-downloads/>. Free; no terms or disclaimer on the page.

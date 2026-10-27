@@ -159,12 +159,8 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Owner (or a chat session with a browser): spot-check these five kept TCAD properties against
-   TCAD's own pages (stored living area, year built): single family 287194 (14602 MENIFEE ST 78725:
-   1,498 sq ft, 1999) and 554861 (4412 BUCKS RUN 78744: 1,032, 1997); condo 233087 (8805 NEWPORT LN
-   78754: 1,226, 1973); two-to-four units 264771 (12403 WILLOW WILD DR 78758: 2,379, 1976); rural home
-   355999 (22419 HAZY HOLLOW CV 78669: 1,285, 1983, 6.9 acres).
-2. Claude: spec the next Phase 2 task (WCAD and Hays CAD facts; place condos, see Open issues).
+1. Owner: paste the P2-03 (WCAD) prompt into Codex (`docs/tasks/P2-03-wcad.md`).
+2. Claude: spec P2-04 (Hays CAD facts and values) next; P2-05 must place condos (see Open issues).
 3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
 
 ## Open issues
@@ -181,8 +177,7 @@ are decided (`DECISIONS.md`).
 - The test-data banner appears whenever any comparison came from fixtures; all comparison sources
   are live now, so it is off. A source that is ever re-gated would bring it back for that source.
 
-- TCAD mobile homes coded `MH` are **11,744 records (2.4% of properties)**, not the "about 130" the
-  owner's 2026-10-26 decision was based on. They stay skipped until the owner re-confirms.
+- TCAD mobile homes coded `MH` (11,744 records, 2.4%) stay skipped (owner re-confirmed 2026-10-26).
 - TCAD condos (54,675 kept) mostly have no match in the P2-01 parcel file (1,030 matched): the parcel
   file has no polygon per condo unit. Single-family match is 99.9%. P2-05 must place condos another way.
 - The live workflow job times out at 30 minutes while `tcad` is allowed 45. Owner decision
@@ -198,8 +193,7 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Re-confirm skipping the 11,744 `MH` mobile homes, now that the real count is known (see Open issues).
-- The five-property TCAD spot check above (needs a browser).
+- Nothing right now (TCAD spot check passed 2026-10-27, see DECISIONS).
 
 ## Working notes for agents
 

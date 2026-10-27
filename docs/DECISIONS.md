@@ -3,6 +3,12 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — Owner decision: mobile homes; P2-03 spec (Claude, chat)
+
+- **Owner decision:** TCAD's 11,744 `MH` mobile-home records stay skipped, now with the real count
+  known (re-confirmed in writing). WCAD's personal-property mobile homes (`M1`) are skipped the same way.
+- P2-03 (WCAD) spec written after checking the open-data portal in the browser (SOURCES, WCAD).
+
 ## 2026-10-27 — TCAD spot check on TCAD's property pages (Claude, chat)
 
 - Five properties from live run 40425025647 checked by hand on travis.prodigycad.com (2026,
