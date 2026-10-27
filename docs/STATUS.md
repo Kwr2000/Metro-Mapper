@@ -184,9 +184,11 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Claude: spec P2-05 (harmonized property records across the three counties, address
-   normalization, static sharded address lookup, condo placement for Travis).
-2. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD, WCAD and Hays
+1. Owner: paste the P2-05 (homes lookup) prompt into Codex (`docs/tasks/P2-05-homes-lookup.md`).
+2. Owner decision (P2-05b): how to place about 54,000 Travis condos that have no parcel of their
+   own (see Waiting on the owner).
+3. Claude: spec P2-06 (value range) while P2-05 is built.
+4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD, WCAD and Hays
    CAD are annual).
 
 ## Open issues
@@ -219,7 +221,13 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Nothing right now (TCAD spot check passed 2026-10-27, see DECISIONS).
+- **Travis condo placement (P2-05b).** 53,645 of TCAD's 54,675 condos have no parcel polygon
+  of their own, and matching their street address to StratMap's parcel addresses places only
+  about 1,000 (probe 40579380664). They stay findable by address without a map point until a
+  location source is chosen. Options: (a) the U.S. Census Geocoder batch service (free, public
+  domain, no key; about 6 calls of 10,000 addresses; street-interpolated, so "approximate
+  location"); (b) a city/county address-point layer (terms to check first); (c) leave them
+  unplaced. Recommended: (a). Needs approval as a new source with a budget.
 
 ## Working notes for agents
 
