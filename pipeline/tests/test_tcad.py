@@ -134,7 +134,8 @@ def test_one_call_plan_and_exact_budget_gate(context):
     assert ad.cadence == 'annual' and not ad.recordable and not ad.retain_raw
     import yaml
     assert yaml.safe_load((ROOT/'config/budgets.yaml').read_text())['adapters']['tcad'] == {'per_day':2,'max_minutes':45}
-    assert yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated']['tcad'] == "awaiting Claude's first live check"
+    # Ungated after its first live check (run 40425025647, 2026-10-27).
+    assert 'tcad' not in (yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated'] or {})
     assert not [l for l in load_layers() if l.source == 'tcad']
 
 
