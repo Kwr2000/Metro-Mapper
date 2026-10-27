@@ -184,6 +184,22 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   (`A`, `B`, `E`, `O`) plus a `Type` (`R`, `M`, `C`, `I`). StratMap's Hays IDs are the digits of
   `QuickRefID` (120,368 of 120,445 match). The owner and sales files are never read past the
   header. Spec `docs/tasks/P2-04-hays-cad.md`.
+- **P2-04 implementation:** fixed monthly file
+  `https://hayscad.com/wp-content/uploads/2026/10/2026-PROPERTY-DATA-EXPORT-FILES-AS-OF-10-19-2026.zip`.
+  Only Property: `PropertyID`, `QuickRefID`, `CurrMarketValue`, `CurrLandValue`,
+  `CurrImprovmentValue` (publisher spelling), `SquareFootage`, `NbhdCode`, `NbhdDesc`,
+  `SitusPreDirectional`, `SitusStreetNumber`, `SitusStreetName`, `SitusStreetSuffix`,
+  `SitusPostDirectional`, `SitusCity`, `SitusZip`, `LegalAcres`; Improvement: `PropertyID`,
+  `InstanceID`, `Type`, `StateCode`, `ImpValue`; Segment: `PropertyID`, `InstanceID`, `Type`,
+  `Area`, `ActYrBuilt`; Land: `PropertyID`, `Acres`, `SquareFeet`. Header discovery only for
+  Owner and Sales: never read their data rows, including to count them. Unselected cells are
+  discarded without decoding, including `LegalDesc`, free-text `Situs`, `TaxingUnitList`,
+  `LeaseNumber`, prior-year values, and all other columns. Raw retention/recording off; both
+  ZIP levels deleted before fetch returns. Common `partial_owner: null` is an unsupported
+  shared record field, never read from this source. Values Jan 1, export corrections Oct 19.
+  Hays does not distinguish condos/townhomes within its residential A/A1 codes. Annual,
+  approved 2/day, first live use gated. Implementation/tests use only synthetic data;
+  publisher verification above is Claude's, not a new source check by Codex.
 - Shapefile on the page (`shapefile-data.zip`, 45 MB) dates from 2024-04-19, which is stale. Use StratMap
   or Hays County GIS instead.
 
