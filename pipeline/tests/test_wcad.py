@@ -333,7 +333,8 @@ def test_bad_page_order_repeated_group_and_non_main_segment_fail(context):
 def test_exact_budget_live_gate_and_no_layer(context):
  import yaml
  assert yaml.safe_load((ROOT/'config/budgets.yaml').read_text())['adapters']['wcad']=={'per_day':40,'min_interval_seconds':2}
- assert yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated']['wcad']=="awaiting Claude's first live check"
+ # Ungated after Claude's first live check, run 40559703311 (2026-10-27).
+ assert 'wcad' not in (yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated'] or {})
  ad=wcad.WCAD();assert ad.cadence=='annual' and not ad.retain_raw and not ad.recordable
  assert not [l for l in load_layers() if l.source=='wcad']
 
