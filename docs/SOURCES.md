@@ -174,6 +174,16 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   (`MA` = Main Area), `ActYrBuilt`, `EffYrBuilt`, `Area`, `Bedrooms`.
 - SALES has dates, instrument and **previous owner name** (strip) but **no sale amount**, even
   though the 2018 layout PDF lists one. OWNER holds names, addresses and exemptions (don't ingest).
+- **Re-checked 2026-10-27 for P2-04** (Claude; probes 40559298690, 40559789367, 40560747935,
+  codes and counts only). The 2026 certified Orion export (2026-07-18, 19.4 MB) has property,
+  owner, exemption, entity-value, agent and mobile-home files but **no improvements or
+  segments**, so no living area. The monthly export (as of 10-19-2026, 40.4 MB) has six nested
+  zips with **numeric member names**; identify them by header. Property 134,553 rows;
+  `SquareFootage` > 0 on 93,502 and equals the sum of all `MA*` segments (`MA`, `MA2`, `MAUPS9`,
+  `MAADDN`, `MAENCL`…) within 1 sq ft for 97.9%. Improvement state codes are single letters
+  (`A`, `B`, `E`, `O`) plus a `Type` (`R`, `M`, `C`, `I`). StratMap's Hays IDs are the digits of
+  `QuickRefID` (120,368 of 120,445 match). The owner and sales files are never read past the
+  header. Spec `docs/tasks/P2-04-hays-cad.md`.
 - Shapefile on the page (`shapefile-data.zip`, 45 MB) dates from 2024-04-19, which is stale. Use StratMap
   or Hays County GIS instead.
 

@@ -165,11 +165,16 @@ are decided (`DECISIONS.md`).
   canaries. No data-source calls. Awaiting Claude's live counts, coverage/MA agreement,
   parcel match, five-property browser check, resource/size and stored-field privacy check.
 
+- **P2-03** (Codex, PR #110; Claude fix: alias the distinct land count): WCAD 2026 certified facts
+  and values. Live run 40559703311: 236,087 homes kept, living area agrees with main-area segments
+  for 99.6%, 99.2% matched to parcels. Ungated (PR #111).
+
 ## Next
 
-1. Claude: review P2-03 (WCAD) and run its first live check before ungating.
-2. Claude: spec P2-04 (Hays CAD facts and values) next; P2-05 must place condos (see Open issues).
-3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
+1. Owner: paste the P2-04 (Hays CAD) prompt into Codex (`docs/tasks/P2-04-hays-cad.md`).
+2. Chat session with a browser: five-property WCAD spot check on search.wcad.org.
+3. Claude: spec P2-05 (harmonized records, addresses, condo placement) once P2-04 is live.
+4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD and WCAD are annual).
 
 ## Open issues
 
