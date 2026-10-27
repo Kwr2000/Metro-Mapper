@@ -3,6 +3,20 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-05 homes lookup reviewed and merged (Claude, chat)
+
+- PR #116 reviewed against the spec: built only from canonical files, fixed public columns, no
+  owner or demographic fields, counts reconcile with each run summary, staging then atomic swap.
+  `mm publish` on the real files: 190.6 MB in `homes/` (limit 200 MB), 662 address shards
+  (largest 1.95 MB), 6,048 map cells, about 2.5 minutes. Pages deploy at `d58bc0e` took 4.5 minutes.
+- One fix before merging: TCAD stores numbered streets without the ordinal ("E 17 ST"), which
+  listings write "E 17th St"; 8,634 Travis homes are on such streets. A bare number that is the
+  whole street name before a suffix now becomes an ordinal on both sides; six real-shape vectors added.
+- Checked 20 listing-style addresses (all three counties, condo units with "UNIT" and "#",
+  "County Road 221", duplexes): each finds the right home(s) with the spot-checked living area and
+  year built. Round-trip misses: Travis 3,084 of 377,311, Williamson 1,007 of 235,581, Hays 440 of 89,687.
+- The 200 MB size limit leaves little room (about 5%); revisit before adding fields or counties.
+
 ## 2026-10-27 — P2-05 homes lookup implementation choices (Codex)
 
 - Publish only from the four local canonical files, with pure fixture adapter execution for

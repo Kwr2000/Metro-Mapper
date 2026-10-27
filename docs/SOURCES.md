@@ -214,6 +214,14 @@ Pages: `comptroller.texas.gov/auto-data/PT2/ratio-study/2024/{2270000001A,246000
 These districts are studied every other year (the 2025 pages return 404). The next study is 2026,
 published in 2027.
 
+### FHFA House Price Index (purchase-only, 100 largest metros)
+- `https://www.fhfa.gov/hpi/download/quarterly_datasets/hpi_po_metro.txt` (listed on
+  <https://www.fhfa.gov/data/hpi/datasets>). Public domain U.S. government data; credit "FHFA House
+  Price Index (purchase-only)". Checked by probe 40587875637 (2026-10-27): tab-separated, header
+  `cbsa metro_name yr qtr index_nsa index_sa`, 142 quarterly rows for CBSA 12420
+  "Austin-Round Rock-San Marcos, TX" through 2026 Q2 (SA 680.77, 656.56, 681.16 for 2025 Q4 to
+  2026 Q2). Used for the value range's time adjustment (P2-06).
+
 ## Parcel shapes
 
 - **TxGIO StratMap Land Parcels 2026** — **License CC0-1.0**. Credit "Texas Geographic
