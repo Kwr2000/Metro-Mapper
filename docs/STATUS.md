@@ -178,12 +178,16 @@ are decided (`DECISIONS.md`).
   counts/categories, living/MA/year/lot coverage, parcel match, five-property browser check,
   runtime/memory, canonical size and privacy scan; owner/sales row counts intentionally unavailable.
 
+- **P2-04** (Codex, PR #113; Claude fix: exempt codes like `XE-11.182`): Hays CAD 2026 facts
+  and values from the monthly export. Live run 40575881166: 90,157 homes kept, living area agrees
+  with `MA*` segments for 97.9%, 98.4% matched to parcels. Ungated. WCAD and Hays spot checks passed.
+
 ## Next
 
-1. Claude: review P2-04 (Hays CAD), then first live check before ungating.
-2. Chat session with a browser: five-property WCAD spot check on search.wcad.org.
-3. Claude: spec P2-05 (harmonized records, addresses, condo placement) once P2-04 is live.
-4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD and WCAD are annual).
+1. Claude: spec P2-05 (harmonized property records across the three counties, address
+   normalization, static sharded address lookup, condo placement for Travis).
+2. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD, WCAD and Hays
+   CAD are annual).
 
 ## Open issues
 

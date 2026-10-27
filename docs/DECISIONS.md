@@ -3,6 +3,26 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-04 Hays CAD reviewed, merged and live-checked; ungated; WCAD spot check (Claude, chat)
+
+- PR #113 reviewed against the spec (files found by header; owner and sales files never read past
+  the header; byte-level CSV reader decodes only allowlisted cells; canaries). One real-shape fix
+  before merging: exempt state codes carry a statute suffix (`XE-11.182`), which the code pattern
+  rejected; it now accepts `[A-Z0-9][A-Z0-9.-]{0,15}`. `make test` 983 pipeline + 51 web; CI
+  green; merged.
+- First live check, run 40575881166: 1 call, 22 s, peak 435 MB, 4.1 MB stored. Property rows
+  134,553 (one repeated ID with conflicting rows, skipped); kept 90,157 (single family 79,493,
+  mobile home 4,560, rural 4,519, two-to-four 936, builder inventory 649); 58 non-`R` IDs skipped.
+  Living area 99.7% of single family; agrees with the `MA*` sum for 97.9%; year built 91.0%; lot
+  size 60.6%; 98.4% matched to P2-01's Hays parcels. No owner, mailing, exemption or legal fields
+  stored. Ungated.
+- Hays spot check on esearch.hayscad.com (2026, "Total Main Area"): R163194 1,636 / 2020;
+  R94307 2,763 (1,811 + 952 upstairs) / 1999; R97005 1,984 / 2000; R155475 1,374 / 2018;
+  R17475 3,576 (its first improvement; Hays shows no year built, stored null). All match.
+- WCAD spot check on search.wcad.org: R417015 1,379 / 2003; R098495 1,397 / 1985; R560055
+  condo 2,344 / 2018; R041212 duplex 2,540 (2 × 1,270) / 1984; R009556 rural 3,740 / 1983.
+  All match the stored living area and year built.
+
 ## 2026-10-27 — P2-04 Hays CAD implementation choices (Codex)
 
 - Existing written Phase 2 approval (2026-10-25) covers Hays CAD 2/day and annual refresh.

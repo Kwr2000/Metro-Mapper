@@ -361,7 +361,8 @@ def test_fixture_never_reads_live_parcels(context,monkeypatch):
 
 def test_exact_budget_gate_and_no_layer(context):
  assert yaml.safe_load((ROOT/'config/budgets.yaml').read_text())['adapters']['hays_cad']=={'per_day':2}
- assert yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated']['hays_cad']=="awaiting Claude's first live check"
+ # Ungated after Claude's first live check, run 40575881166 (2026-10-27).
+ assert 'hays_cad' not in (yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated'] or {})
  assert not [layer for layer in load_layers() if layer.source=='hays_cad']
  ad=hays.HaysCAD();assert ad.cadence=='annual' and not ad.retain_raw and not ad.recordable
  config.clear_cache()
