@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-26 (fresh-clone verification; TCAD remains gated at its daily limit)._
+_Last updated 2026-10-27 (TCAD live and ungated; parcels re-run pending)._
 
 ## Phase
 
@@ -138,12 +138,14 @@ are decided (`DECISIONS.md`).
   green–red colours appear only on crime, access and school layers; ACS and elections are brown–teal
   with "lower/higher than" wording.
 
-- **P2-02** (Codex, PR #99; Claude fixes #100, #101): TCAD 2026 property facts. Reviewed and merged
-  2026-10-26 (byte-range allowlist enforced by a slice-guard test, canaries in owner/mail/
-  confidential/exemption/qualify-year ranges, 830 pipeline tests). **First live check not passed
-  yet:** run 40265353275 failed on one real row with a blank improvement type (fixed, #100); run
-  40266259475 failed on partial-owner repeat rows in `PROP.TXT` (fixed, #101). Both of the day's
-  2 calls are used; the next run is due after 00:00 UTC on 2026-10-27. `tcad` is still gated.
+- **P2-02** (Codex, PR #99; Claude fixes #100, #101, #105): TCAD 2026 property facts. Reviewed and
+  merged 2026-10-26 (byte-range allowlist enforced by a slice-guard test, canaries in owner/mail/
+  confidential/exemption/qualify-year ranges). Three live attempts failed on real-data shapes
+  (blank improvement type, partial-owner repeat rows, mobile homes missing from the TOTALS count);
+  the fourth, run 40425025647 (2026-10-27), passed: 384,236 properties kept, real/mobile count
+  453,705 vs TOTALS 453,779, living area on 99.67%, HVAC agreement 98.92%, 66 s, 1.76 GB, 19.2 MB, no
+  personal fields. Ungated. See DECISIONS 2026-10-27 for the numbers, the condo parcel gap and the
+  mobile-home correction.
 
 - **Review verification 2026-10-26** (Codex, fresh clone): confirmed PRs #98/#99 were
   already merged with green CI. Current `make test`: 831 pipeline + 51 web tests and build;
@@ -157,13 +159,15 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Re-run the TCAD first live check (`adapter=tcad`, `first_check=true`) after 00:00 UTC on
-   2026-10-27 (7 p.m. Central on October 26);
-   if it passes, merge its data, ungate `tcad`, and list five kept properties for the browser spot
-   check against TCAD's own pages (the owner or a chat session with a browser does that).
-2. Claude: re-run `parcels` (4 calls; it used 4 of its 6 on 2026-10-26) after 00:00 UTC on 2026-10-27, to
-   store the records without `acres` (owner decision 2026-10-26; code merged), then merge its data.
-3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
+1. Owner (or a chat session with a browser): spot-check these five kept TCAD properties against
+   TCAD's own pages (stored living area, year built): single family 287194 (14602 MENIFEE ST 78725:
+   1,498 sq ft, 1999) and 554861 (4412 BUCKS RUN 78744: 1,032, 1997); condo 233087 (8805 NEWPORT LN
+   78754: 1,226, 1973); two-to-four units 264771 (12403 WILLOW WILD DR 78758: 2,379, 1976); rural home
+   355999 (22419 HAZY HOLLOW CV 78669: 1,285, 1983, 6.9 acres).
+2. Claude: re-run `parcels` (4 calls; 0 used on 2026-10-27) to store the records without `acres`
+   (owner decision; code merged), then merge its data.
+3. Claude: spec the next Phase 2 task (WCAD and Hays CAD facts; place condos, see Open issues).
+4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
 
 ## Open issues
 
@@ -180,8 +184,10 @@ are decided (`DECISIONS.md`).
 - The test-data banner appears whenever any comparison came from fixtures; all comparison sources
   are live now, so it is off. A source that is ever re-gated would bring it back for that source.
 
-- TCAD: mobile homes coded `MH` (about 130 records, usually on rented land) stay skipped, by owner
-  decision 2026-10-26; mobile homes recorded as real property (A2) are kept.
+- TCAD mobile homes coded `MH` are **11,744 records (2.4% of properties)**, not the "about 130" the
+  owner's 2026-10-26 decision was based on. They stay skipped until the owner re-confirms.
+- TCAD condos (54,675 kept) mostly have no match in the P2-01 parcel file (1,030 matched): the parcel
+  file has no polygon per condo unit. Single-family match is 99.9%. P2-05 must place condos another way.
 - The live workflow job times out at 30 minutes while `tcad` is allowed 45. Owner decision
   2026-10-26: leave it; raise the workflow `timeout-minutes` only if a run is cut off.
 - P1-12 header nits: school score header shows 81.033 (three decimals) and the election header shows
@@ -195,7 +201,8 @@ are decided (`DECISIONS.md`).
 
 ## Waiting on the owner
 
-- Nothing right now.
+- Re-confirm skipping the 11,744 `MH` mobile homes, now that the real count is known (see Open issues).
+- The five-property TCAD spot check above (needs a browser).
 
 ## Working notes for agents
 

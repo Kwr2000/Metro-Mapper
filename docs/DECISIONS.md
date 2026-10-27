@@ -3,9 +3,31 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-02 TCAD first live check passed; ungated (Claude)
+
+- Run 40425025647 (the fourth attempt; the first three failed on real-data shapes and stored nothing,
+  see the 2026-10-26 entry and #100, #101, #105): 1 call, 66 s of processing, peak memory 1.76 GB,
+  stored file 19.2 MB compressed (338 MB as text). 493,324 rows read; **384,236 properties kept**
+  (limit 330,000–430,000): single family 290,624, condo 54,675, builder inventory 13,043, two to
+  four units 10,939, rural home 6,854, mobile home (A2) 6,006, other residential 2,095.
+- Real/mobile count 453,705 vs TOTALS 453,779 (−0.02%): TOTALS counts mobile homes coded `MH`, so the
+  check now counts R + M + MH. Living area on 99.67% of single-family and condo properties (limit
+  97%); living area agrees with the HVAC area within 2% for 98.92% of 333,357 (limit 97%); 78
+  partial-owner repeat rows merged; 19 partial-owner records kept.
+- Share of kept IDs found among P2-01's Travis parcels: 85.0% overall; 99.9% of single-family
+  (290,424 of 290,624) but only about 2% of condos (1,030 of 54,675), because the parcel file has no
+  polygon per condo unit. P2-05 needs another way to place condos (the master lot or situs).
+- **Correction for the owner:** mobile homes coded `MH` are **11,744 records (2.4% of properties)**,
+  not "about 130" (an extrapolation from the first third of the file, where they are rare). They stay
+  skipped for now; the owner should re-confirm that decision with the real number.
+- Stored data: exactly the spec's properties, geometry empty, one `run_summary`. A case-insensitive
+  search found no owner, mailing, exemption, mortgage or cap fields; the words "owner", "homestead",
+  "confidence" and "mortgage" appear only in the `partial_owner` flag and in street and subdivision
+  names. Five properties for the browser spot check are listed in STATUS. Ungated; gate test updated.
+
 ## 2026-10-26 — Owner decisions after the P1-12 / P2-02 review
 
-- **Owner decision:** TCAD mobile homes coded `MH` (about 130 records, usually on rented land) stay
+- **Owner decision (premise corrected 2026-10-27: the real `MH` count is 11,744, not about 130):** TCAD mobile homes coded `MH` (about 130 records, usually on rented land) stay
   skipped; mobile homes recorded as real property (state code A2) are kept. The spec's R and M
   rule is unchanged.
 - **Owner decision:** leave the live workflow's 30-minute job limit as is (TCAD is allowed 45);
