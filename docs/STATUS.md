@@ -192,14 +192,17 @@ are decided (`DECISIONS.md`).
   No source calls, adapter/web changes or generated-data commits. Unplaced condos stay
   address-searchable; Claude should check a dozen Zillow-style addresses per county.
 
+- **P2-05** (Codex, PR #116; Claude fix: bare numbered streets → ordinals): one record per home
+  in all three counties (710,480), address shards and a map grid built by `mm publish` (190.6 MB,
+  662 shards); 20 listing-style addresses checked. Travis condos have no map point yet.
+
 ## Next
 
-1. Claude: review P2-05 and check a dozen Zillow-style addresses per county against its files.
+1. Owner: paste the P2-06 (value range) prompt into Codex (`docs/tasks/P2-06-value-range.md`).
 2. Owner decision (P2-05b): how to place about 54,000 Travis condos that have no parcel of their
    own (see Waiting on the owner).
-3. Claude: spec P2-06 (value range) while P2-05 is built.
-4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD, WCAD and Hays
-   CAD are annual).
+3. Claude: spec P2-07 ("Check a home" page) and P2-08 (HMDA validation) while P2-06 is built.
+4. Check the 2026-11-03 refresh report (expect nothing due except, once live, `fhfa_hpi`).
 
 ## Open issues
 
