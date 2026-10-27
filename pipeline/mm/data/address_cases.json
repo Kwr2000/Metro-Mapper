@@ -2111,6 +2111,120 @@
         "unit": "2",
         "zip": "78704"
       }
+    },
+    {
+      "id": "address-115",
+      "county": "Travis",
+      "query": "1008 S 8th St, Austin, TX 78704",
+      "expected": {
+        "number": "1008",
+        "street_key": "S 8TH ST",
+        "unit": "",
+        "zip": "78704"
+      },
+      "cad": {
+        "situs_number": "1008",
+        "situs_prefix": "S",
+        "situs_street": "8",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78704"
+      }
+    },
+    {
+      "id": "address-116",
+      "county": "Travis",
+      "query": "1500 E 17th St, Austin, TX 78702",
+      "expected": {
+        "number": "1500",
+        "street_key": "E 17TH ST",
+        "unit": "",
+        "zip": "78702"
+      },
+      "cad": {
+        "situs_number": "1500",
+        "situs_prefix": "E",
+        "situs_street": "17",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78702"
+      }
+    },
+    {
+      "id": "address-117",
+      "county": "Travis",
+      "query": "700 W 22nd St, Austin, TX 78705",
+      "expected": {
+        "number": "700",
+        "street_key": "W 22ND ST",
+        "unit": "",
+        "zip": "78705"
+      },
+      "cad": {
+        "situs_number": "700",
+        "situs_prefix": "W",
+        "situs_street": "22",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78705"
+      }
+    },
+    {
+      "id": "address-118",
+      "county": "Travis",
+      "query": "300 W 3rd Ave, Austin, TX 78701",
+      "expected": {
+        "number": "300",
+        "street_key": "W 3RD AVE",
+        "unit": "",
+        "zip": "78701"
+      },
+      "cad": {
+        "situs_number": "300",
+        "situs_prefix": "W",
+        "situs_street": "3",
+        "situs_suffix": "AVE",
+        "situs_unit": null,
+        "situs_zip": "78701"
+      }
+    },
+    {
+      "id": "address-119",
+      "county": "Williamson",
+      "query": "200 17th St E, Taylor, TX 76574",
+      "expected": {
+        "number": "200",
+        "street_key": "17TH ST E",
+        "unit": "",
+        "zip": "76574"
+      },
+      "cad": {
+        "situs_number": "200",
+        "situs_prefix": null,
+        "situs_street": "17",
+        "situs_suffix": "ST E",
+        "situs_unit": null,
+        "situs_zip": "76574"
+      }
+    },
+    {
+      "id": "address-120",
+      "county": "Travis",
+      "query": "1100 E 11th St, Austin, TX 78702",
+      "expected": {
+        "number": "1100",
+        "street_key": "E 11TH ST",
+        "unit": "",
+        "zip": "78702"
+      },
+      "cad": {
+        "situs_number": "1100",
+        "situs_prefix": "E",
+        "situs_street": "11",
+        "situs_suffix": "ST",
+        "situs_unit": null,
+        "situs_zip": "78702"
+      }
     }
   ]
 }

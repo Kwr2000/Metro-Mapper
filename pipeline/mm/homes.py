@@ -55,6 +55,7 @@ for forms in (
 ):
     words = forms.split()
     SUFFIXES.update({word: words[0] for word in words})
+SUFFIX_FORMS = set(SUFFIXES.values())
 ORDINALS = dict(zip("FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH EIGHTH NINTH TENTH ELEVENTH TWELFTH THIRTEENTH FOURTEENTH FIFTEENTH SIXTEENTH SEVENTEENTH EIGHTEENTH NINETEENTH TWENTIETH".split(),
                    "1ST 2ND 3RD 4TH 5TH 6TH 7TH 8TH 9TH 10TH 11TH 12TH 13TH 14TH 15TH 16TH 17TH 18TH 19TH 20TH".split()))
 UNIT_WORDS = {"APT", "APARTMENT", "UNIT", "STE", "SUITE", "BLDG"}
@@ -104,6 +105,12 @@ def normalize_street(prefix, name, suffix):
     end = len(words)-1 if len(words) > 1 and words[-1] in DIRS else len(words)
     if end:
         words[end-1] = SUFFIXES.get(words[end-1], words[end-1])
+    # TCAD stores numbered streets bare ("E 17 ST"); listings say "E 17th St". A bare number
+    # that is the whole street name before a suffix becomes an ordinal (2026-10-27 review).
+    start = 1 if len(words) > 2 and words[0] in DIRECTIONS.values() else 0
+    if end and end-1 == start+1 and re.fullmatch(r"[0-9]+", words[start]) and words[end-1] in SUFFIX_FORMS:
+        n = int(words[start])
+        words[start] = f"{n}{'TH' if 10 <= n % 100 <= 20 else {1: 'ST', 2: 'ND', 3: 'RD'}.get(n % 10, 'TH')}"
     text = " ".join(words)
     # Whole highway prefixes only, after an optional directional. Never rewrite interior words.
     for pattern, replacement in HIGHWAYS:
