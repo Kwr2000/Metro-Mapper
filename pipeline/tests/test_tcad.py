@@ -286,6 +286,31 @@ def test_missing_or_duplicate_required_member_fails(kind):
         tcad.parse_export(BytesIO(tiny_zip(**{'omit' if kind=='missing' else 'duplicate':'IMP_DET.TXT'})))
 
 
+def test_mobile_home_rows_count_for_totals_but_are_not_kept(context,monkeypatch):
+    # Real file: TOTALS "real/mobile" includes mobile homes coded MH (owner: MH stays skipped).
+    source = source_rows()
+    mobile = native_prop('000000000789', 'A2'); mobile['prop_type_cd'] = 'MH'
+    source['PROP.TXT'].append(mobile)
+    source['TOTALS.TXT'][0]['num_real_mobile'] = '000000000003'
+    body = tcad.parse_export(BytesIO(tiny_zip(source)))
+    assert [p['prop_id'] for p in body['properties']] == ['123', '456']
+    assert body['summary']['real_mobile'] == 3 and body['summary']['mobile_home_rows'] == 1
+    assert body['summary']['skipped_by_state'] == {'A2': 1}
+    # A real mismatch names the counts and the row types (aggregates only), nothing else.
+    source['TOTALS.TXT'][0]['num_real_mobile'] = '000000000100'
+    with pytest.raises(ValueError) as error: tcad.parse_export(BytesIO(tiny_zip(source)))
+    text = str(error.value)
+    assert 'count 3 outside 2% of TOTALS 100' in text and 'rows by type R 2, MH 1' in text
+    # ... and a failed live fetch passes that text on (letters, digits and a few symbols only).
+    ad,req,_ = planned(context)
+    class Response(BytesIO):
+        status=200
+        headers={}
+    monkeypatch.setattr(tcad.urllib.request,'urlopen',lambda *a,**k:Response(tiny_zip(source)))
+    raw = ad.fetch(req,context)
+    with pytest.raises(ValueError, match='rows by type R 2, MH 1'): ad.follow_up(raw,context)
+
+
 def test_partial_owner_repeat_rows_keep_the_first_and_are_counted():
     # Real shape (probe 2026-10-26): adjacent rows for one property, partial_owner T, same udi_group,
     # same facts (the market value can differ slightly).

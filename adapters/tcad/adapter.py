@@ -52,9 +52,10 @@ DERIVED = {"land_value", "improvement_value", "abs_subdv_desc", "living_area", "
            "year_built", "floors", "dwelling_count", "has_adu"}
 SPLITS = {"land_hstd_val", "land_non_hstd_val", "imprv_hstd_val", "imprv_non_hstd_val"}
 COMPACT_FIELDS = (RANGES["PROP.TXT"].keys() - SPLITS) | DERIVED
-SAFE_NOTE = re.compile(r"[A-Za-z0-9 ,.()/+%–-]{1,100}")
-ERROR_TEXT = re.compile(r"TCAD download/parse failed \(\w+(: [A-Za-z0-9 ,.()/+%–-]{1,100})?\)")
-INPUT_COUNTS = {"records_read", "real_mobile", "skipped_by_state", "totals_num_real_mobile", "repeated_rows"}
+SAFE_NOTE = re.compile(r"[A-Za-z0-9 ,.()/+%–-]{1,200}")
+ERROR_TEXT = re.compile(r"TCAD download/parse failed \(\w+(: [A-Za-z0-9 ,.()/+%–-]{1,200})?\)")
+INPUT_COUNTS = {"records_read", "real_mobile", "skipped_by_state", "totals_num_real_mobile", "repeated_rows",
+                "mobile_home_rows"}
 
 
 def read_fields(line, member):
@@ -128,7 +129,7 @@ def deed(value):
 def check_counts(summary, kept, live):
     total, count = summary["totals_num_real_mobile"], summary["real_mobile"]
     if total <= 0 or abs(count - total) > total * .02:
-        raise ValueError("TCAD R+M count outside 2% of TOTALS")
+        raise ValueError(f"TCAD real/mobile count {count} outside 2% of TOTALS {total}")
     if live and not 330000 <= kept <= 430000:
         raise ValueError("TCAD kept count outside 330,000–430,000")
 
@@ -235,8 +236,8 @@ def parse_export(path, check_time=lambda: None):
         del improvements
         output, seen = [], {}
         summary = {"records_read": 0, "real_mobile": 0, "skipped_by_state": {}, "totals_num_real_mobile": totals[0],
-                   "repeated_rows": 0}
-        skipped = Counter()
+                   "repeated_rows": 0, "mobile_home_rows": 0}
+        skipped, types = Counter(), Counter()
         for r in rows(archive, members["PROP.TXT"], "PROP.TXT", check_time):
             summary["records_read"] += 1
             year(r)
@@ -253,10 +254,14 @@ def parse_export(path, check_time=lambda: None):
                 summary["repeated_rows"] += 1
                 continue
             seen[pid] = signature
-            real_mobile = r["prop_type_cd"] in {"R", "M"}
-            summary["real_mobile"] += real_mobile
+            types[r["prop_type_cd"] or "blank"] += 1
+            # TOTALS "real/mobile" counts real (R) plus mobile homes, coded MH in the real file. Only R
+            # and M are kept (owner decision 2026-10-26: MH stays skipped), but MH counts for the check.
+            kept_type = r["prop_type_cd"] in {"R", "M"}
+            summary["real_mobile"] += kept_type or r["prop_type_cd"] == "MH"
+            summary["mobile_home_rows"] += r["prop_type_cd"] == "MH"
             state = r["imprv_state_cd"] or r["land_state_cd"]
-            if not real_mobile or state not in CATEGORIES:
+            if not kept_type or state not in CATEGORIES:
                 skipped[state or "(blank)"] += 1
                 continue
             # Consume each split locally; only the summed values can leave the parser.
@@ -273,7 +278,11 @@ def parse_export(path, check_time=lambda: None):
             r["prop_id"] = pid
             output.append(r)
         summary["skipped_by_state"] = dict(sorted(skipped.items()))
-    check_counts(summary, len(output), live=False)
+    try:
+        check_counts(summary, len(output), live=False)
+    except ValueError as exc:
+        # Aggregates only (counts and type codes), to say why the count check failed.
+        raise ValueError(f"{exc} - rows by type " + ", ".join(f"{k} {v}" for k, v in types.most_common(8))) from None
     return {"properties": output, "summary": summary}
 
 
