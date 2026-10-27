@@ -3,6 +3,15 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — TCAD spot check on TCAD's property pages (Claude, chat)
+
+- Five properties from live run 40425025647 checked by hand on travis.prodigycad.com (2026,
+  Certified). Stored `living_area` equals TCAD's own "Main Area" and `year_built` equals the
+  1st-floor segment's year for all five: 287194 (A1, 1,498 sq ft, 1999), 554861 (A1, 1,032,
+  1997), 233087 (A4 townhome, 1,226 = 926 + 300, 1973), 264771 (B2, 2,379 = 1,719 + 660,
+  1976), 355999 (E1, 1,285 = 1,073 + 212, 1983; land 6.8910 acres; its 140 sq ft "Sketch
+  Only" segment is correctly left out). The HVAC segment equals Main Area on all five.
+
 ## 2026-10-27 — Parcels re-run without `acres` (Claude)
 
 - Run 40425928158 (4 calls, 111 s, 1.76 GB; file 12.6 MB): Travis 386,240, Williamson 286,776, Hays
