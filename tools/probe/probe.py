@@ -463,6 +463,48 @@ def _():
         re.sub(r".*FILE-([A-Z]+)-.*", r"\1", m.name) for m in members)
 
 
+def _hays_certified_bytes() -> tuple[str, bytes]:
+    status, _, body, _ = _req("https://hayscad.com/data-downloads/")
+    links = [l.decode() for l in re.findall(rb'href="(https://hayscad\.com/wp-content/uploads/[^"]*\.zip)"', body)]
+    cert = [l for l in links if re.search(r"certif", l, re.I) and "2026" in l]
+    if not cert:
+        raise RuntimeError(f"HTTP {status}; no 2026 certified zip among {len(links)} zip links")
+    url = cert[0]
+    _, hdrs, data, _ = _req(url, max_bytes=80_000_000)
+    return url, data
+
+
+def _hays_members(data: bytes, prefix: str = ""):
+    import io, zipfile
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        for info in z.infolist():
+            name = prefix + info.filename
+            if info.filename.lower().endswith(".zip"):
+                yield from _hays_members(z.read(info), name + "/")
+            else:
+                yield name, info.file_size, (lambda i=info, zz=data: zipfile.ZipFile(io.BytesIO(zz)).open(i))
+
+
+PERSONAL = re.compile(r"OWNER|SALE|EXEMPT|AGENT|ARB|APPEAL|DEED|MORT", re.I)
+
+
+@check("hays_certified_layout", "Hays CAD 2026 certified export: members, headers, row counts (no cell contents)")
+def _():
+    url, data = _hays_certified_bytes()
+    out = [f"{url.rsplit('/', 1)[-1]} {mb(len(data))}"]
+    for name, size, opener in _hays_members(data):
+        if PERSONAL.search(name.rsplit("/", 1)[-1]):
+            out.append(f"{name} {mb(size)} (not opened)")
+            continue
+        with opener() as f:
+            first = f.readline().decode("latin-1").rstrip("\r\n")
+            rows = sum(1 for _ in f)
+        delim = max(",|\t", key=first.count)
+        cols = first.split(delim) if first.count(delim) >= 3 else [f"(no header; line length {len(first)})"]
+        out.append(f"{name} {mb(size)} rows {rows:,} cols[{len(cols)}]: " + ",".join(c.strip('"')[:28] for c in cols)[:1400])
+    return " ;; ".join(out)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
