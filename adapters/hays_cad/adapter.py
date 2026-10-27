@@ -25,6 +25,7 @@ from mm.schemas import AreaFeature
 URL = "https://hayscad.com/wp-content/uploads/2026/10/2026-PROPERTY-DATA-EXPORT-FILES-AS-OF-10-19-2026.zip"
 AS_OF = date(2026, 1, 1)
 CERTIFIED = "2026-10-19"
+CODE = r"[A-Z0-9][A-Z0-9.-]{0,15}"
 EMPTY = {"type": "GeometryCollection", "geometries": []}
 COLUMNS = {
     "property": ("PropertyID", "QuickRefID", "CurrMarketValue", "CurrLandValue", "CurrImprovmentValue",
@@ -206,7 +207,8 @@ def parse_export(path):
                             elif kind == "improvement":
                                 code, typ = text(row, "StateCode"), text(row, "Type")
                                 for value in (code, typ):
-                                    if value is not None and not re.fullmatch(r"[A-Z0-9]{1,10}", value):
+                                    # Real exempt codes carry a statute suffix, e.g. "XE-11.182" (probe 2026-10-27).
+                                    if value is not None and not re.fullmatch(CODE, value):
                                         raise ValueError("Hays invalid classification code")
                                 candidate = (code, typ, number(row["ImpValue"]))
                                 best = improvements.setdefault(pid, [None, None])
@@ -391,7 +393,7 @@ class HaysCAD(SourceAdapter):
         clean["rows_by_file"].update(owner=None, sales=None)
         clean["skipped_by_code"] = {}
         for code, count in counts["skipped_by_code"].items():
-            if not isinstance(code, str) or not re.fullmatch(r"(?:[A-Z0-9]{1,10}|\(blank\))\|(?:[A-Z0-9]{1,10}|\(blank\))", code):
+            if not isinstance(code, str) or not re.fullmatch(rf"(?:{CODE}|\(blank\))\|(?:{CODE}|\(blank\))", code):
                 raise ValueError("Hays invalid skip code")
             clean["skipped_by_code"][code] = integer(count)
         yield AreaFeature(dataset="hays_input_summary", feature_id="2026", geometry=EMPTY, properties=clean)

@@ -162,7 +162,7 @@ def test_bad_headers_fail(tmp_path,kind,change):
 @pytest.mark.parametrize('code,typ,expected',[
  ('A','R','single_family'),('A1','R','single_family'),('A','M','mobile_home'),('A5','M','mobile_home'),
  ('B','R','two_to_four_units'),('E','R','rural_home'),('E','M','rural_home'),('O','R','builder_inventory'),
- ('B','C',None),('M1','M',None),('X1','R',None),('A5','R',None),('O','M',None),('A','I',None)])
+ ('B','C',None),('M1','M',None),('X1','R',None),('A5','R',None),('O','M',None),('A','I',None),('XE-11.182','R',None)])
 def test_category_map(tmp_path,code,typ,expected):
  rows=fixtures.source_rows();rows['improvement']=[dict(PropertyID='1001',InstanceID='1',StateCode=code,Type=typ,ImpValue='10')]
  body=parsed(tmp_path,rows)
@@ -368,3 +368,11 @@ def test_exact_budget_gate_and_no_layer(context):
  (context.adapter_dir.parents[1]/'config/live_gates.yaml').write_text('gated:\n  hays_cad: awaiting first check\n')
  config.clear_cache();run=runner.run('hays_cad','live',NOW)
  assert run.status=='skipped' and run.calls_made==0
+
+
+def test_real_exempt_codes_with_statute_suffix_are_valid_skip_keys():
+ # The real improvement file has codes such as "XE-11.182" (probe 40559789367, 2026-10-27).
+ import re
+ for code in ('XE-11.182','XJ-11.21','XR-11.30','A','M1'):
+  assert re.fullmatch(hays.CODE,code)
+ assert not re.fullmatch(hays.CODE,'xe 11')
