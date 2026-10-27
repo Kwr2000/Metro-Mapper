@@ -616,6 +616,64 @@ def _():
     return " ;; ".join(out)
 
 
+@check("stratmap_situs_travis", "StratMap Travis DBF: field names; can unmatched TCAD condos be placed by situs address? (counts only)")
+def _():
+    import gzip, io, json, struct, zipfile
+    from collections import Counter
+    url = "https://tnris-data-warehouse.s3.us-east-1.amazonaws.com/LCD/collection/stratmap-2026-land-parcels/items/shp/stratmap-2026-land-parcels_48453_shp.zip"
+    _, _, data, _ = _req(url, max_bytes=200_000_000)
+    z = zipfile.ZipFile(io.BytesIO(data))
+    name = next(n for n in z.namelist() if n.endswith(".dbf"))
+    f = z.open(name)
+    head = f.read(32)
+    n, hlen, rlen = struct.unpack("<IHH", head[4:12])
+    fields, raw = [], f.read(hlen - 32)
+    for i in range(0, len(raw) - 1, 32):
+        d = raw[i:i + 32]
+        if d[0] == 0x0D: break
+        fields.append((d[:11].split(b"\0")[0].decode(), chr(d[11]), d[16]))
+    names = [x[0] for x in fields]
+    want = [x for x in names if x == "PROP_ID" or x.startswith("SITUS")]
+    offs, o = {}, 1
+    for nm, t, ln in fields:
+        offs[nm] = (o, o + ln); o += ln
+    norm = lambda s: re.sub(r"\s+", " ", s.upper()).strip()
+    addr_to_ids = {}
+    situs_filled = 0
+    for _ in range(n):
+        rec = f.read(rlen)
+        if not rec or rec[:1] == b"*": continue
+        g = {k: rec[a:b].decode("latin-1").strip() for k, (a, b) in offs.items() if k in want}
+        num = g.get("SITUS_NUM", ""); street = g.get("SITUS_STRE", "") or g.get("SITUS_ST_1", ""); zp = g.get("SITUS_ZIP", "")[:5]
+        if num and street:
+            situs_filled += 1
+            addr_to_ids.setdefault((num, norm(street), zp), set()).add(g["PROP_ID"])
+    par = set()
+    with gzip.open("data/canonical/area_feature/parcels.ndjson.gz", "rt") as g:
+        for line in g:
+            r = json.loads(line)
+            if r["properties"].get("county") == "Travis": par.add(r["properties"]["prop_id"])
+    un = Counter(); hit = Counter(); samples = Counter()
+    with gzip.open("data/canonical/area_feature/tcad.ndjson.gz", "rt") as g:
+        for line in g:
+            r = json.loads(line)
+            if r["dataset"] != "property": continue
+            p = r["properties"]
+            if p["prop_id"] in par: continue
+            un[p["category"]] += 1
+            street = norm(" ".join(x for x in (p.get("situs_prefix"), p.get("situs_street"), p.get("situs_suffix")) if x))
+            street2 = norm(p.get("situs_street") or "")
+            key = (p.get("situs_number") or "", street, (p.get("situs_zip") or "")[:5])
+            key2 = (p.get("situs_number") or "", street2, (p.get("situs_zip") or "")[:5])
+            ids = addr_to_ids.get(key) or addr_to_ids.get(key2)
+            if ids:
+                hit[p["category"]] += 1
+                samples["one parcel" if len(ids) == 1 else "several parcels"] += 1
+    example = sorted({re.sub(r"[0-9]", "9", re.sub(r"[A-Z]", "A", k[1]))[:12] for k in list(addr_to_ids)[:2000]})[:6]
+    return (f"DBF {n:,} records; fields: {', '.join(names)} ;; situs fields used {want}; records with number+street {situs_filled:,}; "
+            f"addresses {len(addr_to_ids):,} ;; unmatched TCAD kept {dict(un)} ;; placed by address {dict(hit)} ({dict(samples)}) ;; street shape sample {example}")
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
