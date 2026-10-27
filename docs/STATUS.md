@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (TCAD live and ungated; parcels re-run without acres)._
+_Last updated 2026-10-26 (P2-03 built on synthetic fixtures)._
 
 ## Phase
 
@@ -157,9 +157,17 @@ are decided (`DECISIONS.md`).
   calls are already logged, budget remaining is 0, and no TCAD canonical file exists yet.
   Live metrics and the five stored-property examples remain pending the next successful run.
 
+- **P2-03** (Codex): WCAD 2026 canonical property facts from the four certified datasets,
+  strict query/select allowlists, native string/omitted-null fixtures, count-checked paging,
+  duplicate validation and improvement/MA/land joins. TCAD-compatible fields and count-only
+  audit; approved 40/day budget and first-live-check gate. No core/web changes or layer.
+  `make test` passes (903 pipeline, 51 web tests and builds), including 71 WCAD tests and
+  canaries. No data-source calls. Awaiting Claude's live counts, coverage/MA agreement,
+  parcel match, five-property browser check, resource/size and stored-field privacy check.
+
 ## Next
 
-1. Owner: paste the P2-03 (WCAD) prompt into Codex (`docs/tasks/P2-03-wcad.md`).
+1. Claude: review P2-03 (WCAD) and run its first live check before ungating.
 2. Claude: spec P2-04 (Hays CAD facts and values) next; P2-05 must place condos (see Open issues).
 3. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels and TCAD are annual).
 

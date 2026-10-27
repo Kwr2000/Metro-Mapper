@@ -3,6 +3,37 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-26 — P2-03 WCAD implementation choices (Codex)
+
+- The existing Phase 2 approval covers WCAD 40/day and annual refresh. Add exactly
+  `{per_day: 40, min_interval_seconds: 2}`, keep first live use gated, and add no layer,
+  core/web change or dependency. Values/source-as-of are 2026-01-01; `certified` is the latest
+  available property datadate date, including skipped properties. No datadate anywhere fails.
+- Use native count cells `count` and, for count(distinct propertyid), `count_propertyid`.
+  Page until short, including an empty last page for exact multiples. Validate the complete
+  request against the fixed dataset/select/filter/order/group builder before transport.
+  Ignore unselected response cells, then aggregate and clear payload lists during normalize
+  to avoid keeping one canonical model per source segment/improvement.
+- Duplicate comparison uses the exact selected string cells and omitted-key shape before
+  trimming; every selected difference fails. Missing improvement values rank below observed
+  values, including zero; first-row ties remain first. M1 remains unmapped and skipped;
+  no classification is inferred from living area, consistent with the owner's decision.
+- Missing source values stay null. Round money/living area to whole units, main-area sums to
+  six decimals and lot acreage to four; a rounded lot/living value of zero is null. Floors
+  count main-segment rows; year comes from the largest measured segment with first-row ties,
+  and stays null if that segment's year is missing/zero. A missing main-area sum is null;
+  an observed sum of zero is preserved. Numeric cells must be finite and nonnegative.
+- The living-area gate uses the combined single-family/condo cohort; MA agreement uses stored
+  values within one square foot. Empty denominators are reported as null, never 100%.
+  Tiny fixtures bypass only the two production volume checks; all other checks apply.
+- Keep all common TCAD field names, including `partial_owner: null`; this required null key
+  is not a WCAD owner column and is the only intended owner-key exception in the live scan.
+- Only live mode consults the optional local P2-01 file, matching exact Williamson quickref
+  strings and reporting coverage without geometry or a match gate. Fixture mode never reads
+  real canonical parcels. Runtime/memory stop at finalization; inspect full job resources and
+  serialized file size in the live check. Automatic refresh remains manifest-driven pending
+  later publication work, as with TCAD and parcels.
+
 ## 2026-10-26 — Owner decision: mobile homes; P2-03 spec (Claude, chat)
 
 - **Owner decision:** TCAD's 11,744 `MH` mobile-home records stay skipped, now with the real count

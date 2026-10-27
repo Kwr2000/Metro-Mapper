@@ -140,6 +140,29 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
   exists for about 30% of homes (most lots are priced per lot). Responses: all values are strings,
   nulls omitted; `$limit` of 100,000 works. Spec `docs/tasks/P2-03-wcad.md`.
 
+
+- **P2-03 implementation allowlist:** only the four certified datasets below, always with
+  an explicit `$select`. All property columns are selected from `ai3c-c9pf`: `propertyid`,
+  `quickrefid`, `propertytypecode`, `neighborhoodcode`, `neighborhooddesc`, `totalpropmktvalue`,
+  `totallandmktvalue`, `totalimpmktvalue`, `totalsqftlivingarea`, `streetnumber`,
+  `streetdirectional`, `streetname`, `streetsuffix`, `streetsuffixdirectional`, `unitnumber`,
+  `city`, `zip`, `condobuilding`, `condounit`, `datadate` (`tax_year=2026`). Improvements
+  `2huh-jk3y`: `propertyid`, `fsptb`, `vtsgimp_impvalue`. Main segments `xs93-mfpk`: `propertyid`,
+  `fsegtype`, `farea`, `factyear`, restricted to MA/MA2/MA3/MA4. Land `bens-i2m7`: group by
+  `propertyid`, sum `faclandsize` as `acres` and `fsftlandsize` as `sqft`. The latter three
+  filter `adhoctaxyear=2026`; count requests read count(*) or count(distinct propertyid) only.
+  Paged queries order by propertyid and :id (grouped land: propertyid only).
+- **Never queried by this adapter:** Owner/PropOwner, Asmt/assessment, Exemptions, Agents,
+  Appeals, Sale/Sales History/Recent Sales, Building Permits, Property Characteristics or any
+  other dataset. Never selected: `legaldescription`, `propertycomment`, `dba`, generic
+  `address`, `mh*`, owner/mail/exemption/cap/sale cells. Other portal entries above are source
+  discovery notes, not additional P2-03 inputs. Extra response cells are ignored; raw retention
+  and fixture recording are off. Canonical property fields follow TCAD; no layer is added.
+- Credit: **Williamson Central Appraisal District, open-data portal, 2026 certified datasets**.
+  No license stated; publication follows the owner's Q1 rule for public government exports
+  with attribution. Annual cadence and first-live-check gate. Codex built on native-shape
+  synthetic fixtures only; publisher verification above is Claude's 2026-10-26 check.
+
 ### Hays CAD
 - Page: <https://hayscad.com/data-downloads/>. Free; no terms or disclaimer on the page.
 - **Monthly "Property Data Export"** zips (latest "as of 10-19-2026": 40.4 MB, Last-Modified

@@ -1,0 +1,41 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "propertyid": "1001.000000",
+      "fsegtype": "MA",
+      "farea": "1500.000000",
+      "factyear": "1998.000000"
+    },
+    {
+      "propertyid": "1001.000000",
+      "fsegtype": "MA2",
+      "farea": "500.000000",
+      "factyear": "2005.000000"
+    },
+    {
+      "propertyid": "1002.000000",
+      "fsegtype": "MA",
+      "farea": "1200.000000",
+      "factyear": "2001.000000"
+    },
+    {
+      "propertyid": "1003.000000",
+      "fsegtype": "MA",
+      "farea": "1400.000000",
+      "factyear": "1980.000000"
+    },
+    {
+      "propertyid": "1004.000000",
+      "fsegtype": "MA",
+      "farea": "900.000000",
+      "factyear": "2010.000000"
+    },
+    {
+      "propertyid": "1005.000000",
+      "fsegtype": "MA",
+      "farea": "2200.000000",
+      "factyear": "1975.000000"
+    }
+  ]
+}

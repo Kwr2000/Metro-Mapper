@@ -1,0 +1,55 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "propertyid": "1001.000000",
+      "fsptb": "A3",
+      "vtsgimp_impvalue": "999999.000000"
+    },
+    {
+      "propertyid": "1001.000000",
+      "fsptb": "A1",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1001.000000",
+      "fsptb": "A9",
+      "vtsgimp_impvalue": "200000.000000"
+    },
+    {
+      "propertyid": "1002.000000",
+      "fsptb": "A8",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1003.000000",
+      "fsptb": "E1",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1004.000000",
+      "fsptb": "A5",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1005.000000",
+      "fsptb": "B2",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1006.000000",
+      "fsptb": "O1",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1007.000000",
+      "fsptb": "A7",
+      "vtsgimp_impvalue": "100000.000000"
+    },
+    {
+      "propertyid": "1008.000000",
+      "fsptb": "M1",
+      "vtsgimp_impvalue": "100000.000000"
+    }
+  ]
+}
