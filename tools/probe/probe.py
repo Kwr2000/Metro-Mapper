@@ -505,6 +505,85 @@ def _():
     return " ;; ".join(out)
 
 
+@check("hays_monthly_layout", "Hays CAD newest monthly export: headers, counts, segment types, living-area agreement (codes and counts only)")
+def _():
+    import csv, io
+    from collections import Counter, defaultdict
+    status, _, body, _ = _req("https://hayscad.com/data-downloads/")
+    links = [l.decode() for l in re.findall(rb'href="(https://hayscad\.com/wp-content/uploads/[^"]*PROPERTY-DATA-EXPORT[^"]*\.zip)"', body)]
+    url = links[0]
+    _, hdrs, data, _ = _req(url, max_bytes=120_000_000)
+    out = [f"{url.rsplit('/', 1)[-1]} {mb(len(data))} LM {hdrs.get('last-modified', '?')}"]
+    tables = {}
+    for name, size, opener in _hays_members(data):
+        short = name.rsplit("/", 1)[-1]
+        if PERSONAL.search(short):
+            out.append(f"{short} {mb(size)} (not opened)")
+            continue
+        with opener() as f:
+            text = io.TextIOWrapper(f, encoding="latin-1", newline="")
+            reader = csv.reader(text)
+            header = next(reader)
+            rows = list(reader)
+        lens = Counter(len(r) for r in rows)
+        out.append(f"{short} {mb(size)} rows {len(rows):,} widths {dict(lens.most_common(3))} cols: " + ",".join(header)[:900])
+        for key in ("PROPERTY", "SEGMENT", "IMPROVEMENT", "LAND"):
+            if key in short.upper():
+                tables[key] = (header, rows)
+    def col(t, *pats):
+        h = tables[t][0]
+        for p in pats:
+            for i, c in enumerate(h):
+                if re.fullmatch(p, c, re.I):
+                    return i
+        return None
+    notes = []
+    if "PROPERTY" in tables:
+        h, rows = tables["PROPERTY"]
+        for i, c in enumerate(h):
+            if re.search(r"state|type|code|year|status", c, re.I):
+                vals = Counter(r[i] for r in rows if i < len(r))
+                if len(vals) <= 60 and all(len(v) <= 8 for v in vals):
+                    notes.append(f"PROPERTY.{c}: {dict(vals.most_common(25))}")
+                else:
+                    notes.append(f"PROPERTY.{c}: {len(vals)} distinct")
+    if "SEGMENT" in tables:
+        h, rows = tables["SEGMENT"]
+        ti, ai = col("SEGMENT", "Type", "SegType", ".*Type"), col("SEGMENT", "Area", ".*Area")
+        if ti is not None:
+            agg = defaultdict(lambda: [0, 0.0])
+            for r in rows:
+                a = agg[r[ti]]; a[0] += 1
+                try: a[1] += float(r[ai] or 0)
+                except Exception: pass
+            top = sorted(agg.items(), key=lambda kv: -kv[1][0])[:30]
+            notes.append(f"SEGMENT.{h[ti]} (n, avg {h[ai] if ai is not None else '?'}): " + ", ".join(f"{k}={n}/{a/n:.0f}" for k, (n, a) in top))
+    if "PROPERTY" in tables and "SEGMENT" in tables:
+        common = [c for c in tables["PROPERTY"][0] if c in tables["SEGMENT"][0] and re.search(r"id|quickref|number", c, re.I)]
+        notes.append(f"common key columns: {common}")
+        if common:
+            k = common[0]; pk, sk = tables["PROPERTY"][0].index(k), tables["SEGMENT"][0].index(k)
+            sq = col("PROPERTY", "SquareFootage", ".*Sq.*F.*")
+            h, rows = tables["SEGMENT"]
+            ti, ai = col("SEGMENT", "Type", ".*Type"), col("SEGMENT", "Area", ".*Area")
+            ma = defaultdict(float)
+            for r in rows:
+                if re.fullmatch(r"MA\d?", r[ti] or ""):
+                    try: ma[r[sk]] += float(r[ai] or 0)
+                    except Exception: pass
+            keys = Counter(r[pk] for r in tables["PROPERTY"][1])
+            both = agree = withsq = 0
+            for r in tables["PROPERTY"][1]:
+                try: v = float(r[sq] or 0)
+                except Exception: v = 0
+                if v > 0:
+                    withsq += 1
+                    if ma.get(r[pk], 0) > 0:
+                        both += 1; agree += abs(ma[r[pk]] - v) <= 1
+            notes.append(f"key {k}: {len(keys):,} distinct of {sum(keys.values()):,}; SquareFootage>0 {withsq:,}; with MA {both:,}; agree within 1 sq ft {agree:,}")
+    return " ;; ".join(out + notes)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
