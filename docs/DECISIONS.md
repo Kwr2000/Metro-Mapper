@@ -3,6 +3,13 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — Parcels re-run without `acres` (Claude)
+
+- Run 40425928158 (4 calls, 111 s, 1.76 GB; file 12.6 MB): Travis 386,240, Williamson 286,776, Hays
+  120,445 kept (793,461), 159 points outside a block group, as before. Properties are now exactly
+  county, prop_id, geo_id, block_group, tract, parcel_as_of; no `acres`. A case-insensitive search found
+  no owner, mail, care, legal, exempt or acres. Merged with the owner's 2026-10-26 decision implemented.
+
 ## 2026-10-27 — P2-02 TCAD first live check passed; ungated (Claude)
 
 - Run 40425025647 (the fourth attempt; the first three failed on real-data shapes and stored nothing,
