@@ -641,6 +641,60 @@ def _():
     return " ;; ".join(out)
 
 
+@check("hays_monthly_rules", "Hays CAD monthly export: main-area rules, descriptions by state code, parcel-ID overlap (codes and counts only)")
+def _():
+    import csv, gzip, io, json
+    from collections import Counter, defaultdict
+    _, _, body, _ = _req("https://hayscad.com/data-downloads/")
+    url = re.findall(rb'href="(https://hayscad\.com/wp-content/uploads/[^"]*PROPERTY-DATA-EXPORT[^"]*\.zip)"', body)[0].decode()
+    _, _, data, _ = _req(url, max_bytes=120_000_000)
+    t = {}
+    for name, size, opener in _hays_members(data):
+        with opener() as f:
+            reader = csv.reader(io.TextIOWrapper(f, encoding="latin-1", newline=""))
+            header = next(reader)
+            kind = ("owner" if "OwnerName" in header or "PrevOwnerName" in header else
+                    "property" if "CurrMarketValue" in header else "segment" if "ActYrBuilt" in header else
+                    "improvement" if "ImpValue" in header else "other")
+            if kind in ("owner", "other"):
+                continue
+            keep = {"property": ("PropertyID", "QuickRefID", "SquareFootage"),
+                    "improvement": ("PropertyID", "InstanceID", "Type", "Description", "StateCode", "ImpValue"),
+                    "segment": ("PropertyID", "InstanceID", "Type", "Description", "Area", "ActYrBuilt")}[kind]
+            idx = [header.index(c) for c in keep]
+            t[kind] = [dict(zip(keep, (r[i] for i in idx))) for r in reader]
+    f = lambda v: float(v) if v not in ("", None) else 0.0
+    out = []
+    S, P, I = t["segment"], t["property"], t["improvement"]
+    ma_types = Counter(r["Type"] for r in S if r["Type"].upper().startswith("MA"))
+    out.append("MA* types: " + ", ".join(f"{k}={n}" for k, n in ma_types.most_common(40)))
+    desc = defaultdict(Counter)
+    for r in S:
+        if r["Type"].upper().startswith("MA"): desc[r["Type"]][r["Description"][:24]] += 1
+    out.append("MA* descriptions: " + "; ".join(f"{k}: {dict(v.most_common(3))}" for k, v in sorted(desc.items(), key=lambda kv: -sum(kv[1].values()))[:14]))
+    sq = {r["PropertyID"]: f(r["SquareFootage"]) for r in P}
+    rules = {"MA,MA2-9": r"MA\d?", "MA*": r"MA.*", "MA* minus MAENCL": r"MA(?!ENCL).*",
+             "MA,MA2-9,MAUPS*,MAADDN": r"MA\d?|MAUPS.*|MAADDN", "MA,MA2-9,MAUPS*,MAADDN,MAUPST": r"MA\d?|MAUPS.*|MAADDN|MAUPST"}
+    for label, rx in rules.items():
+        m = defaultdict(float)
+        for r in S:
+            if re.fullmatch(rx, r["Type"], re.I): m[r["PropertyID"]] += f(r["Area"])
+        both = [(sq[p], m[p]) for p in m if sq.get(p, 0) > 0 and m[p] > 0]
+        agree = sum(abs(a - b) <= 1 for a, b in both)
+        out.append(f"rule {label}: agree {agree:,} of {len(both):,}")
+    sd = defaultdict(Counter)
+    for r in I: sd[r["StateCode"]][(r["Type"], r["Description"][:22])] += 1
+    out.append("improvement descriptions by state code: " + "; ".join(f"{k}: {dict(v.most_common(6))}" for k, v in sd.items() if k in ("A", "B", "E", "O", "M1", "A1", "A5")))
+    pids = {r["PropertyID"] for r in P}; qdig = {re.sub(r"\D", "", r["QuickRefID"]) for r in P}
+    hays = set()
+    with gzip.open("data/canonical/area_feature/parcels.ndjson.gz", "rt") as g:
+        for line in g:
+            r = json.loads(line)
+            if r["properties"].get("county") == "Hays": hays.add(r["properties"]["prop_id"])
+    out.append(f"StratMap Hays IDs {len(hays):,}: match PropertyID {len(hays & pids):,}; match QuickRefID digits {len(hays & qdig):,}")
+    return " ;; ".join(out)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
