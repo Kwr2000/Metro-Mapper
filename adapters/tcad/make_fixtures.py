@@ -23,7 +23,7 @@ def main():
              adu_area=400, has_adu=True, deed_dt="", situs_num="1010", year_built=2005, floors=1)
     body = {"properties": [a,b], "summary": {"records_read": 4, "real_mobile": 3,
             "skipped_by_state": {"B1": 1, "J1": 1}, "totals_num_real_mobile": 3,
-            "repeated_rows": 0}}
+            "repeated_rows": 0, "mobile_home_rows": 0}}
     (Path(__file__).parent/'fixtures/tcad_2026.json').write_text(json.dumps({"status": 200, "body": body}, indent=2)+'\n')
 
 
