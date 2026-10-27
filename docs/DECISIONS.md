@@ -3,6 +3,39 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-04 Hays CAD implementation choices (Codex)
+
+- Existing written Phase 2 approval (2026-10-25) covers Hays CAD 2/day and annual refresh.
+  Add exactly `{per_day: 2}` and keep the first-live-check gate; no new budget, source,
+  dependency, core/web change or map layer. Use the task's monthly export, not Orion certified.
+- Count only the four read CSVs. Owner/sales `rows_by_file` values are null (header discovered),
+  since even counting their rows would violate the header-only requirement. Numeric nested
+  members are identified solely by headers. Decode only allowlisted cells, parsing discarded
+  cells solely to recognize CSV structure; compressed nested archives use temporary seekable
+  files under the download folder and are deleted even on parse failure.
+- Improvement ties keep first file order; missing value ranks below observed zero. Code skips
+  use the highest overall improvement's `StateCode|Type`; absent improvement is
+  `(blank)|(blank)`. Count invalid QuickRefs separately. Compare duplicate rows' selected
+  original strings exactly, before trimming; all extra rows increment `repeated_rows`, and
+  `conflicting_ids` counts distinct permanently excluded IDs, including later identical repeats.
+  Duplicate kept QuickRef digit suffixes fail closed. Preserve the suffix's exact digits,
+  including any leading zeros; internal numeric PropertyID remains a separate integer.
+- Sum all case-sensitive MA-prefixed segment areas across a property. Floors count their rows;
+  largest measured segment's year wins, first tie, with no fallback if that year is missing/0.
+  Missing numeric cells stay null; nonnumeric, negative and nonfinite selected quantities fail.
+  Round money/living to whole units, MA sums to six decimals, acreage to four; zero or
+  rounded-zero living/lot values are null, observed zero money/MA stays zero. Lot precedence
+  is based on positive source sums before rounding; never invent a minimum lot size.
+- Apply both 95% quality gates in fixture and live modes; bypass only production volumes on
+  tiny fixtures. Empty denominators report null. Keep TCAD/WCAD common field names, including
+  required `partial_owner: null`, the sole expected exception to an owner-key privacy grep.
+  Hays A/A1 residential codes do not separate condos/townhomes, so no condo label is inferred.
+- Optional parcel matching is live-only, local and report-only, using exact Hays IDs; fixtures
+  never consult live canonical parcels. Summary runtime stops at finalization and peak memory
+  is Linux process RSS; Claude must also check full job/serialization resources and file size.
+  Annual adapter cadence is declared; automatic scheduling remains manifest-driven pending
+  later publication work, consistent with TCAD/WCAD. No source calls made in development.
+
 ## 2026-10-27 — P2-03 WCAD reviewed, merged and live-checked; ungated (Claude, chat)
 
 - PR #110 reviewed against the spec (select allowlist, four datasets only, canaries, native string

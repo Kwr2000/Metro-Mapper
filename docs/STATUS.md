@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-26 (P2-03 built on synthetic fixtures)._
+_Last updated 2026-10-27 (P2-04 built on synthetic fixtures)._
 
 ## Phase
 
@@ -169,9 +169,18 @@ are decided (`DECISIONS.md`).
   and values. Live run 40559703311: 236,087 homes kept, living area agrees with main-area segments
   for 99.6%, 99.2% matched to parcels. Ungated (PR #111).
 
+- **P2-04** (Codex): Hays CAD monthly 2026 canonical facts, six numeric nested ZIPs
+  identified by header, private files closed after the header and allowed-cell-only CSV decoding.
+  Shared TCAD/WCAD names, mapped improvement choice, all MA-prefixed segments, duplicate conflict
+  skips, count-only audit, exact approved 2/day budget and first-live-check gate. `make test`
+  passes (981 pipeline + 51 web tests, schema/type checks and builds), including 76 Hays tests
+  with canaries and temp cleanup. No source calls, core/web changes or layer. Awaiting Claude's
+  counts/categories, living/MA/year/lot coverage, parcel match, five-property browser check,
+  runtime/memory, canonical size and privacy scan; owner/sales row counts intentionally unavailable.
+
 ## Next
 
-1. Owner: paste the P2-04 (Hays CAD) prompt into Codex (`docs/tasks/P2-04-hays-cad.md`).
+1. Claude: review P2-04 (Hays CAD), then first live check before ungating.
 2. Chat session with a browser: five-property WCAD spot check on search.wcad.org.
 3. Claude: spec P2-05 (harmonized records, addresses, condo placement) once P2-04 is live.
 4. Check the 2026-11-03 refresh report (expect nothing due; FBI, parcels, TCAD and WCAD are annual).
