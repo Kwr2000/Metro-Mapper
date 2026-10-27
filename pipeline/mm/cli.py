@@ -7,7 +7,7 @@ import json
 import sys
 
 from . import adapter as adapter_mod
-from . import canonical, config, health, registry, runlog, runner
+from . import canonical, config, health, homes, registry, runlog, runner
 from .budget import BudgetExceeded, CallBudget
 from .manifests import ManifestError
 
@@ -135,6 +135,7 @@ def _cmd_publish(a: argparse.Namespace) -> int:
             worst = 1
             for e in run.errors:
                 print("  error:", e.splitlines()[0])
+    homes.publish()
     _cmd_compile(a)
     _cmd_health(a)
     _copy_validation()
