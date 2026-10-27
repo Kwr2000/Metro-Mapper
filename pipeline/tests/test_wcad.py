@@ -119,7 +119,8 @@ def test_every_request_has_exact_dataset_select_filter_order_and_paging(context,
   kind,page=req.params['kind'],req.params['page'];query=req.params['query']
   assert wcad.DATASETS[kind]==IDS[kind] and query['$where']==WHERES[kind]
   if page is None:
-   assert query['$select']==('count(distinct propertyid)' if kind=='land' else 'count(*)')
+   # The portal names an unaliased distinct count 'count_distinct_propertyid' (checked 2026-10-26).
+   assert query['$select']==('count(distinct propertyid) AS count_propertyid' if kind=='land' else 'count(*)')
    assert set(query)=={'$select','$where'}
   else:
    assert query['$select']==SELECTS[kind]
@@ -361,7 +362,7 @@ def test_mock_live_all_requests_canaries_match_summary_and_failed_run_keeps_last
   kind=next(k for k,v in IDS.items() if parsed.path==f'/resource/{v}.json')
   assert query['$where']==[WHERES[kind]]
   page=None if query['$select'][0].startswith('count(') else int(query['$offset'][0])//wcad.PAGE_SIZE
-  assert query['$select'][0]==(('count(distinct propertyid)' if kind=='land' else 'count(*)') if page is None else SELECTS[kind])
+  assert query['$select'][0]==(('count(distinct propertyid) AS count_propertyid' if kind=='land' else 'count(*)') if page is None else SELECTS[kind])
   seen.append((kind,page));return Response(body_for(wcad.request(kind,page),source))
  monkeypatch.setattr(wcad.urllib.request,'urlopen',serve)
  monkeypatch.setattr(wcad,'volume_checks',lambda distinct,kept:None)  # tiny run; production boundaries tested above

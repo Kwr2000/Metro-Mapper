@@ -74,7 +74,9 @@ def request(kind, page=None):
         raise ValueError("WCAD unexpected dataset/page")
     query = {"$where": WHERE[kind]}
     if page is None:
-        query["$select"] = "count(distinct propertyid)" if kind == "land" else "count(*)"
+        # Without an alias the portal names this column "count_distinct_propertyid" (checked
+        # 2026-10-26); the alias makes the key explicit.
+        query["$select"] = "count(distinct propertyid) AS count_propertyid" if kind == "land" else "count(*)"
         key = kind + "_count"
     else:
         query.update({"$select": "propertyid, sum(faclandsize) AS acres, sum(fsftlandsize) AS sqft" if kind == "land" else ",".join(COLUMNS[kind]),
