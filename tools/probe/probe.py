@@ -640,14 +640,19 @@ def _():
     norm = lambda s: re.sub(r"\s+", " ", s.upper()).strip()
     addr_to_ids = {}
     situs_filled = 0
+    shapes = Counter()
     for _ in range(n):
         rec = f.read(rlen)
         if not rec or rec[:1] == b"*": continue
         g = {k: rec[a:b].decode("latin-1").strip() for k, (a, b) in offs.items() if k in want}
-        num = g.get("SITUS_NUM", ""); street = g.get("SITUS_STRE", "") or g.get("SITUS_ST_1", ""); zp = g.get("SITUS_ZIP", "")[:5]
-        if num and street:
+        num = g.get("SITUS_NUM", ""); zp = g.get("SITUS_ZIP", "")[:5]
+        full = norm(" ".join(x for x in (g.get("SITUS_STRE", ""), g.get("SITUS_ST_1", ""), g.get("SITUS_ST_2", "")) if x))
+        name_only = norm(g.get("SITUS_ST_1", ""))
+        if num and full:
             situs_filled += 1
-            addr_to_ids.setdefault((num, norm(street), zp), set()).add(g["PROP_ID"])
+            addr_to_ids.setdefault((num, full, zp), set()).add(g["PROP_ID"])
+            addr_to_ids.setdefault(("N", num, name_only, zp), set()).add(g["PROP_ID"])
+            shapes[(bool(g.get("SITUS_STRE")), bool(g.get("SITUS_ST_2")))] += 1
     par = set()
     with gzip.open("data/canonical/area_feature/parcels.ndjson.gz", "rt") as g:
         for line in g:
@@ -665,13 +670,13 @@ def _():
             street2 = norm(p.get("situs_street") or "")
             key = (p.get("situs_number") or "", street, (p.get("situs_zip") or "")[:5])
             key2 = (p.get("situs_number") or "", street2, (p.get("situs_zip") or "")[:5])
-            ids = addr_to_ids.get(key) or addr_to_ids.get(key2)
+            ids = addr_to_ids.get(key) or addr_to_ids.get(("N", key2[0], key2[1], key2[2]))
             if ids:
                 hit[p["category"]] += 1
                 samples["one parcel" if len(ids) == 1 else "several parcels"] += 1
     example = sorted({re.sub(r"[0-9]", "9", re.sub(r"[A-Z]", "A", k[1]))[:12] for k in list(addr_to_ids)[:2000]})[:6]
     return (f"DBF {n:,} records; fields: {', '.join(names)} ;; situs fields used {want}; records with number+street {situs_filled:,}; "
-            f"addresses {len(addr_to_ids):,} ;; unmatched TCAD kept {dict(un)} ;; placed by address {dict(hit)} ({dict(samples)}) ;; street shape sample {example}")
+            f"(prefix?, suffix?) shapes {dict(shapes)} ;;  unmatched TCAD kept {dict(un)} ;; placed by address {dict(hit)} ({dict(samples)}) ;; street shape sample {example}")
 
 
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
