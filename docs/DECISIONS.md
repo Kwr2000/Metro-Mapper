@@ -3,6 +3,20 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-03 WCAD reviewed, merged and live-checked; ungated (Claude, chat)
+
+- PR #110 reviewed against the spec (select allowlist, four datasets only, canaries, native string
+  shapes, paging and count checks); one real-shape fix before merging: the portal names an
+  unaliased distinct count `count_distinct_propertyid`, so the land count now uses
+  `AS count_propertyid`. `make test` 903 pipeline + 51 web; CI green; merged.
+- First live check, run 40559703311: 18 calls, 113 s, peak 986 MB, 9.6 MB stored. Property rows
+  323,073 / 319,443 distinct (3,630 identical repeats); kept 236,087 (single family 208,788,
+  condo 12,169, rural 5,836, mobile home 4,978, two-to-four 2,337, builder inventory 1,979),
+  exactly as the spec's county-wide check. Living area 99.94% of single family and condo; agrees
+  with the main-area sum for 99.62%; year built 97.1%; lot size 31.8%. 99.2% of kept IDs match
+  P2-01's Williamson parcels (condos included, unlike Travis). No owner, mailing, exemption or
+  legal fields stored ("homestead" appears only in neighborhood and street names). Ungated.
+
 ## 2026-10-26 — P2-03 WCAD implementation choices (Codex)
 
 - The existing Phase 2 approval covers WCAD 40/day and annual refresh. Add exactly
