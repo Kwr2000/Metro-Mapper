@@ -9,8 +9,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-# score/model id -> feature properties it reads. Empty until Phase 2/3 adds models.
-SCORE_INPUTS: dict[str, list[str]] = {}
+# score/model id -> every home/HPI feature property read by the model.
+SCORE_INPUTS: dict[str, list[str]] = {
+    "value_range": ["county", "category", "hood_cd", "market_value", "improvement_value", "value_year",
+                    "year_built", "land_acres", "living_area", "partial_owner", "cbsa", "year", "quarter", "index_sa"],
+}
 
 
 class DemographicInputError(ValueError):

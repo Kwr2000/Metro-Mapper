@@ -3,6 +3,55 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-06 appraisal-based value range; strict publish blocked (Codex)
+
+- Existing written Phase 2 approval covers `fhfa_hpi: {per_day: 2}` and monthly refresh.
+  Add that exact budget and the first-live-check gate, plus a `publish: none` monthly
+  manifest. Develop only with native synthetic quoted TSV fixtures; publisher verification
+  is Claude's probe 40587875637, recorded in SOURCES. No data-source calls or new dependency.
+- Keep `published: false` pending P2-08. Register all home/HPI model fields in `inputs.py`
+  as the task explicitly requires; no demographic field is read. TCAD `partial_owner` is
+  consumed internally only, never added to shards. Home rows append only `range_pct` and
+  `range_flags`; the page will compute the three endpoints from the shared reference formula.
+- Use decimal nearest-even rounding at exact $500 boundaries, matching Python's specified
+  nearest-$1,000 rule. Round the centre first, then round its two endpoints. Shared synthetic
+  vectors include all reasons/flags, each county, time adjustment and ties. No-range precedence
+  is `no_value`, then `no_building`, then TCAD `partial`; return one reason rather than wider
+  flags on an excluded home. A missing improvement value is not an observed zero.
+- Size percentiles are nearest-rank on positive measured living area, separately by county,
+  original category and hood with at least 20 measurements, otherwise original category
+  county-wide. Edges are included, so only strictly outside values receive `size`. Missing
+  characteristics are not imputed. Hood statistics use homes with a range and positive living
+  area, groups of at least ten, single-family/condo separately and all other categories pooled.
+  Their dollar-per-square-foot percentiles use the rounded centre and nearest-even whole dollars.
+  Coverage's denominator includes every single-family home with a range, including missing area.
+- Keep both production coverage gates strict on real CAD records even if HPI or parcels come
+  from fixtures. Only a fixture CAD county bypasses the 97%/90% coverage gates, since its tiny
+  independent fixtures include deliberate exclusions and cannot form ten-home groups. All
+  arithmetic/recomputation, privacy and existing homes checks still apply. HPI fixture use marks
+  `value_range.test_data` and `hoods.json` as Test data. Existing property/placement provenance
+  flags keep their P2-05 meaning; the value metadata separately identifies its fixture input.
+- FHFA fixtures validate against the fixed 2026-10-27 verification date so fixture builds remain
+  reproducible; live mode always uses the actual run date. Nine months means calendar months,
+  with end-of-month clamping; future quarter ends fail. The SA factor uses full precision:
+  (2025Q4 680.77 + 2026Q1 656.56)/2 = 668.665; 2026Q2 681.16/base = 1.0186864872544548,
+  as of 2026-06-30. HPI base-date integration is explicitly 2026-01-01; mixed CAD value dates fail.
+- **Actual blocker, no gate change:** strict full `mm publish` on stored real CAD/parcel files
+  plus the labeled FHFA fixture failed after 159.087 s: Travis has 366,469/384,236 homes with
+  a range (95.376%), below the task's 97% per-county minimum. Zero improvement value excludes
+  17,758 homes (10,411 are builder inventory), then nine more are excluded for partial ownership.
+  These exclusions follow the task exactly; no denominator/category exemption is invented.
+  Zero source-network attempts; a hash of every previous homes file confirms it is unchanged
+  (last good tree 190,599,658 bytes). Resolve the specification/data expectation before publishing.
+- An **isolated temporary diagnostic candidate**, never installed into the public tree and with
+  the two production coverage checks bypassed only in that uncommitted diagnostic process,
+  measured 197,487,456 bytes and 105.726 s for the homes publisher (not a successful full publish).
+  It has 690 shards, largest 1,887,579 bytes; ranges remain off and HPI is labeled Test data.
+  Range / ±10% / ±20% counts: Travis 366,469 / 242,822 / 123,647; Williamson
+  236,015 / 167,548 / 68,467; Hays 90,107 / 52,514 / 37,593. Single-family hood coverage is
+  288,460/288,966 (99.82%), 208,454/208,782 (99.84%), 78,967/79,470 (99.37%) respectively.
+  Per-flag counts are in the PR. This diagnostic does not relax any committed production gate.
+
 ## 2026-10-27 — P2-05 homes lookup reviewed and merged (Claude, chat)
 
 - PR #116 reviewed against the spec: built only from canonical files, fixed public columns, no

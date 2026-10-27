@@ -49,6 +49,11 @@ def parcel(r,point=(-97.700001,30.300001)):
 
 
 def seed(repo):
+ # Tiny P2-05 placement fixtures exercise the new columns, with one-home hood groups.
+ import yaml
+ config_path=repo/'config/value_range.yaml'
+ cfg=yaml.safe_load(config_path.read_text());cfg['hood_min_group']=1
+ config_path.write_text(yaml.safe_dump(cfg))
  data={};parcels=[]
  for county,(source,_,_) in homes.COUNTIES.items():
   props=[record(county,str(i)) for i in range(1,6)]
@@ -94,7 +99,7 @@ def test_merge_exact_points_counts_compact_contract_meta_and_roundtrip(repo):
   assert meta['counties'][county]['certified']==['2026-10-19']
  published=rows();assert len(published)==15 and all(r['number']=='100' and r['street_key']=='S 8TH ST' for r in published)
  assert homes.FIELDS==['id','number','street_key','unit','zip','situs','city','county','category','lon','lat','block_group',
-  'hood_cd','living_area','year_built','land_acres','floors','market_value','land_value','improvement_value','value_year','certified','placed']
+  'hood_cd','living_area','year_built','land_acres','floors','market_value','land_value','improvement_value','value_year','certified','placed','range_pct','range_flags']
  points={r.feature_id:r.geometry['coordinates'] for r in parcels}
  for r in published:
   assert set(r)==set(homes.FIELDS) and r['unit'] is None and r['city']=='Austin'
@@ -143,8 +148,10 @@ def test_lookup_returns_all_units_and_optional_zip(repo):
  assert not lookup('999 Unknown Ln')
 
 
-def test_missing_values_stay_null_observed_zero_not_invented(repo):
+def test_missing_values_stay_null_observed_zero_not_invented(repo,monkeypatch):
  data,_=seed(repo)
+ original=homes.source_records
+ monkeypatch.setattr(homes,'source_records',lambda source:(original(source)[0],True))
  for r in data['wcad'][:-1]:
   for key in ['living_area','land_acres','year_built','market_value','land_value','improvement_value','floors']:r.properties[key]=None
  canonical.write('area_feature','wcad',data['wcad']);homes.publish()

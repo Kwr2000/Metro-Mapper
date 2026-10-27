@@ -1,0 +1,11 @@
+published: false            # P2-08 turns this on after the HMDA check passes
+study: "Texas Comptroller, 2024 Property Value Study, category A (single-family), median level"
+levels: {"48453": 1.00, "48491": 0.96, "48209": 1.00}
+within_10pct: {"48453": 0.7297, "48491": 0.7559, "48209": 0.7363}
+base_width: 0.10
+wide_width: 0.20
+new_years: 2
+large_lot_acres: 1.0
+size_percentiles: [5, 95]
+size_min_group: 20
+hood_min_group: 10

@@ -221,6 +221,13 @@ published in 2027.
   `cbsa metro_name yr qtr index_nsa index_sa`, 142 quarterly rows for CBSA 12420
   "Austin-Round Rock-San Marcos, TX" through 2026 Q2 (SA 680.77, 656.56, 681.16 for 2025 Q4 to
   2026 Q2). Used for the value range's time adjustment (P2-06).
+- **P2-06 implementation:** one fixed request, exact tab-separated header above, standard CSV
+  quoting for metro names; retain only CBSA 12420 with both positive indexes, consecutive
+  quarters (at least 140), both 2025Q4/2026Q1 base quarters and a latest quarter ending within
+  nine calendar months of a live run. `source_as_of` is its quarter end. SA is used for the
+  factor; NSA is retained only as a check value. No key, raw retention or recording. Monthly
+  refresh via a `publish: none` manifest, approved 2/day budget and first-live-check gate.
+  Synthetic fixtures only in development; the publisher verification above is Claude's.
 
 ## Parcel shapes
 

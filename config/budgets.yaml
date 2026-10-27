@@ -16,3 +16,4 @@ adapters:
   tcad: {per_day: 2, max_minutes: 45}
   wcad: {per_day: 40, min_interval_seconds: 2}
   hays_cad: {per_day: 2}
+  fhfa_hpi: {per_day: 2}
