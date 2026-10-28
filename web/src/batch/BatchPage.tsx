@@ -17,7 +17,7 @@ export const columns:Column[]=[
   {label:"County",render:r=>r.home?.county},{label:"Category",render:r=>categoryLabel(r.home!.category)},
   ...([['Beds','beds'],['Baths','baths'],['Listing sq ft','sqft']] as const).map(([label,sort])=>({label,sort,render:(r:BatchRow)=><>{amount(r.listing[sort])}{sort==='sqft'&&r.metrics?.areaWarning&&<strong className="batch-area-warning">⚠ More than 10% different from appraisal living area</strong>}</>})),
   {label:"Appraisal sq ft",sort:"living_area",render:r=>amount(r.home?.living_area)},
-  {label:"Year built",sort:"year_built",render:r=>amount(r.home?.year_built)},
+  {label:"Year built",sort:"year_built",render:r=>r.home?.year_built==null?"Not available":String(r.home.year_built)},
   {label:"Asking price",sort:"price",render:r=>money(r.listing.price)},
   {label:"Asking $ per sq ft",sort:"psf",render:r=>money(r.metrics?.psf)},
   {label:"Appraisal-based value range",sort:"low",range:true,render:r=>r.metrics?.mid==null?"Not available":<>{money(r.metrics.low)} – {money(r.metrics.high)}<small>Centre {money(r.metrics.mid)}</small></>},
@@ -36,7 +36,7 @@ function SourceDetails({row,meta}:{row:BatchRow;meta:HomeMeta}){
   return <details className="batch-source"><summary>Sources and file details{row.metrics?.testData?" · Test data":""}</summary>
     <p>{meta.sources[c?.source]??c?.source} · appraisal as of {dateLabel(c?.value_as_of?.[0])} · export {dateLabel(h.certified)}.</p>
     <p>Asking price, beds/baths, listing area, days and HOA are supplied by your file.</p>
-    <p>Listing year: {amount(row.listing.year)} · Lot: {amount(row.listing.lot)} (file units) · Status: {row.listing.status||"Not available"} · Property type: {row.listing.propertyType||"Not available"}.</p>
+    <p>Listing year: {row.listing.year==null?"Not available":String(row.listing.year)} · Lot: {amount(row.listing.lot)} (file units) · Status: {row.listing.status||"Not available"} · Property type: {row.listing.propertyType||"Not available"}.</p>
     {range&&<p>Neighbourhood appraisal-based $ per sq ft uses {range.study} ({range.study_year}) and FHFA as of {dateLabel(range.hpi.as_of)}. Approximate percentile position interpolates between published quantiles and is capped at the 10th and 90th percentiles.</p>}
   </details>;
 }
