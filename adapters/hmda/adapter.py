@@ -23,6 +23,8 @@ COUNTIES = {"48453": "Travis", "48491": "Williamson", "48209": "Hays"}
 EMPTY = {"type": "GeometryCollection", "geometries": []}
 AS_OF = date(2025, 12, 31)
 REQUEST = Request("purchase_2025", {"url": URL})
+REQUESTS = (REQUEST, Request("purchase_2024", {"url": URL.replace("years=2025", "years=2024")}))
+YEARS = {req.key: int(req.key.rsplit("_", 1)[1]) for req in REQUESTS}
 DWELLING = "Single Family (1-4 Units):Site-Built"
 
 
@@ -123,16 +125,17 @@ def selected_rows(stream):
         raise ValueError("HMDA missing header")
 
 
-def check_counts(summary, live):
+def check_counts(summary, live, year=2025):
     if set(summary["counties"]) != set(COUNTIES.values()):
         raise ValueError("HMDA every county required")
-    if live and abs(summary["rows_read"] - 30323) * 100 > 30323 * 5:
-        raise ValueError("HMDA row count differs from 30,323 by more than 5 percent")
+    expected = {2025:30323, 2024:32641}[year]
+    if live and abs(summary["rows_read"] - expected) * 100 > expected * 5:
+        raise ValueError(f"HMDA {year} row count differs from {expected:,} by more than 5 percent")
     if live and summary["tracts_30_loans"] < 250:
         raise ValueError("HMDA requires at least 250 tracts with 30 loans")
 
 
-def parse(stream, *, live=False):
+def parse(stream, *, live=False, year=2025):
     assert_no_demographics("hmda_validation", HMDA_INPUTS)
     groups = defaultdict(list)
     counties = Counter()
@@ -140,7 +143,7 @@ def parse(stream, *, live=False):
     total = 0
     for row in selected_rows(stream):
         total += 1
-        if row["activity_year"] != "2025":
+        if row["activity_year"] != str(year):
             raise ValueError("HMDA unexpected activity year")
         code = row["county_code"]
         if code not in COUNTIES:
@@ -164,12 +167,12 @@ def parse(stream, *, live=False):
     rows = []
     for tract, observations in sorted(groups.items()):
         ordered = sorted(observations)
-        rows.append({"county": COUNTIES[tract[:5]], "tract": tract, "year": 2025, "loans": len(ordered),
+        rows.append({"county": COUNTIES[tract[:5]], "tract": tract, "year": year, "loans": len(ordered),
                      "median_value": percentile(ordered, 50), "p25_value": percentile(ordered, 25),
                      "p75_value": percentile(ordered, 75)})
     summary = {"rows_read": total, "kept": sum(len(v) for v in groups.values()), "skipped_by_reason": dict(sorted(skipped.items())),
                "counties": dict(sorted(counties.items())), "tracts": len(rows), "tracts_30_loans": sum(r["loans"] >= 30 for r in rows)}
-    check_counts(summary, live)
+    check_counts(summary, live, year)
     return {"tracts": rows, "summary": summary}
 
 
@@ -182,17 +185,17 @@ class HMDA(SourceAdapter):
 
     def plan(self, ctx):
         self.live = ctx.mode == "live"
-        return [REQUEST]
+        return list(REQUESTS)
 
     def fetch(self, req, ctx):
-        if req != REQUEST:
+        if req not in REQUESTS:
             raise ValueError("HMDA unexpected request")
         try:
-            with urllib.request.urlopen(urllib.request.Request(URL, headers={"User-Agent": self.user_agent}), timeout=120) as response:
+            with urllib.request.urlopen(urllib.request.Request(req.params["url"], headers={"User-Agent": self.user_agent}), timeout=120) as response:
                 if response.status != 200:
                     return RawPayload(req, None, status=response.status)
                 # Do not return the wide CSV to the runner, even in memory.
-                return RawPayload(req, parse(response, live=True))
+                return RawPayload(req, parse(response, live=True, year=YEARS[req.key]))
         except urllib.error.HTTPError as exc:
             return RawPayload(req, None, status=exc.code)
         except Exception:
@@ -204,18 +207,22 @@ class HMDA(SourceAdapter):
         return []
 
     def normalize(self, raw):
-        if raw.status != 200 or raw.request != REQUEST:
+        if raw.status != 200 or raw.request not in REQUESTS:
             raise ValueError("HMDA failed or unexpected response")
         # Fixtures are native CSV text. Live fetch returns aggregates only.
-        data = parse(BytesIO(raw.body.encode("utf-8"))) if isinstance(raw.body, str) else raw.body
-        check_counts(data["summary"], self.live)
+        year = YEARS[raw.request.key]
+        as_of = date(year,12,31)
+        data = parse(BytesIO(raw.body.encode("utf-8")), year=year) if isinstance(raw.body, str) else raw.body
+        check_counts(data["summary"], self.live, year)
         for properties in data["tracts"]:
-            yield AreaFeature(dataset="hmda_tract", feature_id=properties["tract"], geometry=EMPTY,
-                              properties=properties, source_as_of=AS_OF)
-        yield AreaFeature(dataset="run_summary", feature_id="2025", geometry=EMPTY, properties=data["summary"], source_as_of=AS_OF)
+            yield AreaFeature(dataset="hmda_tract", feature_id=f"{year}:{properties['tract']}", geometry=EMPTY,
+                              properties=properties, source_as_of=as_of)
+        yield AreaFeature(dataset="run_summary", feature_id=str(year), geometry=EMPTY, properties=data["summary"], source_as_of=as_of)
 
     def finalize(self, records):
-        summary = next(r.properties for r in records if r.dataset == "run_summary")
+        summary = {r.feature_id:r.properties for r in records if r.dataset == "run_summary"}
+        if set(summary) != {"2025","2024"}:
+            raise ValueError("HMDA both year summaries required")
         print("hmda: run note: " + json.dumps(summary, sort_keys=True))
         return records
 

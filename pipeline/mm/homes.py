@@ -323,6 +323,7 @@ def publish():
     hpi = values.hpi_factor(hpi_records, "2026-01-01")
     range_counties, hood_rows = {}, []
     tract_centres = defaultdict(list)
+    tract_markets = defaultdict(list)
     parcels = {}; parcel_dates = defaultdict(set)
     parcel_records, parcel_fixture = source_records("parcels")
     for r in parcel_records:
@@ -400,14 +401,38 @@ def publish():
             values.validate_annotation(home,row[-2],row[-1],limits,cfg)
             if tract and home["category"] == "single_family" and pct is not None:
                 tract_centres[tract].append(values.value_range(home["market_value"],fips,pct,hpi["factor"],cfg["levels"])["mid"])
+                tract_markets[tract].append(home["market_value"])
         range_counties[county] = range_summary
         hood_rows.extend(stats)
         descriptions[county] = hoods
     del parcels, value_rows
     range_test_data = hpi_fixture or any(c["test_data"] for c in meta_counties.values())
     hmda_records, hmda_fixture = source_records("hmda")
-    validation = values.hmda_check(tract_centres,hmda_records,hpi_records,test_data=hmda_fixture)
+    calibration, validation, calibration_info = values.calibrate(
+        tract_centres,tract_markets,hmda_records,hpi_records,hpi,cfg,test_data=hmda_fixture)
+    if calibration_info["used"]:
+        # Work from the exact public records and the same tract lookup as the browser.
+        # Widths and exclusion reasons were already checked above; calibration never widens them.
+        grouped = defaultdict(list)
+        for rows in buckets.values():
+            for row in rows:
+                tract = row[11][:11] if isinstance(row[11],str) else None
+                k = values.factor_for(tract,row[0][:5],calibration)
+                if row[-2] is not None and abs(values.decimal(k)-1) >= values.Decimal(".10"):
+                    row[-1] = ",".join(filter(None,[row[-1],"cal"]))
+                    range_counties[row[7]]["by_flag"]["cal"] += 1
+                grouped[row[7]].append(row)
+        hood_rows = []
+        for county, rows in grouped.items():
+            measured = [{"county":r[7],"category":r[8],"hood_cd":r[12],"living_area":r[13],
+                         "market_value":r[17],"tract":r[11][:11] if isinstance(r[11],str) else None} for r in rows]
+            hood_rows.extend(values.hood_stats(measured,hpi["factor"],cfg["levels"],cfg=cfg,limits={},
+                calibration=calibration,annotations=[(r[-2],r[-1]) for r in rows]))
+        del grouped
+        range_test_data = range_test_data or hmda_fixture
     range_meta = values.metadata(cfg,hpi,range_test_data,range_counties,validation=validation,hmda_live=not hmda_fixture)
+    range_meta["calibration"] = calibration_info
+    del tract_centres, tract_markets
     folder = paths().web_public/"data";folder.mkdir(parents=True, exist_ok=True)
     target = folder/"homes"
     with tempfile.TemporaryDirectory(prefix=".homes-", dir=folder) as temporary:
@@ -431,6 +456,7 @@ def publish():
         for cell, rows in sorted(grid.items()):
             write_json(stage/"grid"/(cell+".json"), {"v":1, "test_data":any(meta_counties[county_from_id(row[0])]["test_data"] for row in rows),
                 "rows":sorted(rows)})
+        write_json(stage/"calibration.json", {**calibration,"test_data":range_test_data or hmda_fixture})
         write_json(stage/"hoods.json", {"v":1,"test_data":range_test_data,"rows":hood_rows})
         metadata = {"v":1, "test_data":any(c["test_data"] for c in meta_counties.values()), "counties":meta_counties,
             "sources":{"parcels":"TxGIO StratMap 2026 (CC0-1.0)", "tcad":"Travis Central Appraisal District",

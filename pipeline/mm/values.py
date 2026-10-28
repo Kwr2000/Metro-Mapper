@@ -19,7 +19,7 @@ from .paths import paths
 from .privacy import check_properties
 
 COUNTY_FIPS = {"Travis":"48453", "Williamson":"48491", "Hays":"48209"}
-FLAG_ORDER = ("new", "lot", "condo", "size", "type")
+FLAG_ORDER = ("new", "lot", "condo", "size", "type", "cal")
 NO_RANGE = ("no_value", "no_building", "partial")
 HOME_INPUTS = tuple(field for field in SCORE_INPUTS["value_range"] if field not in {"cbsa","year","quarter","index_sa"})
 # P2-08's explicit core-file scope excludes inputs.py. Keep its native-column
@@ -39,6 +39,7 @@ FLAG_TEXT = {
     "condo":"Condominium",
     "size":"Living area outside the 5th–95th percentile of similar homes",
     "type":"Mobile home, two-to-four units or rural home; the study covers single-family homes",
+    "cal":"Neighbourhood adjustment from home-purchase loans",
     "no_value":"Market value is missing or zero",
     "no_building":"Improvement value is zero",
     "partial":"TCAD partial-ownership record",
@@ -68,7 +69,7 @@ def settings():
     with (paths().config/"value_range.yaml").open() as handle:
         cfg = yaml.safe_load(handle)
     required = {"published","study","levels","within_10pct","base_width","wide_width","new_years",
-                "large_lot_acres","size_percentiles","size_min_group","hood_min_group"}
+                "large_lot_acres","size_percentiles","size_min_group","hood_min_group","calibration"}
     if not isinstance(cfg,dict) or set(cfg) != required or not isinstance(cfg["published"],bool) or not isinstance(cfg["study"],str):
         raise ValueError("value range: invalid config fields")
     if set(cfg["levels"]) != set(COUNTY_FIPS.values()) or set(cfg["within_10pct"]) != set(COUNTY_FIPS.values()):
@@ -84,6 +85,12 @@ def settings():
     for key in ("base_width","wide_width"):
         if decimal(cfg[key])*100 != (decimal(cfg[key])*100).to_integral_value():
             raise ValueError("value range: widths must be whole percentages")
+    cal = cfg["calibration"]
+    if (not isinstance(cal,dict) or set(cal) != {"enabled","fit_year","test_year","n0","clamps"}
+        or type(cal["enabled"]) is not bool or type(cal["fit_year"]) is not int
+        or type(cal["test_year"]) is not int or cal["test_year"] != cal["fit_year"]-1
+        or cal["n0"] != 30 or cal["clamps"] != [.8,1.25]):
+        raise ValueError("value range: invalid calibration config")
     return cfg
 
 
@@ -177,19 +184,20 @@ def round_thousand(value):
     return int(value.quantize(Decimal("1E3"), rounding=ROUND_HALF_EVEN))
 
 
-def value_range(market_value, county_fips, range_pct, factor, levels):
+def value_range(market_value, county_fips, range_pct, factor, levels, k=1):
     if range_pct is None or market_value is None or market_value == 0:
         return {"low":None,"mid":None,"high":None}
-    if range_pct not in (10,20) or decimal(market_value) < 0 or decimal(factor) <= 0 or county_fips not in levels or decimal(levels[county_fips]) <= 0:
+    if range_pct not in (10,20) or decimal(market_value) < 0 or decimal(factor) <= 0 or decimal(k) <= 0 or county_fips not in levels or decimal(levels[county_fips]) <= 0:
         raise ValueError("value range: invalid reference-formula input")
-    mid = round_thousand(decimal(market_value)/decimal(levels[county_fips])*decimal(factor))
+    mid = round_thousand(decimal(market_value)/decimal(levels[county_fips])*decimal(factor)*decimal(k))
     width = decimal(range_pct)/100
     return {"low":round_thousand(Decimal(mid)*(1-width)),"mid":mid,"high":round_thousand(Decimal(mid)*(1+width))}
 
 
-def annotation(home, limits, cfg):
+def annotation(home, limits, cfg, k=1):
     codes = flags(home,limits,cfg)
     pct = None if codes and codes[0] in NO_RANGE else int(100*decimal(cfg["wide_width"] if codes else cfg["base_width"]))
+    if pct is not None and abs(decimal(k)-1) >= Decimal(".10"):codes.append("cal")
     return pct, ",".join(codes) or None
 
 
@@ -198,16 +206,16 @@ def validate_annotation(home, pct, codes, limits, cfg):
         raise ValueError("value range: width and flags differ from recomputation")
 
 
-def hood_stats(homes, factor, levels, *, cfg=None, limits=None):
+def hood_stats(homes, factor, levels, *, cfg=None, limits=None, calibration=None, annotations=None):
     cfg = settings() if cfg is None else cfg
     limits = size_bounds(homes,cfg) if limits is None else limits
     groups = defaultdict(list)
-    for home in homes:
-        pct,_ = annotation(home,limits,cfg)
+    for i,home in enumerate(homes):
+        pct,_ = annotation(home,limits,cfg) if annotations is None else annotations[i]
         area = home.get("living_area")
         if pct is None or area is None or area <= 0 or not home.get("hood_cd"):continue
         category = home["category"] if home["category"] in {"single_family","condo"} else "other"
-        mid = value_range(home["market_value"],COUNTY_FIPS[home["county"]],pct,factor,levels)["mid"]
+        mid = value_range(home["market_value"],COUNTY_FIPS[home["county"]],pct,factor,levels,factor_for(home.get("tract"),COUNTY_FIPS[home["county"]],calibration) if calibration else 1)["mid"]
         groups[(home["county"],home["hood_cd"],category)].append(Decimal(mid)/decimal(area))
     output = []
     for (county,code,category), prices in sorted(groups.items()):
@@ -274,7 +282,7 @@ def hmda_adjustment(records, year):
             "source":"FHFA House Price Index (purchase-only)", "seasonally_adjusted":True}
 
 
-def hmda_check(tract_centres, records, hpi_records, *, test_data=False):
+def hmda_check(tract_centres, records, hpi_records, *, test_data=False, year=2025):
     """Aggregate-only check; failure hides ranges and leaves property facts publishable.
 
     Our tract median and the median ratio use the ordinary median (mean of the two
@@ -285,27 +293,28 @@ def hmda_check(tract_centres, records, hpi_records, *, test_data=False):
     result = {"passed":False, "tracts":0, "median_ratio":None, "share_within_20":None,
               "per_county":{county:{"tracts":0,"median_ratio":None,"share_within_20":None,
                   "warning":"No eligible comparison is available."} for county in COUNTY_FIPS},
-              "hmda_year":2025, "hmda_loans":0, "hmda_tracts":0,
-              "source":"FFIEC Home Mortgage Disclosure Act data, 2025", "source_as_of":"2025-12-31",
+              "hmda_year":year, "hmda_loans":0, "hmda_tracts":0,
+              "source":f"FFIEC Home Mortgage Disclosure Act data, {year}", "source_as_of":f"{year}-12-31",
               "test_data":test_data, "adjustment":None, "thresholds":dict(HMDA_THRESHOLDS),
-              "note":HMDA_NOTE, "reasons":[]}
+              "note":HMDA_NOTE.replace("2025",str(year)), "reasons":[]}
     rows = {}
     for record in records:
         r = record.model_dump(mode="json") if hasattr(record,"model_dump") else record
         if r["dataset"] != "hmda_tract":continue
         p = r["properties"]
+        if p["year"] != year:continue
         tract = p["tract"]
         if (not isinstance(tract,str) or len(tract) != 11 or not tract.isascii() or not tract.isdigit()
-            or tract[:5] not in COUNTY_FIPS.values() or r["feature_id"] != tract or tract in rows
+            or tract[:5] not in COUNTY_FIPS.values() or r["feature_id"] not in {tract,f"{year}:{tract}"} or tract in rows
             or p["county"] != next(c for c,fips in COUNTY_FIPS.items() if fips == tract[:5])
-            or p["year"] != 2025 or type(p["loans"]) is not int or p["loans"] < 1
+            or type(p["loans"]) is not int or p["loans"] < 1
             or decimal(p["median_value"]) <= 0):
             result["reasons"].append("HMDA tract aggregates are invalid or duplicated.")
             return result
         rows[tract] = p
     result.update(hmda_loans=sum(p["loans"] for p in rows.values()),hmda_tracts=len(rows))
     try:
-        adjustment = hmda_adjustment(hpi_records,2025)
+        adjustment = hmda_adjustment(hpi_records,year)
     except ValueError:
         result["reasons"].append("The HMDA FHFA time adjustment is unavailable.")
         return result
@@ -322,7 +331,9 @@ def hmda_check(tract_centres, records, hpi_records, *, test_data=False):
     def figures(observations):
         within = sum(Decimal("0.80") <= value <= Decimal("1.20") for value in observations)
         return {"tracts":len(observations), "median_ratio":float(median(observations)) if observations else None,
-                "share_within_20":within/len(observations) if observations else None}
+                "share_within_20":within/len(observations) if observations else None,
+                "share_within_10":sum(Decimal(".90") <= v <= Decimal("1.10") for v in observations)/len(observations) if observations else None,
+                "median_abs_log_error":float(median([abs(v.ln()) for v in observations])) if observations else None}
 
     result.update(figures(ratios))
     for county in COUNTY_FIPS:
@@ -346,11 +357,99 @@ def ranges_published(configured, validation, test_data, hmda_live):
     return configured is True and validation.get("passed") is True and not test_data and hmda_live is True
 
 
+def factor_for(tract, county_fips, calibration):
+    if not calibration:return 1
+    # A home's county remains authoritative; foreign/missing tracts use its county factor.
+    if isinstance(tract,str) and tract.startswith(county_fips) and tract in calibration["tract"]:
+        return calibration["tract"][tract]
+    return calibration["county"].get(county_fips,1)
+
+
+def fit_calibration(tract_centres, records, hpi_records, cfg):
+    """Only the specified latest year can cross this fitting boundary.
+
+    The preceding year's loan counts and values are deliberately never read here.
+    Geography and aggregate fields are guarded alongside the existing nine-column list.
+    """
+    assert_no_demographics("range_calibration", (*HMDA_INPUTS,*SCORE_INPUTS["value_range"],"tract","loans","median_value"))
+    year=cfg["fit_year"]
+    output={"v":1,"fit_year":year,"test_year":cfg["test_year"],
+            "county":{fips:1 for fips in COUNTY_FIPS.values()},"tract":{}}
+    rows=[]
+    for record in records:
+        # Filter before serialization too: held-out model objects never cross this boundary.
+        dataset=record.dataset if hasattr(record,"model_dump") else record["dataset"]
+        properties=record.properties if hasattr(record,"model_dump") else record["properties"]
+        if dataset=="hmda_tract" and properties["year"]==year:
+            rows.append(record.model_dump(mode="json") if hasattr(record,"model_dump") else record)
+    # Reuse strict aggregate validation, even if none meet the comparison minimums.
+    audit=hmda_check(tract_centres,rows,hpi_records,year=year)
+    if audit["adjustment"] is None or any("invalid" in reason for reason in audit["reasons"]):
+        return output
+    adj=audit["adjustment"]
+    time_factor=decimal(adj["latest_index"])/decimal(adj["base_index"])
+    raw={};county=defaultdict(list)
+    for r in rows:
+        p=r["properties"];tract=p["tract"];ours=tract_centres.get(tract,[])
+        if len(ours)<30 or p["loans"]<10:continue
+        ratio=decimal(p["median_value"])*time_factor/median([decimal(v) for v in ours])
+        raw[tract]=(ratio,p["loans"])
+        if p["loans"]>=30:county[tract[:5]].append(ratio)
+    output["county"].update({c:float(median(ratios)) for c,ratios in sorted(county.items())})
+    for tract,(ratio,n) in sorted(raw.items()):
+        base=decimal(output["county"][tract[:5]])
+        shrunk=base*(ratio/base)**(Decimal(n)/Decimal(n+cfg["n0"]))
+        output["tract"][tract]=float(min(decimal(cfg["clamps"][1]),max(decimal(cfg["clamps"][0]),shrunk)))
+    return output
+
+
+def holdout_passed(calibrated, baseline):
+    reasons=list(calibrated["reasons"])
+    if calibrated.get("share_within_10") is None or baseline.get("share_within_10") is None:
+        reasons.append("The held-out year has no eligible comparison.")
+    elif calibrated["tracts"]!=baseline["tracts"] or calibrated["share_within_10"]<baseline["share_within_10"]:
+        reasons.append("Held-out share within ±10% is lower than without calibration.")
+    return not reasons,reasons
+
+
+def calibrate(tract_centres, tract_markets, records, hpi_records, hpi, cfg, *, test_data=False):
+    """Fit on the latest year; select exclusively on the preceding year; fail back safely."""
+    records=list(records);cal=cfg["calibration"];fit_year=cal["fit_year"];test_year=cal["test_year"]
+    fit_result=hmda_check(tract_centres,records,hpi_records,test_data=test_data,year=fit_year)
+    candidate=fit_calibration(tract_centres,records,hpi_records,cal)
+    adjusted={tract:[value_range(v,tract[:5],10,hpi["factor"],cfg["levels"],factor_for(tract,tract[:5],candidate))["mid"] for v in markets]
+              for tract,markets in tract_markets.items()}
+    baseline=hmda_check(tract_centres,records,hpi_records,test_data=test_data,year=test_year)
+    held_out=hmda_check(adjusted,records,hpi_records,test_data=test_data,year=test_year)
+    fitted_result=hmda_check(adjusted,records,hpi_records,test_data=test_data,year=fit_year)
+    fit_result["label"]=f"Fitting-year result, {fit_year}, uncalibrated"
+    fitted_result["label"]=f"Fitting-year result, {fit_year}, calibrated"
+    baseline["label"]=f"Held-out result, {test_year}, uncalibrated"
+    held_out["label"]=f"Held-out result, {test_year}, calibrated"
+    passed,reasons=holdout_passed(held_out,baseline)
+    # Invalid fit aggregates must never be made usable by a favourable test year.
+    if fit_result["adjustment"] is None or any("invalid" in r for r in fit_result["reasons"]) or not fit_result["hmda_tracts"]:
+        passed=False;reasons.append("Latest-year fitting data are unavailable or invalid.")
+    if not candidate["tract"]:
+        passed=False;reasons.append("No latest-year tract meets the fitting minimums.")
+    used=cal["enabled"] and passed
+    effective=candidate if used else {**candidate,"county":{c:1 for c in COUNTY_FIPS.values()},"tract":{}}
+    result={**(held_out if used else fit_result),"calibration_requested":cal["enabled"],"calibration_used":used,
+            "fit_year_result":fit_result,"fit_year_calibrated":fitted_result,"holdout":{"test_year":test_year,"passed":passed,
+                "uncalibrated":baseline,"calibrated":held_out,"reasons":reasons},
+            "fallback_reason":None if used else "; ".join(reasons) if cal["enabled"] else "Calibration is disabled."}
+    info={**cal,"used":used,"test_data":test_data,"fitted_tracts":len(candidate["tract"]),
+          "tracts_with_factor":len(effective["tract"]),"county_factors":effective["county"],
+          "method":"Latest-year tract loan medians relative to uncalibrated single-family centres; shrink toward the county by n/(n+30), then clamp tract factors to 0.80–1.25. The preceding year is used only for validation."}
+    check_properties("calibration validation",result)
+    return effective,result,info
+
+
 def metadata(cfg, hpi, test_data, counties, *, validation=None, hmda_live=False):
     assert_no_demographics("value_range",SCORE_INPUTS["value_range"])
     validation = validation if validation is not None else {"passed":False,"reasons":["HMDA validation is unavailable."]}
     result = {"published":ranges_published(cfg["published"],validation,test_data,hmda_live),"test_data":test_data,"label":"Appraisal-based value range",
-        "method":METHOD,"study":cfg["study"],"study_year":2024,"levels":cfg["levels"],"within_10pct":cfg["within_10pct"],
+        "method":METHOD+(" Multiply by the held-out-validated neighbourhood or county factor before rounding." if validation.get("calibration_used") else ""),"study":cfg["study"],"study_year":2024,"levels":cfg["levels"],"within_10pct":cfg["within_10pct"],
         "hpi":{**hpi,"source":"FHFA House Price Index (purchase-only)","cbsa":"12420","seasonally_adjusted":True},
         "widths":{"base":cfg["base_width"],"wide":cfg["wide_width"]},"flags":FLAG_TEXT,
         "year_over_year_note":YEAR_NOTE,

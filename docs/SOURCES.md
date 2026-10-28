@@ -43,7 +43,7 @@ Counties: **T** Travis (48453), **W** Williamson (48491), **H** Hays (48209).
 | CapMetro GTFS (data.texas.gov `r4v4-vz24`) | Stops, routes, scheduled frequency | Stop / route | T, parts of W | Per service change | Yes (zip) | Yes, conditions |
 | OpenStreetMap via Geofabrik Texas extract | Streets, groceries, parks, daily needs | Feature | T W H | Daily (we use ≤ monthly) | Yes (725.6 MB file) | Yes, conditions (ODbL) |
 | FEMA NFHL | Flood hazard zones | Polygon | T W H | Continuous | Yes (ArcGIS service) | Yes (public domain) |
-| HMDA 2025 (FFIEC/CFPB) | Tract property values of mortgaged purchases (validation, trends) | Tract | T W H | Yearly (June) | Yes (data browser API) | Yes (public) |
+| HMDA 2025 and 2024 (FFIEC/CFPB) | Tract property values of mortgaged purchases (validation, trends) | Tract | T W H | Yearly (June) | Yes (data browser API) | Yes (public) |
 | City of Austin neighborhood planning areas | Area names | Polygon | Austin | Irregular | Yes | Yes, no license stated |
 | WCAD subdivisions; TCAD subdivision codes; Hays County subdivisions | Area names | Polygon / code | W, T, H | Monthly / yearly | Yes | Yes, no license stated |
 | Census places (TIGER) | Place names | Polygon | T W H | Yearly | Yes | Yes (public domain) |
@@ -231,11 +231,11 @@ published in 2027.
 
 ### HMDA (FFIEC/CFPB Data Browser)
 - `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?counties=48453,48491,48209&years=2025&actions_taken=1&loan_purposes=1`.
-  Public U.S. government loan-level data; credit "FFIEC Home Mortgage Disclosure Act data, 2025".
+  Public U.S. government loan-level data; credit "FFIEC Home Mortgage Disclosure Act data, 2025 and 2024".
   Checked by probes 40608377396 and 40608476927 (2026-10-28): 30,323 originated 2025 purchase
   loans (2024: 32,641), 99 columns incl. `property_value` (midpoint of a $10,000 band; "Exempt" on
   616) and `census_tract`; 281 tracts with ≥ 30 loans. Only tract aggregates are stored; applicant
-  demographic columns are never read. Used only for the value-range check (P2-08).
+  demographic columns are never read. Used for the value-range check (P2-08) and tract calibration (P3-02).
 - **P2-08 implementation:** decode only `activity_year`, `county_code`, `census_tract`,
   `action_taken`, `loan_purpose`, `lien_status`, `derived_dwelling_category`, `total_units`
   and `property_value`. Other data cells pass through a streaming byte scanner without
@@ -243,11 +243,21 @@ published in 2027.
   identifiers. Select first-lien, site-built, one-unit purchases with digit-only property
   values; count withheld/missing values and other exclusions. Only tract counts and
   nearest-rank property-value percentiles, plus a count-only run summary, leave the adapter.
-  The CSV is neither retained nor recordable. Annual, one call per run, approved 6/day;
-  `publish: none` and gated until Claude's first live check. Republication/field verification
+  The CSV is neither retained nor recordable. Annual, two calls per run, unchanged approved
+  6/day; `publish: none`. The first one-year check was completed on 2026-10-28; Claude
+  checks the two-year run after P3-02 review. Republication/field verification
   is from the cited probes; Codex made no publisher calls and used native synthetic fixtures.
   The check compares tract medians at the same FHFA quarter; it neither validates an
   individual home nor uses applicant or lender information. WCAD sales ratios remain out of scope.
+- **P3-02:** request the same endpoint separately with `years=2025` and `years=2024`,
+  fixture keys `purchase_2025` / `purchase_2024`. The existing nine-column allowlist and
+  count-only summaries apply to both; aggregates use `<year>:<tract>` identities. The
+  2024 row count (32,641) is recorded in the probes above. Calibration probe 40720982283
+  (2026-10-28) used 2025 for fitting and 2024 only for validation. Tract factors shrink toward
+  county factors, and are used only after the held-out check passes, including a share within
+  ±10% at least equal to the uncalibrated result. Otherwise the original P2-08 method applies.
+  Loan medians move to the same FHFA SA quarter separately for each year; no sale price or
+  applicant/lender characteristic is used. Codex builds and tests with synthetic fixtures only.
 
 ## Parcel shapes
 

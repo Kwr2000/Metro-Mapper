@@ -13,6 +13,7 @@ from playwright.sync_api import sync_playwright, expect
 import homes as home_checks
 import scores as score_checks
 import batch as batch_checks
+import calibration as calibration_checks
 
 WEB = Path(__file__).resolve().parents[1]
 DIST = WEB / "dist"
@@ -245,6 +246,7 @@ def main():
                     home_checks.smoke(browser,registry,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
                     score_checks.smoke(browser,registry,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
                     batch_checks.smoke(browser,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
+                    calibration_checks.smoke(browser,width,height,URL,DIST,ARTIFACTS)
                 browser.close()
         finally:
             server.terminate()
