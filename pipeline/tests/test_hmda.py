@@ -159,7 +159,8 @@ def test_manifest_budget_gate_fixture_runner_and_rebuild(repo,monkeypatch,capsys
     layer=next(l for l in load_layers() if l.source=="hmda")
     assert layer.publish=="none" and layer.refresh=="annual" and layer.geometry=="none" and layer.license=="Public domain"
     assert yaml.safe_load((ROOT/"config/budgets.yaml").read_text())["adapters"]["hmda"]=={"per_day":6}
-    assert yaml.safe_load((ROOT/"config/live_gates.yaml").read_text())["gated"]["hmda"]=="awaiting Claude's first live check"
+    # Ungated after Claude's first live check, run 40617364808 (2026-10-28).
+    assert "hmda" not in (yaml.safe_load((ROOT/"config/live_gates.yaml").read_text())["gated"] or {})
     # Plant native-column canaries in the runner fixture; neither logs nor records may keep them.
     rows=list(csv.DictReader(StringIO(fixtures.native_text())))
     fields=[*values.HMDA_INPUTS,"lei","applicant_age","derived_race"]
