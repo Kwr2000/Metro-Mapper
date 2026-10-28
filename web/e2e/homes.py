@@ -11,7 +11,7 @@ import urllib.request
 from urllib.parse import quote, urlparse
 from playwright.sync_api import expect
 
-BANNED=re.compile(r'\b(fair value|good deal|overpriced|worth)\b',re.I)
+BANNED=re.compile(r'\b(fair value|good deal|overpriced|worth|bargain|undervalued)\b',re.I)
 
 
 def prepare(web):

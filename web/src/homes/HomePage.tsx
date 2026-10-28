@@ -7,6 +7,7 @@ import type { PolygonFeature } from "../map-polygons";
 import { HomeCard, categoryLabel } from "./HomeCard";
 import { homeData, homeLink, validHomeId, type Home, type HomeMeta } from "./data";
 import { normalizeQuery } from "./address";
+import { BatchPage } from "../batch/BatchPage";
 
 const areaRequests=new Map<string,Promise<FeatureCollection>>();
 export function useHomeArea(registry:Registry|null,home:Home|null):string|undefined {
@@ -21,7 +22,13 @@ export function useHomeArea(registry:Registry|null,home:Home|null):string|undefi
     return()=>{cancelled=true;};
   },[registry,home?.block_group]);return name;
 }
-export function HomePage({hash,registry,onShowMap}:{hash:string;registry:Registry|null;onShowMap:(home:Home)=>void}) {
+type HomePageProps={hash:string;registry:Registry|null;onShowMap:(home:Home)=>void};
+export function HomePage(props:HomePageProps){
+  const many=new URLSearchParams(props.hash.split("?")[1]??"").get("tab")==="many";
+  return <><nav className="home-tabs" aria-label="Home checks"><a href="#/home" aria-current={!many?"page":undefined}>Check a home</a><a href="#/home?tab=many" aria-current={many?"page":undefined}>Check many listings</a></nav>
+    {many?<BatchPage registry={props.registry}/>:<SingleHomePage {...props}/>}</>;
+}
+function SingleHomePage({hash,registry,onShowMap}:HomePageProps) {
   const [meta,setMeta]=useState<HomeMeta|null>(null),[text,setText]=useState(""),[selected,setSelected]=useState<Home|null>(null);
   const [matches,setMatches]=useState<Home[]|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(""),[searched,setSearched]=useState("");
   const sequence=useRef(0),controller=useRef<AbortController>();

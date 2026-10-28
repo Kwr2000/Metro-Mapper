@@ -19,8 +19,8 @@ export function percentilePosition(price:number,stat:HoodStat):number {
   }
   return 90;
 }
-const flagLabels:Record<string,string>={new:"Built in the last two years or builder inventory",lot:"Lot over one acre",condo:"Condo",size:"Unusually large/small for its neighbourhood",type:"Not a single-family home"};
-const reasons:Record<string,string>={no_building:"No building value on January 1, 2026",partial:"Partial-ownership record",no_value:"No 2026 market value"};
+export const flagLabels:Record<string,string>={new:"Built in the last two years or builder inventory",lot:"Lot over one acre",condo:"Condo",size:"Unusually large/small for its neighbourhood",type:"Not a single-family home"};
+export const reasons:Record<string,string>={no_building:"No building value on January 1, 2026",partial:"Partial-ownership record",no_value:"No 2026 market value"};
 export function HomeCard({home,meta,areaName,onShowMap,onClose,loadHoods=()=>homeData.hoods()}: {
   home:Home;meta:HomeMeta;areaName?:string;onShowMap:(home:Home)=>void;onClose?:()=>void;loadHoods?:()=>Promise<HoodData>;
 }) {

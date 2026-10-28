@@ -3,6 +3,23 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-01 local batch parsing, persistence and comparisons (Codex)
+
+- Cap input text at 5 MB in addition to the specified 350 listing rows; reject an oversized
+  import rather than silently truncate. Invalid or shorthand prices need attention. A row
+  with neither address nor price is a disclaimer; an address without a price remains visible.
+- Store only recognized listing fields and explicit match choices, under one browser key per
+  list name. Saving an existing name replaces it; restore recomputes comparisons rather than
+  storing derived ranges. Export includes matched rows in the current filtered/sorted order,
+  with provenance and test-data labels; protect text cells against spreadsheet formulas.
+- A non-Texas state, or supplied coordinates outside the published county-area polygons, can
+  establish an outside-area result. Otherwise an unknown address stays Not found; no geocoder
+  or external listing URL is called. CSV aliases prefer the first nonempty specified alias.
+- Suspend the map while the batch tab is open so its external basemap requests cannot overlap
+  an import; retain its view in memory for return. Group lookups by shard and yield between
+  rows, then render in batches of 25. The batch spec explicitly retains neighbourhood
+  percentiles when the range publication switch is off; range values and position stay hidden.
+
 ## 2026-10-28 — P3-03 "good place to live" score reviewed and merged (Claude, chat)
 
 - PR #125 reviewed: only the eight listed non-demographic fields are read (registered in
