@@ -229,6 +229,14 @@ published in 2027.
   refresh via a `publish: none` manifest, approved 2/day budget and first-live-check gate.
   Synthetic fixtures only in development; the publisher verification above is Claude's.
 
+### HMDA (FFIEC/CFPB Data Browser)
+- `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?counties=48453,48491,48209&years=2025&actions_taken=1&loan_purposes=1`.
+  Public U.S. government loan-level data; credit "FFIEC Home Mortgage Disclosure Act data".
+  Checked by probes 40608377396 and 40608476927 (2026-10-28): 30,323 originated 2025 purchase
+  loans (2024: 32,641), 99 columns incl. `property_value` (midpoint of a $10,000 band; "Exempt" on
+  616) and `census_tract`; 281 tracts with ≥ 30 loans. Only tract aggregates are stored; applicant
+  demographic columns are never read. Used only for the value-range check (P2-08).
+
 ## Parcel shapes
 
 - **TxGIO StratMap Land Parcels 2026** — **License CC0-1.0**. Credit "Texas Geographic

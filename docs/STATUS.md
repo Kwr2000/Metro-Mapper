@@ -207,13 +207,17 @@ are decided (`DECISIONS.md`).
   counties. No source calls; FHFA remains fixture/Test data. Claude must resolve the coverage
   expectation and first-live-check FHFA; full counts and the blocker are in DECISIONS/the PR.
 
+- **P2-06** (Codex, PR #118; Claude spec fix: builder inventory left out of the coverage check;
+  homes size limit 300 MB): appraisal-based value ranges for 692,591 homes, built but unpublished.
+  FHFA live (run 40607922630), ungated. HMDA preview: 263 tracts, median ratio 0.956, 85% within ±20%.
+
 ## Next
 
-1. Claude: review P2-06, resolve Travis's 97% coverage blocker and perform the first FHFA live check.
-2. Owner decision (P2-05b): how to place about 54,000 Travis condos that have no parcel of their
-   own (see Waiting on the owner).
-3. Claude: spec P2-07 ("Check a home" page) and P2-08 (HMDA validation) while P2-06 is built.
-4. Check the 2026-11-03 refresh report (expect nothing due except, once live, `fhfa_hpi`).
+1. Owner: paste the P2-07 ("Check a home" page) prompt into Codex, and the P2-08 (HMDA check)
+   prompt into a second Codex task; they touch different files.
+2. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
+3. Claude: review both PRs, run the HMDA first live check, then check the live page.
+4. Check the 2026-11-03 refresh report (FHFA is now monthly; expect it to be due).
 
 ## Open issues
 
