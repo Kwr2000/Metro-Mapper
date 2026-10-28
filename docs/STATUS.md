@@ -4,6 +4,7 @@ Where the build stands, for whoever picks it up next (a new chat, Codex, or the 
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
 _Last updated 2026-10-27 (P2-08 built; awaiting HMDA first live check)._
+_Last updated 2026-10-28 (P2-07 built; Phase 3 approved; awaiting home-page review)._
 
 ## Phase
 
@@ -220,14 +221,22 @@ specs ready. **Phase 2 — in progress** (P2-01 to P2-06 done; P2-07 and P2-08 b
   hidden and facts published. Claude should first-live-check HMDA, compare with the
   263-tract / 0.956 median ratio / 85.2% within ±20% preview, then ungate per REVIEW.
 
+- **P2-07** (Codex): Check a home search/card, ID-only links, nearest-home map panel/phone
+  sheet, per-home browser-only asking prices and methodology. Web build derives public ID
+  locators from existing shards; no pipeline, adapter, manifest, config or source changes.
+  All 120 shared address and 41 range vectors pass; `make test` passes (1,207 pipeline +
+  242 web tests, schema/type checks and builds). Fixture-only local e2e passes at 1440×900
+  and 390×844, including keyboard selection, fresh links, range off/on, price reload/privacy
+  and map lookup. Ranges obey the unpublished flag. Claude should check a dozen real addresses
+  across the counties, a condo unit, map click, hidden ranges and phone layout after merge. Merged as PR #122 after Claude checked real addresses.
+
 ## Next
 
-1. Claude: review P2-07 ("Check a home", PR #122) and P2-08 (HMDA check).
-   Keep ranges hidden until HMDA has passed its first live check.
-2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex now; it only needs
-   Phase 1 data. P3-01 (batch listing check) waits for P2-07 and P2-08.
+1. Claude: P2-08 HMDA first live check; then ranges show on the live site.
+2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex; P3-01 (batch listing
+   check) can start once P2-08 is live.
 3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.
-4. Claude: review P2-07/P2-08, run the HMDA first live check; spec P3-02, P3-04, P3-05.
+4. Claude: spec P3-02, P3-04, P3-05.
 5. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
 6. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
 

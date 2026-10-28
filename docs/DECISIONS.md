@@ -41,6 +41,38 @@ why, and (for approvals) that the owner approved it in writing.
   **0.9921925071374469**, latest 2026Q2, as of 2026-06-30. Zero source-network attempts;
   all canonical-file hashes are unchanged. No generated publication is committed. Claude
   must perform the gated first live check and compare with the spec's 263-tract preview.
+## 2026-10-28 — P2-07 home page, private prices and web-only ID lookup (Codex)
+
+- The existing home publication has address shards but no ID-to-shard directory. Build a
+  directory in the web build/dev hook from those same public shards: 256 deterministic FNV-1a
+  buckets under ignored `data/homes/ids/`, containing only canonical IDs and shard names.
+  A fresh ID-only link loads one bucket and one address shard instead of scanning all homes.
+  Each bucket has a 2 MB build guard. No pipeline, adapter, manifest, config, dependency or
+  committed publication changes; Pages already runs the web build after `mm publish`.
+- Port the existing normalization and decimal nearest-even range arithmetic; read all 120
+  address and 41 range vectors directly from the pipeline's shared JSON files. Exact decimal
+  rational arithmetic in TypeScript avoids binary floating-point errors at $500 ties. Keep
+  lot acreage's four published decimal places, including tiny positive lots.
+- The card only computes or discloses the model when `value_range.published === true`.
+  Neighbourhood comparisons also wait for that flag and a usable range. Their approximate
+  asking-price position interpolates between the five published percentiles, caps the tails
+  at the 10th/90th percentiles, and shows the sample count, grouping and source dates.
+  An asking price per sq ft from the user's own input and recorded area can show independently.
+- Asking prices use per-home browser storage through `store.ts`, with the existing session
+  fallback when storage is blocked. No price enters a request, view state or shared link;
+  home links contain only the canonical ID. Incoming unrelated home-link parameters are
+  stripped rather than interpreted. Fixture provenance is visible on cards and model tables.
+- Map lookup uses the specified nine grid cells and 30 m limit, with canonical ID order to
+  break equal-distance ties. Unplaced homes stay unplaced. Show on map uses the stored point
+  and highlights its actual block group via the existing registry-driven base layer. Home
+  cards contain no demographics. An unmatched later click restores ordinary area inspection.
+- Local browser tests publish only synthetic adapter fixtures in a temporary root with source
+  networking blocked. Independent parcel/base-area fixtures have different block-group IDs;
+  the home browser context supplies a coherent synthetic area/name join, without modifying
+  either fixture set. Both required viewport sizes cover the complete home flow. Playwright
+  stays out of CI; production builds scan every JS/HTML asset for prohibited wording and
+  browser checks also scan the rendered text. Claude's real-address and phone checks follow
+  merge; ranges remain unpublished until P2-08 authorizes their display.
 
 ## 2026-10-27 — Owner approval: Phase 3 (find value in good areas)
 

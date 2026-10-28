@@ -12,3 +12,19 @@ a plain local map background. It checks filters, map selection, two-area compari
 restoration, note privacy, shortlist persistence and horizontal overflow at both sizes.
 
 This is intentionally separate from Vitest and is not run or installed by CI.
+
+P2-07 adds fixture home checks at both sizes. The harness creates a temporary root with
+no canonical files, calls the existing homes publisher on adapter fixtures with networking
+blocked, and copies only its generated homes files into ignored `web/public/data/`.
+The web build derives small ID locator buckets from those publications. Pipeline fixtures
+use different block-group IDs, so the home browser context supplies a coherent synthetic
+area/name join; no adapter fixtures or real data are changed.
+
+The home checks cover a unit address, no match, keyboard selection among multiple records,
+a fresh-browser ID-only link (one locator plus one address shard), asking-price persistence
+and absence from every request URL/share URL, unpublished/published metadata, a zoom-16
+map click, a phone bottom sheet and page overflow. The test-only published metadata and
+hood table remain labeled Test data. All external map requests are fulfilled locally.
+Screenshots `home-hidden-*`, `home-range-*` and `home-map-*` go into ignored `artifacts/`.
+The build scans every generated JS/HTML file for prohibited home-value wording; browser
+checks scan rendered page text too. Playwright remains a local check, outside CI.
