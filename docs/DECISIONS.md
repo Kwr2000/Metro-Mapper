@@ -3,6 +3,19 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-03 "good place to live" score reviewed and merged (Claude, chat)
+
+- PR #125 reviewed: only the eight listed non-demographic fields are read (registered in
+  `inputs.py`, guarded by canaries); district rating by interior point; weights browser-only.
+- One fix before merging: the access layer stores walk/bike routes over 60 minutes as null with
+  "More than 60 minutes" (609 block groups for the daily-needs walk). Treating those as missing
+  dropped the factor and lifted remote areas to the top (before: rural Hays and Leander edges at
+  82–83). They now rank as the slowest, tied, and the popup says "More than 60 minutes". With the
+  default weights the top areas are now in Cedar Park and Round Rock (Mesa Park, Cedar Park
+  Ranchettes, Forest Oaks; about 76–79), median 51. `make test` 1,263 pipeline + 249 web; merged.
+- Transit is CapMetro only, so areas outside its service tie at the 33rd percentile; the weight
+  default (1) keeps that small. Owner to review the default weights on the live site.
+
 ## 2026-10-27 — P3-03 non-demographic area score (Codex)
 
 - Phase 3 and this score are already approved in the owner's 2026-10-27 entry. Read only
