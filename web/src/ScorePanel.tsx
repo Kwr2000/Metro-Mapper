@@ -16,7 +16,7 @@ export function ScorePanel({data,error,preferences,onChange}:{data:AreaScore|nul
     <ScoreLegend/><p className="small">Other polygon fills are hidden while score colouring is on. Point markers and filters still work.</p><p className="small score-note">{SCORE_NOTE}</p>
   </section>;
 }
-const rawValue=(value:number|null|undefined,unit:string)=>value==null?"Not available":unit==="share"?`${(value*100).toFixed(1)}%`:`${value.toLocaleString("en-US",{maximumFractionDigits:2})} ${unit}`;
+const rawValue=(value:number|null|undefined,unit:string)=>value==null?"Not available":unit==="minutes"&&value===-1?"More than 60 minutes":unit==="share"?`${(value*100).toFixed(1)}%`:`${value.toLocaleString("en-US",{maximumFractionDigits:2})} ${unit}`;
 export function scorePopup(data:AreaScore|null|undefined,id:string,weights:number[]):string {
   const row=data?.rows[id],score=areaScore(row,weights);
   let html=`<section class="score-popup"><h3>Good place to live: ${score.value==null?"Not available":Math.round(score.value)+" / 100 (your weights)"}</h3>`;

@@ -73,7 +73,8 @@ def test_composite_percentiles_require_both_parts_and_transit_zero_is_measured(r
 
 
 def test_registered_input_allowlist_and_guarded_property_access(repo,monkeypatch):
-    expected={"rate_part1","overall_score","flood_share_1pct","walk_basket","bike_basket","walk_grocery","walk_park","transit_per_hour"}
+    expected={"rate_part1","overall_score","flood_share_1pct","walk_basket","bike_basket","walk_grocery","walk_park","transit_per_hour",
+              "walk_basket_note","bike_basket_note","walk_grocery_note","walk_park_note"}
     assert set(inputs.SCORE_INPUTS["area_score"])==expected
     class Guarded(dict):
         def get(self,key,default=None):
@@ -124,3 +125,16 @@ def test_mm_publish_calls_area_publisher_offline(repo):
     assert cli._cmd_publish(argparse.Namespace())==0
     document=json.loads((paths().web_public/"data/area_score.json").read_text())
     assert document["v"]==1 and document["test_data"] and len(document["rows"])==8
+
+
+def test_walk_bike_over_60_minutes_ranks_slowest_not_missing(repo):
+    # The access adapter stores routes over 60 minutes as null with "More than 60 minutes"
+    # (610 block groups for walk_basket on 2026-10-28); that is a measurement, not missing.
+    data=records()
+    data["access"][2]["properties"].update({"walk_basket":None,"walk_basket_note":"More than 60 minutes",
+        "bike_basket":None,"bike_basket_note":"More than 60 minutes"})
+    doc=area_score.build(data)
+    a,b,c,d=doc["rows"].values()
+    assert c[3] is not None and c[3] < a[3] and c[3] < b[3]   # ranked slowest
+    assert c[6+3] == area_score.CAPPED == -1 and c[6+4] == -1  # raw marker for "more than 60"
+    assert d[3] is None                                          # truly missing stays missing

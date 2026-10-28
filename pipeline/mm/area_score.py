@@ -22,6 +22,10 @@ from .budget import CallBudget
 # are needed solely for joins/provenance; no registry layer values are consulted.
 FIELDS = ("rate_part1", "overall_score", "flood_share_1pct", "walk_basket", "bike_basket",
           "walk_grocery", "walk_park", "transit_per_hour")
+MINUTES = {3,4,5,6}  # walk/bike minute fields
+CAP_NOTE = "More than 60 minutes"
+CAPPED = -1  # published raw marker: more than 60 minutes
+CAP_RANK = 61
 SOURCES = ("areas", "dps_agency", "schools", "fema_nfhl", "access")
 FIXTURE_TIME = datetime(2026,10,28,tzinfo=timezone.utc)
 FACTORS = (
@@ -104,7 +108,7 @@ def district_values(areas, districts):
 
 def build(records, *, fixtures=(), dates=None):
     assert_no_demographics("area_score",SCORE_INPUTS["area_score"])
-    if set(SCORE_INPUTS["area_score"]) != set(FIELDS):raise ValueError("area score: unregistered input")
+    if set(SCORE_INPUTS["area_score"]) != set(FIELDS)|{FIELDS[i]+"_note" for i in MINUTES}:raise ValueError("area score: unregistered input")
     if set(records) != set(SOURCES):
         raise ValueError("area score: unexpected source")
     areas = sorted((r for r in records["areas"] if r["dataset"] == "block_group"),key=lambda r:r["feature_id"])
@@ -121,8 +125,15 @@ def build(records, *, fixtures=(), dates=None):
             if identity not in columns[0]:continue
             if identity in seen:raise ValueError("area score: duplicate source area")
             seen.add(identity)
-            for index in indices:columns[index][identity] = record["properties"].get(FIELDS[index])
-    ranked = [percentiles(column,lower=i!=1 and i!=7) for i,column in enumerate(columns)]
+            for index in indices:
+                value = record["properties"].get(FIELDS[index])
+                # Access caps routes at 60 minutes: "More than 60 minutes" is a measured worst
+                # value, not missing (review 2026-10-28). Published raw as CAPPED; ranked as 61.
+                if value is None and index in MINUTES and record["properties"].get(FIELDS[index]+"_note") == CAP_NOTE:
+                    value = CAPPED
+                columns[index][identity] = value
+    ranked = [percentiles({k:(CAP_RANK if i in MINUTES and v == CAPPED else v) for k,v in column.items()},lower=i!=1 and i!=7)
+              for i,column in enumerate(columns)]
     rows = {}
     for identity in ids:
         scores = []
@@ -139,7 +150,7 @@ def build(records, *, fixtures=(), dates=None):
             "test_data":source in fixture_set or "areas" in fixture_set})
     return {"v":1,"test_data":bool(fixture_set),"factors":factors,"rows":rows,
         "percentile_note":"Mid-rank percentiles relative to block groups in Travis, Williamson and Hays counties; 100 is the better direction, not absolute quality.",
-        "method":"100 × (number below + half the tied group) / number measured; flip lower-is-better inputs, round half upward. Composite factors average both rounded component percentiles and round half upward."}
+        "method":"100 × (number below + half the tied group) / number measured; flip lower-is-better inputs, round half upward. Composite factors average both rounded component percentiles and round half upward. Walk/bike times over 60 minutes are measured as 'more than 60 minutes' and rank as the slowest, tied."}
 
 
 def publish():
