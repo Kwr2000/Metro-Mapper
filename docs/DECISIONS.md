@@ -3,6 +3,18 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-01 batch listing check reviewed and merged (Claude, chat)
+
+- PR #127 reviewed: file parsed and matched in the browser only (no request left the site in a
+  real-data run); Redfin header aliases; disclaimer row skipped; ignored headers listed by name.
+- Real-data check on a local build: a Redfin-shaped CSV (Redfin's header row and its "In
+  accordance with local MLS rules…" line) with ten listings across the three counties. Eight
+  matched with the spot-checked living area and year built; a Florence address with two records
+  asked to pick one; a made-up address said "Not found". Positions read correctly (e.g. a Round
+  Rock home listed at $399,000 against $416,000–$508,000: "3.7% below the range").
+- One fix: years showed with a thousands separator ("1,989"). Still to confirm with the owner's own
+  Redfin download: the exact header names (the page lists any it ignored).
+
 ## 2026-10-28 — P3-01 local batch parsing, persistence and comparisons (Codex)
 
 - Cap input text at 5 MB in addition to the specified 350 listing rows; reject an oversized
