@@ -3,6 +3,16 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-02 calibration merged; HMDA two-year run; calibration on (Claude, chat)
+
+- PR #130 reviewed (fit on the latest year only, test year never feeds factors, fallback to k = 1,
+  ports and vectors in both languages); `make test` 1,288 pipeline + 282 web; CI green; merged.
+- HMDA live run 40741563680 (2 calls: 2025 and 2024). Publish on the real data: calibration used.
+  Held-out 2024 (261 tracts): median ratio 1.004, 80.1% within ±10%, 92.7% within ±20%, median abs
+  log error 0.050 — matching the preview. County factors: Travis 1.090, Williamson 0.970, Hays
+  1.011; 408 tracts with their own factor (2 at the 0.80 clamp, 11 at 1.25). The fit-year figures
+  (95.8% within ±10%) are shown but labelled as fitted, not as a test.
+
 ## 2026-10-28 — P3-02 fitting boundary and effective calibration (Codex)
 
 - Keep HMDA's existing 6/day annual budget. Request 2025 and 2024 separately; apply the

@@ -261,8 +261,8 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
 
 ## Next
 
-1. Owner: paste the P3-02 (calibration) prompt into Codex first; P3-04 (value for money) and P3-05
-   ("things to check") can follow in parallel once P3-02 is merged (all three touch `homes.py`).
+1. Owner: paste the P3-04 (value for money) and P3-05 ("things to check") prompts into two Codex
+   tasks; P3-02 (calibration) is merged and live.
 2. Claude: review each PR; HMDA live run (2 calls) after P3-02; `fema_nfhl` and `access` live
    re-runs after P3-05.
 3. Owner: try the live tools (Check a home, Check many listings with a real Redfin CSV, Good place
