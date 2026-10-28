@@ -3,6 +3,31 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-04 area score against appraisal-based price (Codex)
+
+- Build the small area-price publication from the already-published home shards, after
+  homes publish. Read only registered home cells and centre inputs. Single-family homes
+  need a range, positive living area and a block-group location; do not place missing homes.
+  Use the existing per-home centre, including accepted P3-02 tract/county factors before
+  rounding, divide by living area, take the ordinary median, then round whole dollars
+  nearest-even. Keep only groups with at least ten qualifying homes. Respect the range
+  publication switch: while it is off, publish an empty rows object with an explanation.
+- Split both map axes at ordinary medians over areas having both measurements; ties go
+  on the higher side. Compare unrounded weighted scores, displayed to two decimal places
+  in the list. Sliders and existing map filters do not redefine the reference population.
+  Area price percentiles use midranks over all priced areas, even those without a score.
+- The list includes the maximum price itself and sorts by descending score, then ascending
+  price and GEOID. Its bounds come from all priced areas. Preserve its session-only limit
+  while switching between weights and list tabs. Map modes are exclusive and use the
+  existing browser/shared-view score preferences; weights never enter published data.
+- Numerical quadrant/list code imports only the two dedicated area models. Names, GEOIDs
+  and geometry come from existing boundary metadata; no layer measurements enter it.
+  The batch view shares the same cached files and browser weights, adds derived columns
+  without changing its default sort, and includes their sources/dates in local exports.
+- All development and browser checks use synthetic Test data; no source calls, sources,
+  manifests, refresh schedules or budgets change. Claude checks real-data quadrants and
+  reports a few areas under $250/sq ft with higher scores after review.
+
 ## 2026-10-28 — P3-02 calibration merged; HMDA two-year run; calibration on (Claude, chat)
 
 - PR #130 reviewed (fit on the latest year only, test year never feeds factors, fallback to k = 1,

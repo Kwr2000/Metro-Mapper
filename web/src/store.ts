@@ -49,7 +49,7 @@ export function writeAskingPrice(id: string, value: string): boolean {
 }
 
 export function readScorePreferences():ScorePreferences {return cleanScorePreferences(readLocal("area-score",null)) ?? {...DEFAULT_SCORE,weights:[...DEFAULT_SCORE.weights]};}
-export function writeScorePreferences(value:ScorePreferences):boolean {return writeLocal("area-score",cleanScorePreferences(value) ?? DEFAULT_SCORE);}
+export function writeScorePreferences(value:ScorePreferences):boolean {const saved=writeLocal("area-score",cleanScorePreferences(value) ?? DEFAULT_SCORE);window.dispatchEvent(new Event("metro-mapper:score-change"));return saved;}
 
 export type SavedBatch={name:string;rows:Listing[]};
 const BATCH="batch-list:";
