@@ -251,12 +251,14 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
 
 ## Next
 
-1. Owner: try Check a home, Check many listings (with a real Redfin "Download all" CSV) and the
-   Good place to live panel on the live site; tell Claude any wording, weights or columns to change.
-2. Claude: spec P3-02 (neighbourhood calibration), P3-04 (value-for-money map and the area score
-   in the batch table) and P3-05 ("why might it be cheap" checklist).
-3. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
-4. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
+1. Owner: paste the P3-02 (calibration) prompt into Codex first; P3-04 (value for money) and P3-05
+   ("things to check") can follow in parallel once P3-02 is merged (all three touch `homes.py`).
+2. Claude: review each PR; HMDA live run (2 calls) after P3-02; `fema_nfhl` and `access` live
+   re-runs after P3-05.
+3. Owner: try the live tools (Check a home, Check many listings with a real Redfin CSV, Good place
+   to live) and send changes.
+4. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
+5. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
 
 ## Open issues
 

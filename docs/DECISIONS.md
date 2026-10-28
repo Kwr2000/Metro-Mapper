@@ -3,6 +3,19 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — Phase 3 specs P3-02, P3-04, P3-05 (Claude, chat)
+
+- Calibration preview (probe 40720982283): a tract factor fitted on HMDA 2025 and tested on 2024
+  raises the share of tracts within ±10% from 64.4% to 80.5% (±20%: 88.1% → 92.7%; median abs log
+  error 0.077 → 0.049); county factors (HMDA ÷ ours): Travis 1.092, Williamson 0.970, Hays 1.010.
+  P3-02 uses tract factors shrunk toward the county (n₀ = 30 loans), clamped to 0.80–1.25, and is
+  switched on only if it beats no calibration on the held-out year.
+- P3-04: four-colour "score vs price" map and an areas list filtered by a max $/sq ft, using only
+  the area score and appraisal-based $/sq ft.
+- P3-05: "Things to check" from FEMA flood zones and OSM highways/major roads/railways that the
+  `fema_nfhl` and `access` adapters already download (kept now, no new source), plus age and lot
+  size facts.
+
 ## 2026-10-28 — P3-01 batch listing check reviewed and merged (Claude, chat)
 
 - PR #127 reviewed: file parsed and matched in the browser only (no request left the site in a
