@@ -79,7 +79,7 @@ def smoke(browser,registry,width,height,url,dist,artifacts,plain_style):
     page.get_by_role('button',name='Check pasted listings',exact=True).click();rows=page.locator('.batch-table tbody tr');expect(rows).to_have_count(2)
     expect(page.get_by_label('Sort by',exact=True)).to_have_value('default')
     page.get_by_label('Sort by',exact=True).select_option('areaScore');expect(rows.first).to_have_attribute('data-listing-key','0')
-    cells=rows.first.locator('td');expect(cells.nth(cells.count()-3)).to_contain_text('10');expect(cells.nth(cells.count()-2)).to_contain_text('20 / 100')
+    cells=rows.first.locator('td');expect(cells.nth(cells.count()-4)).to_contain_text('10');expect(cells.nth(cells.count()-3)).to_contain_text('20 / 100')  # then Things to check, Sources
     page.get_by_role('button',name='Ascending',exact=True).click();expect(rows.first).to_have_attribute('data-listing-key','1')
     page.get_by_label('Sort by',exact=True).select_option('areaPercentile');expect(rows.first).to_have_attribute('data-listing-key','0')
     if width<760:cells.nth(cells.count()-3).evaluate("el=>el.scrollIntoView({block:'center'})")

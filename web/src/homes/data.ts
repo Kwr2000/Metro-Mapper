@@ -5,13 +5,15 @@ import { matches, normalizeQuery, shardId, shardThird } from "./address";
 
 export type Home = { id:string; number:string|null; street_key:string|null; unit:string|null; zip:string|null; situs:string|null; city:string|null; county:string; category:string;
   lon:number|null; lat:number|null; block_group:string|null; hood_cd:string|null; living_area:number|null; year_built:number|null; land_acres:number|null; floors:number|null;
-  market_value:number|null; land_value:number|null; improvement_value:number|null; value_year:number|null; certified:string|null; placed:string|null; range_pct:number|null; range_flags:string|null; test_data?:boolean };
+  market_value:number|null; land_value:number|null; improvement_value:number|null; value_year:number|null; certified:string|null; placed:string|null; range_pct:number|null; range_flags:string|null; checks?:string|null; test_data?:boolean };
+export type ChecksMeta={v:1;header:string;texts:Record<string,string>;thresholds:Record<string,number>;distance_note:string;zone_note:string;lot_note:string;test_data:boolean;
+  sources:Record<string,{source:string;available:boolean;dates:string[];versions?:string[];test_data:boolean}>};
 export type RangeMeta = { published:boolean; test_data:boolean; label:string; method:string; study:string; study_year:number; levels:Record<string,number>; within_10pct:Record<string,number>;
   hpi:{factor:number;base_quarters:string[];base_index:number;latest_quarter:string;latest_index:number;as_of:string;source:string};
   calibration?:{used:boolean;fit_year:number;test_year:number;test_data:boolean;method:string};
   flags:Record<string,string>; year_over_year_note:string; size_note?:string; hood_stats_note?:string };
 export type HomeMeta = { v:number; test_data:boolean; counties:Record<string,{source:string;test_data:boolean;value_as_of:string[];certified:string[];parcel_as_of:string[]}>;
-  sources:Record<string,string>; hood_desc:Record<string,Record<string,string>>; shards:Record<string,string[]>; cells:string[]; value_range?:RangeMeta };
+  sources:Record<string,string>; hood_desc:Record<string,Record<string,string>>; shards:Record<string,string[]>; cells:string[]; value_range?:RangeMeta;checks?:ChecksMeta };
 export type HoodStat = {county:string;hood_cd:string;category:string;n:number;p10:number;p25:number;p50:number;p75:number;p90:number};
 export type HoodData = {test_data:boolean;rows:HoodStat[]};
 export type GridRow = [string,number,number,string];

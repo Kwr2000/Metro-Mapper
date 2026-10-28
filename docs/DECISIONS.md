@@ -3,6 +3,41 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-05 property and map facts (Codex)
+
+- Keep exactly two dissolved FEMA MultiPolygon records, simplified at 2 metres and rounded
+  to six decimals. The 0.2% union excludes the original SFHA union; point checks prefer SFHA
+  and include boundaries. Their sorted zone labels describe each entire union, so the card
+  states that limitation instead of claiming a precise original zone label at the point.
+  Record the retrieval date and sorted NFHL VERSION_IDs separately from map effective dates.
+  Fail before storing more than 25 MB of uncompressed flood-zone NDJSON.
+- Keep filtered OSM ways while streaming the existing extract, with native highway/railway,
+  lifecycle, service and tunnel tags. Split at unresolved nodes and clip to the study bbox;
+  never connect across missing refs. Retain only public name/ref labels, not contact or
+  ownership tags. One nearest line per kind is enough; highway suppresses major road.
+  Compare unrounded EPSG:5070 distances with inclusive 150/60/150-metre thresholds, then round
+  whole metres. Percent-escape delimiters/Unicode in the compact cells; cap encoded road
+  labels at 30 bytes. Ellipses mark shortening. The search radius is 200 metres.
+- Use the existing nearest-rank percentile rule for lots, with the exact category, county
+  and appraisal neighbourhood. Require 20 recorded lot sizes; no county fallback. Compare
+  decimals so a floating-point representation cannot flag a tie. Age codes are exclusive
+  at 1978, stop at 1990, and omit unknown years. Range notes remain existing property flags.
+- Older stored canonical files lack the new spatial datasets. Mark each source unavailable
+  until Claude re-runs it; do not substitute synthetic geometry for an existing stored file.
+  Track spatial fixture provenance separately from CAD facts. The browser loads only the
+  compact check cell and metadata, with no extra requests for geometry or the owner's file.
+- Reproducible fixture-scale estimate (`test_fixture_scale_storage_estimates`): 2,000
+  disjoint synthetic rectangles store 236,346 bytes; 39,000 equally simple polygons (39
+  1,000-feature FEMA pages after the Census call) project to 4,608,747 bytes, below 25 MB.
+  This estimates vertex cost, not real polygon complexity. The stored size guard remains.
+- A dense 1,000-home synthetic scenario, all in SFHA and near highway/rail, adds 84,509
+  bytes for checks. At the documented 710,480 homes, adding that rate and 4 KB metadata to
+  P3-02's 197,497,779-byte baseline projects to 257,543,733 bytes; reserving another 30
+  bytes/home for browser ID locators gives 278,858,133 bytes, below 300 MB. These are Test
+  data estimates, not a real publish; the transactional homes size guard remains unchanged.
+- No request, source, budget, cadence or gate changes. Claude must re-run `fema_nfhl` and
+  `access` within their existing budgets, check actual stored sizes and inspect a dozen homes,
+  including highway, rail and flood examples, before closing the task.
 ## 2026-10-28 — P3-04 area score against appraisal-based price (Codex)
 
 - Build the small area-price publication from the already-published home shards, after

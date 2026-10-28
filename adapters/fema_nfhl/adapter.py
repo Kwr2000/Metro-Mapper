@@ -16,9 +16,9 @@ from mm import config
 from mm.adapter import RawPayload, Request, SourceAdapter
 from mm.schemas import AreaFeature
 from pyproj import Transformer
-from shapely import STRtree, make_valid, transform, union_all
+from shapely import STRtree, make_valid, set_precision, transform, union_all
 from shapely.errors import GEOSException
-from shapely.geometry import mapping, shape
+from shapely.geometry import MultiPolygon, mapping, shape
 
 FEMA = "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query"
 TIGER = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/8/query"
@@ -29,6 +29,37 @@ MISSING_COVERAGE = "not available: FEMA map does not fully cover this area"
 FEMA_MAP = "https://msc.fema.gov/portal/search"
 TO_AREA = Transformer.from_crs(4326, 5070, always_xy=True).transform
 TO_WGS84 = Transformer.from_crs(5070, 4326, always_xy=True).transform
+MAX_ZONE_BYTES = 25_000_000
+
+
+def flood_records(hazards, retrieved):
+    """Two dissolved unions, separate from the unchanged area-share calculation."""
+    output = []
+    sfha = union_all([g for g, p in hazards if p["sfha"]])
+    for identity, kind in (("sfha", "sfha"), ("x02", "annual_02")):
+        selected = [(g, p) for g, p in hazards if p[kind]]
+        geom = union_all([g for g, _ in selected])
+        if identity == "x02":geom = geom.difference(sfha)
+        if not geom.is_empty:
+            geom = reproject(geom.simplify(2, preserve_topology=True), TO_WGS84)
+            geom = MultiPolygon(polygon_parts(geom))
+        else:geom = MultiPolygon([])
+        doc = mapping(geom)
+        def rounded(v):return [rounded(x) for x in v] if isinstance(v, (list, tuple)) else round(v, 6)
+        doc = {"type":"MultiPolygon", "coordinates":rounded(doc["coordinates"])}
+        # Rounding can collapse tiny rings or close a narrow seam: keep valid polygon parts.
+        snapped = set_precision(make_valid(shape(doc)), .000001)
+        merged = union_all(polygon_parts(snapped))
+        doc = mapping(MultiPolygon(polygon_parts(merged)))
+        doc = {"type":"MultiPolygon", "coordinates":rounded(doc["coordinates"])}
+        output.append(AreaFeature(dataset="flood_zone", feature_id=identity, geometry=doc,
+            properties={"zones":sorted({p["zone"] for _, p in selected}),
+                        "effective_versions":sorted({p["effective_version"] for _, p in hazards if p["effective_version"]}),
+                        "retrieved_at":retrieved, "version_note":"NFHL VERSION_ID values are publisher identifiers, not effective dates."}))
+    size = sum(len(r.model_dump_json().encode())+1 for r in output)
+    if size > MAX_ZONE_BYTES:raise ValueError("FEMA stored flood polygons exceed 25 MB")
+    print(f"fema_nfhl: stored flood polygons: records=2; bytes={size}", file=sys.stderr)
+    return output
 
 
 def classify(row):
@@ -148,6 +179,7 @@ class FemaNFHL(SourceAdapter):
     retry_wait_seconds = 60
 
     def plan(self, ctx):
+        self.retrieved = ctx.now.date().isoformat()
         return [Request("block_groups", {"kind": "tiger", "url": TIGER, "query": {
             "where": "STATE='48' AND COUNTY IN ('453','491','209')", "outFields": "GEOID",
             "outSR": 4326, "f": "geojson", "returnGeometry": "true"}}), self.page_request(0)]
@@ -230,6 +262,7 @@ class FemaNFHL(SourceAdapter):
             if version is not None and not isinstance(version, str):
                 raise ValueError("unexpected FEMA VERSION_ID")
             props["effective_version"] = version.strip() if version else None
+            props["zone"] = row["FLD_ZONE"].strip().upper()
             yield AreaFeature(dataset="nfhl_input", feature_id=f"{raw.request.key}_{index}",
                               geometry=mapping(geom), properties=props)
         if skipped:
@@ -286,7 +319,7 @@ class FemaNFHL(SourceAdapter):
                     "mapped_share": round(mapped, 3), "flood_note": MISSING_COVERAGE if not covered else "FEMA map covers at least 99% of this area.",
                     "effective_versions": ",".join(sorted(versions)), "fema_map_link": FEMA_MAP,
                 }))
-        return output
+        return output + flood_records(hazards, self.retrieved)
 
     # VERSION_ID is not an effective date. Leave source_as_of unknown; registry uses the
     # successful run date, while the actual publisher version identifiers stay per area.

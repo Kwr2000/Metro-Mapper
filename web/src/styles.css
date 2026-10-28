@@ -305,6 +305,10 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
  .map-home-panel { right: 0; left: 0; bottom: 0; top: auto; width: 100%; max-height: 72dvh; border-radius: 16px 16px 0 0; }
 }
 
+.home-checks-list { padding-left:20px; }.home-checks-list li { margin:12px 0; }
+.home-checks-list p { margin:4px 0; }.home-checks-list small { color:var(--muted); overflow-wrap:anywhere; }
+.batch-checks { min-width:200px; }.batch-checks summary { cursor:pointer; }
+@media(max-width:760px) { .batch-checks { min-width:0; } }
 .score-panel [role="tablist"] { display:flex; gap:8px; margin:12px 0; }
 .score-panel [role="tab"][aria-selected="true"] { background:var(--brand); color:#fff; }
 .areas-price-list label { display:block; margin:14px 0; }.areas-price-list input { display:block; width:100%; }

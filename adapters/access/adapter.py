@@ -31,7 +31,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import dijkstra
 from scipy.spatial import cKDTree
 from shapely import make_valid
-from shapely.geometry import Polygon, shape
+from shapely.geometry import LineString, Polygon, box, mapping, shape
 
 OSM = "https://download.geofabrik.de/north-america/us/texas-latest.osm.pbf"
 GTFS = "https://data.texas.gov/download/r4v4-vz24/application%2Fzip"
@@ -42,6 +42,35 @@ SPEED = {"walk": 80, "bike": 16000 / 60}
 EXCLUDED = {"motorway", "motorway_link", "trunk", "trunk_link", "construction", "proposed", "raceway", "bus_guideway", "abandoned"}
 PERMITTED = {"yes", "designated", "permissive"}
 WAY_TAGS = ("highway", "foot", "access", "bicycle")
+LINE_TAGS = ("highway", "railway", "abandoned", "disused", "service", "tunnel", "name", "ref")
+
+
+def line_kind(tags):
+    if tags.get("tunnel") == "yes" or tags.get("service") in {"siding", "yard", "spur"}:return None
+    if any(tags.get(k) not in (None, "no", "false", "0") for k in ("abandoned", "disused")):return None
+    if tags.get("highway") in {"motorway", "trunk"}:return "highway"
+    if tags.get("highway") == "primary":return "major_road"
+    if tags.get("railway") == "rail":return "rail"
+    return None
+
+
+def nuisance_records(osm, bbox):
+    output = []
+    for way in osm.get("nuisance_ways", []):
+        kind = line_kind(way["tags"])
+        if not kind:continue
+        points = [osm["nodes"][ref] for ref in way["nodes"]]
+        if len(set(map(tuple, points))) < 2:continue
+        props = {"kind":kind,"osm_as_of":osm["osm_as_of"]}
+        for key in ("name", "ref"):
+            if way["tags"].get(key):props[key] = way["tags"][key][:120]
+        clipped = LineString(points).intersection(box(*bbox))
+        parts = [clipped] if clipped.geom_type == "LineString" else getattr(clipped, "geoms", ())
+        for part in parts:
+            if part.geom_type == "LineString" and not part.is_empty and part.length:
+                output.append(AreaFeature(dataset="nuisance_line",feature_id=f"w{way['id']}_{len(output)}",
+                    geometry=mapping(part),properties=props,source_as_of=osm["osm_as_of"]))
+    return output
 BASKET = ("pharmacy", "food", "hardware", "bank", "library")
 KINDS = ("grocery", "park", "school", *BASKET)
 MEASURES = tuple(f"{mode}_{dest}" for mode in SPEED for dest in ("grocery", "park", "school", "basket"))
@@ -175,6 +204,7 @@ class OSMCollector:
     """
     def __init__(self, bbox, check_time=lambda: None):
         self.bbox, self.nodes, self.ways, self.destinations = bbox, {}, [], []
+        self.nuisances = []
         self.used = set()
         self.seen_way = False
         self.check_time, self.visited = check_time, 0
@@ -203,6 +233,16 @@ class OSMCollector:
             self.check_time()
         refs = [str(node.ref) for node in way.nodes]
         tags = {key: way.tags[key] for key in WAY_TAGS if key in way.tags}
+        line_tags = {key:way.tags[key] for key in LINE_TAGS if key in way.tags}
+        if line_kind(line_tags):
+            run = []
+            for ref in [*refs, None]:
+                if ref in self.nodes:run.append(ref)
+                else:
+                    if len(run) >= 2:
+                        self.nuisances.append({"id":int(way.id),"nodes":run,"tags":line_tags})
+                        self.used.update(run)
+                    run = []
         if tags.get("highway"):
             run = []
             for ref in [*refs, None]:
@@ -233,7 +273,8 @@ class OSMCollector:
 
     def compact(self, as_of):
         return {"nodes": {key: point for key, point in self.nodes.items() if key in self.used},
-                "ways": self.ways, "destinations": self.destinations, "osm_as_of": as_of}
+                "ways": self.ways, "destinations": self.destinations, "osm_as_of": as_of,
+                "nuisance_ways":self.nuisances}
 
 
 def parse_osm(path, bbox, as_of, check_time=lambda: None):
@@ -471,8 +512,14 @@ class Access(SourceAdapter):
                 if row["kind"] not in KINDS or not re.fullmatch(r"[nw]\d+", str(row["osm_id"])) or not within(point, self.bbox):
                     raise ValueError("invalid compact OSM destination")
                 destinations.append({"kind": row["kind"], "lon": point[0], "lat": point[1], "osm_id": row["osm_id"]})
+            nuisance = []
+            for way in body.get("nuisance_ways", []):
+                refs = [str(integer(ref)) for ref in way["nodes"]]
+                tags = {key:way["tags"][key] for key in LINE_TAGS if key in way["tags"]}
+                if len(refs)<2 or any(ref not in nodes for ref in refs) or any(not isinstance(v,str) for v in tags.values()):raise ValueError("invalid nuisance way")
+                nuisance.append({"id":integer(way["id"]),"nodes":refs,"tags":tags})
             yield AreaFeature(dataset="osm_input", feature_id="osm", geometry=EMPTY,
-                properties={"nodes": nodes, "ways": ways, "destinations": destinations, "osm_as_of": as_of})
+                properties={"nodes": nodes, "ways": ways, "destinations": destinations, "osm_as_of": as_of,"nuisance_ways":nuisance})
             return
         if key == "gtfs":
             files = {name: selected_csv(body["files"][name], fields) for name, fields in CSV_FIELDS.items()}
@@ -554,7 +601,9 @@ class Access(SourceAdapter):
         for i, block in enumerate(blocks):
             by_group[block["geoid"][:12]].append(i)
         self.as_of = date.fromisoformat(osm["osm_as_of"])
-        output = []
+        lines = nuisance_records(osm, self.study)
+        stats.update(nuisance_lines=len(lines), nuisance_bytes=sum(len(r.model_dump_json().encode())+1 for r in lines))
+        output = list(lines)
         for geoid, row in sorted(groups["block_groups"].items()):
             indices = by_group[geoid]
             populations = [blocks[i]["population"] for i in indices]

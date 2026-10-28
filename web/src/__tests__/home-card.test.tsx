@@ -43,7 +43,7 @@ it("keeps a session price when persistent storage is blocked",()=>{
  vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{throw new Error("blocked");});show();fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"570000"}});expect(screen.getByText(/Storage is blocked/)).toBeDefined();expect(readAskingPrice(home.id)).toBe("570000");
 });
 it("contains no prohibited wording in rendered page text",()=>{
- show();expect(document.body.textContent).not.toMatch(/\b(fair value|good deal|overpriced|worth|bargain|undervalued)\b/i);
+ show();expect(document.body.textContent).not.toMatch(/\b(fair value|good deal|overpriced|worth|bargain|undervalued|bad|avoid|deal)\b/i);
 });
 
 it("keeps the published four-decimal lot precision",()=>{

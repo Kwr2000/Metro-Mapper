@@ -23,6 +23,11 @@ import os
 from pathlib import Path
 import re
 import tempfile
+from urllib.parse import quote
+
+from pyproj import Transformer
+from shapely import STRtree, transform
+from shapely.geometry import Point, shape
 
 from . import adapter, canonical, values
 from .adapter import RunContext
@@ -33,13 +38,114 @@ from .privacy import check_properties
 COUNTIES = {"Travis": ("tcad", "48453", 80), "Williamson": ("wcad", "48491", 98), "Hays": ("hays_cad", "48209", 98)}
 FIELDS = ["id", "number", "street_key", "unit", "zip", "situs", "city", "county", "category", "lon", "lat",
           "block_group", "hood_cd", "living_area", "year_built", "land_acres", "floors", "market_value",
-          "land_value", "improvement_value", "value_year", "certified", "placed", "range_pct", "range_flags"]
+          "land_value", "improvement_value", "value_year", "certified", "placed", "range_pct", "range_flags", "checks"]
 KEEP = ("county", "prop_id", "category", "situs_number", "situs_prefix", "situs_street", "situs_suffix",
         "situs_unit", "situs_city", "situs_zip", "situs", "hood_cd", "market_value", "land_value",
         "improvement_value", "value_year", "certified", "living_area", "year_built", "land_acres", "floors")
 MAX_SHARD_BYTES = 2_000_000
 # Raised from 200 MB on 2026-10-27 (P2-06 adds two columns: 197.5 MB). GitHub Pages allows 1 GB.
 MAX_TOTAL_BYTES = 300_000_000
+CHECK_TEXTS = {
+    "flood1":"In a FEMA 1% annual chance flood zone ({zone}). Flood insurance is usually required with a mortgage.",
+    "flood02":"In a FEMA 0.2% annual chance flood zone (moderate risk).",
+    "highway":"About {distance} m from a highway{label}. Traffic noise is likely.",
+    "major_road":"About {distance} m from a major road{label}.",
+    "rail":"About {distance} m from a railway line{label}.",
+    "pre1978":"Built before 1978: federal lead-based paint disclosure applies.",
+    "old_systems":"Built in {year}: original roof, HVAC or plumbing may be near the end of their life.",
+    "small_lot":"Lot smaller than about 90% of similar homes in its appraisal neighbourhood.",
+}
+CHECK_THRESHOLDS = {"highway":150,"major_road":60,"rail":150,"search_metres":200,"small_lot_percentile":10,"lot_min_group":20}
+CHECK_HEADER = "Things that often go with a lower price. None of them is a verdict; check the home."
+CHECK_DISTANCE_NOTE = "Distances are approximate: OpenStreetMap centrelines and parcel interior points, not a building or noise measurement."
+CHECK_PROJECT = Transformer.from_crs(4326, 5070, always_xy=True).transform
+
+
+def check_geometry(geom):
+    def coordinates(xy):
+        result=xy.copy();result[:,0],result[:,1]=CHECK_PROJECT(xy[:,0],xy[:,1]);return result
+    return transform(geom,coordinates)
+
+
+def check_label(value):
+    # Bound the encoded public road label; keep whole UTF-8 characters and escape delimiters.
+    result=""
+    for c in value[:60]:
+        part=quote(c,safe=" ")
+        if len(result)+len(part)>27:return result+"..."
+        result+=part
+    return result
+
+
+class LocationChecks:
+    def __init__(self, flood, lines):
+        self.flood, self.lines = [], {kind:[] for kind in ("highway","major_road","rail")}
+        for r in flood:
+            if r["dataset"] != "flood_zone":continue
+            if r["feature_id"] not in {"sfha","x02"}:raise ValueError("homes: invalid flood union")
+            geom = shape(r["geometry"])
+            if not geom.is_valid:raise ValueError("homes: invalid flood polygon")
+            self.flood.append((check_geometry(geom),r["feature_id"],r["properties"]))
+        self.flood.sort(key=lambda r:r[1])
+        self.flood_tree = STRtree([g for g,_,_ in self.flood])
+        for r in lines:
+            if r["dataset"] != "nuisance_line":continue
+            p=r["properties"];kind=p["kind"]
+            if kind not in self.lines:raise ValueError("homes: invalid line kind")
+            geom=shape(r["geometry"])
+            if geom.geom_type != "LineString" or not geom.is_valid:raise ValueError("homes: invalid line")
+            self.lines[kind].append((check_geometry(geom),str(p.get("ref") or p.get("name") or "")[:60]))
+        for group in self.lines.values():group.sort(key=lambda r:(r[1],r[0].wkb_hex))
+        self.trees={kind:STRtree([g for g,_ in group]) for kind,group in self.lines.items()}
+
+    def at(self, lon, lat):
+        point=Point(*CHECK_PROJECT(lon,lat));codes=[]
+        found={self.flood[i][1]:self.flood[i][2] for i in self.flood_tree.query(point,predicate="covered_by")}
+        if "sfha" in found:
+            zones="/".join(found["sfha"].get("zones",[]))
+            codes.append("flood1:"+quote(zones,safe="/"))
+        elif "x02" in found:codes.append("flood02")
+        highway=False
+        for kind,tree in self.trees.items():
+            if kind=="major_road" and highway:continue
+            candidates=[(point.distance(self.lines[kind][i][0]),self.lines[kind][i][1]) for i in tree.query(point.buffer(200).envelope)]
+            if not candidates:continue
+            distance,label=min(candidates)
+            if distance <= CHECK_THRESHOLDS[kind]+1e-7:
+                codes.append(f"{kind}:{round(distance)}:"+check_label(label))
+                if kind=="highway":highway=True
+        return codes
+
+
+def annotate_checks(buckets, flood, access, flood_fixture, access_fixture):
+    flood=list(flood);access=list(access)
+    location=LocationChecks(flood,access)
+    zones=[r for r in flood if r["dataset"]=="flood_zone"]
+    lines=[r for r in access if r["dataset"]=="nuisance_line"]
+    groups=defaultdict(list)
+    for rows in buckets.values():
+        for r in rows:
+            if r[12] and r[15] is not None:groups[(r[7],r[12],r[8])].append(r[15])
+    limits={key:values.decimal(values.percentile(sorted(v),10)) for key,v in groups.items() if len(v)>=20}
+    for rows in buckets.values():
+        for r in rows:
+            codes=location.at(r[9],r[10]) if r[22]=="parcel" else []
+            if r[14] is not None and 0<r[14]<1978:codes.append("pre1978")
+            elif r[14] is not None and 0<r[14]<1990:codes.append("old_systems")
+            bound=limits.get((r[7],r[12],r[8]))
+            if bound is not None and r[15] is not None and values.decimal(r[15])<bound:codes.append("small_lot")
+            if r[24]:codes.append("range_flags")
+            r[25]=",".join(codes) or None
+    fema_dates=sorted({r["properties"]["retrieved_at"] for r in zones})
+    versions=sorted({v for r in zones for v in r["properties"].get("effective_versions",[])})
+    osm_dates=sorted({r["properties"]["osm_as_of"] for r in access if r["properties"].get("osm_as_of")})
+    available_osm=bool(lines) or any("nuisance_lines" in r["properties"] for r in access if r["dataset"]=="run_summary")
+    return {"v":1,"header":CHECK_HEADER,"texts":CHECK_TEXTS,"thresholds":CHECK_THRESHOLDS,
+        "distance_note":CHECK_DISTANCE_NOTE,"zone_note":"Zone labels describe the dissolved FEMA union; an individual zone boundary is not retained.",
+        "lot_note":"Below the nearest-rank 10th percentile of the same county, appraisal neighbourhood and exact home category; at least 20 recorded lot sizes, with no county fallback.",
+        "sources":{"fema":{"source":"FEMA National Flood Hazard Layer","available":len(zones)==2,"dates":fema_dates,"versions":versions,"test_data":flood_fixture},
+                   "osm":{"source":"OpenStreetMap contributors (ODbL 1.0)","available":available_osm,"dates":osm_dates,"test_data":access_fixture}},
+        "test_data":flood_fixture or access_fixture}
 DIRECTIONS = dict(zip("NORTH SOUTH EAST WEST NORTHEAST NORTHWEST SOUTHEAST SOUTHWEST".split(),
                       "N S E W NE NW SE SW".split()))
 DIRS = set(DIRECTIONS.values()) | set(DIRECTIONS)
@@ -397,8 +503,8 @@ def publish():
             [home for _,home,_ in value_rows], hpi["factor"], cfg, test_data=fixture)
         limits = values.size_bounds([home for _,home,_ in value_rows],cfg)
         for (row,home,tract),(pct,codes) in zip(value_rows,annotations):
-            row[-2:] = [pct,codes]
-            values.validate_annotation(home,row[-2],row[-1],limits,cfg)
+            row[23:25] = [pct,codes]
+            values.validate_annotation(home,row[23],row[24],limits,cfg)
             if tract and home["category"] == "single_family" and pct is not None:
                 tract_centres[tract].append(values.value_range(home["market_value"],fips,pct,hpi["factor"],cfg["levels"])["mid"])
                 tract_markets[tract].append(home["market_value"])
@@ -418,8 +524,8 @@ def publish():
             for row in rows:
                 tract = row[11][:11] if isinstance(row[11],str) else None
                 k = values.factor_for(tract,row[0][:5],calibration)
-                if row[-2] is not None and abs(values.decimal(k)-1) >= values.Decimal(".10"):
-                    row[-1] = ",".join(filter(None,[row[-1],"cal"]))
+                if row[23] is not None and abs(values.decimal(k)-1) >= values.Decimal(".10"):
+                    row[24] = ",".join(filter(None,[row[24],"cal"]))
                     range_counties[row[7]]["by_flag"]["cal"] += 1
                 grouped[row[7]].append(row)
         hood_rows = []
@@ -427,12 +533,15 @@ def publish():
             measured = [{"county":r[7],"category":r[8],"hood_cd":r[12],"living_area":r[13],
                          "market_value":r[17],"tract":r[11][:11] if isinstance(r[11],str) else None} for r in rows]
             hood_rows.extend(values.hood_stats(measured,hpi["factor"],cfg["levels"],cfg=cfg,limits={},
-                calibration=calibration,annotations=[(r[-2],r[-1]) for r in rows]))
+                calibration=calibration,annotations=[(r[23],r[24]) for r in rows]))
         del grouped
         range_test_data = range_test_data or hmda_fixture
     range_meta = values.metadata(cfg,hpi,range_test_data,range_counties,validation=validation,hmda_live=not hmda_fixture)
     range_meta["calibration"] = calibration_info
     del tract_centres, tract_markets
+    flood, flood_fixture = source_records("fema_nfhl")
+    access, access_fixture = source_records("access")
+    checks_meta = annotate_checks(buckets, flood, access, flood_fixture, access_fixture)
     folder = paths().web_public/"data";folder.mkdir(parents=True, exist_ok=True)
     target = folder/"homes"
     with tempfile.TemporaryDirectory(prefix=".homes-", dir=folder) as temporary:
@@ -462,7 +571,7 @@ def publish():
             "sources":{"parcels":"TxGIO StratMap 2026 (CC0-1.0)", "tcad":"Travis Central Appraisal District",
                        "wcad":"Williamson Central Appraisal District", "hays_cad":"Hays Central Appraisal District"},
             "hood_desc":descriptions, "shards":shards, "cells":sorted(grid), "shard_count":len(sizes),
-            "largest_shard_bytes":max(sizes.values(), default=0), "value_range":range_meta}
+            "largest_shard_bytes":max(sizes.values(), default=0), "value_range":range_meta, "checks":checks_meta}
         write_json(stage/"meta.json",metadata)
         total = sum(file.stat().st_size for file in stage.rglob("*.json"))
         if total >= MAX_TOTAL_BYTES:

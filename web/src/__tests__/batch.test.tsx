@@ -103,5 +103,5 @@ it('renders a local paste import, hides unpublished range columns, and saves/res
 });
 it('checks the extended prohibited wording guard in built-copy configuration and rendered batch copy',()=>{
  const config=readFileSync(resolve(__dirname,'../../vite.config.ts'),'utf8');expect(config).toContain('bargain|undervalued');
- render(<BatchPage registry={null}/>);expect(document.body.textContent).not.toMatch(/\b(fair value|good deal|overpriced|worth|bargain|undervalued)\b/i);
+ render(<BatchPage registry={null}/>);expect(document.body.textContent).not.toMatch(/\b(fair value|good deal|overpriced|worth|bargain|undervalued|bad|avoid|deal)\b/i);
 });

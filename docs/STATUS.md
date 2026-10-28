@@ -3,6 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
+_Last updated 2026-10-28 (P3-05 built; awaiting review and adapter re-runs)._
 _Last updated 2026-10-28 (P3-04 built; awaiting review)._
 
 ## Phase
@@ -12,6 +13,15 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
 
 ## Done
 
+- **P3-05 Things to check** (Codex, 2026-10-28): existing FEMA/OSM downloads now retain
+  two dissolved flood unions and filtered road/rail lines. Home shards gain one compact
+  checks column, source/date metadata, age and local lot-size facts; cards and batch rows
+  show the same sourced facts, with unavailable location checks stated. No source calls,
+  sources or budget changes. `make test`: 1,315 pipeline + 295 web tests and build pass;
+  synthetic card/batch e2e passes at 1440×900 and 390×844. Fixture-scale estimates: flood
+  polygons 4.61 MB; homes 278.86 MB including ID-locator reserve, below 25/300 MB limits
+  (assumptions in DECISIONS). Claude must re-run `fema_nfhl` and `access`, check real sizes
+  and inspect a dozen homes including highway, rail and flood examples before closing.
 - **P3-04 score vs price** (Codex, 2026-10-28): offline, guarded single-family area-price
   medians using the current calibrated centre; four-class map, weighted areas list with
   max-price slider, sourced popup and two sortable batch columns. No source calls or new
@@ -269,6 +279,7 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
 
 ## Next
 
+1. Claude: review P3-04 (score vs price) and P3-05 (Things to check). P3-02 calibration is live.
 1. Claude: review P3-04 (score vs price); owner: paste the P3-05 ("things to check") prompt
    into a Codex task. P3-02 (calibration) is merged and live.
 2. Claude: review each PR; HMDA live run (2 calls) after P3-02; `fema_nfhl` and `access` live
