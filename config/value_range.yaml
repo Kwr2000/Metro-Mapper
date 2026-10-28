@@ -1,4 +1,4 @@
-published: false            # P2-08 turns this on after the HMDA check passes
+published: true             # Effective only after a passing check with live model/HMDA data.
 study: "Texas Comptroller, 2024 Property Value Study, category A (single-family), median level"
 levels: {"48453": 1.00, "48491": 0.96, "48209": 1.00}
 within_10pct: {"48453": 0.7297, "48491": 0.7559, "48209": 0.7363}

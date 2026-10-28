@@ -1,0 +1,15 @@
+id: hmda_tracts
+title: HMDA home-purchase property values
+group: Homes
+description: Tract aggregates for an area-level check of appraisal-based value ranges; no loan rows or applicant characteristics are retained.
+source: hmda
+geometry: none
+join: none
+dataset: hmda_tract
+publish: none
+coverage: Travis, Williamson and Hays counties; 2020 Census tracts
+refresh: annual
+attribution: FFIEC Home Mortgage Disclosure Act data, 2025
+license: Public domain
+disclaimer: HMDA property values are midpoints of $10,000 bands, not disclosed sale prices. Mortgaged purchases differ from all homes; this check cannot validate an individual property.
+default_visible: false

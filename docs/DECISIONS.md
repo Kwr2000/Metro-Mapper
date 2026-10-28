@@ -3,6 +3,44 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P2-08 HMDA tract validation and effective range switch (Codex)
+
+- Existing **Owner approval (2026-10-25)** covers HMDA 6 calls/day and annual refresh;
+  add exactly that budget, the first-live-check gate and a `publish: none` manifest. The
+  P2-08 request authorizes `config.published: true`; effective publication additionally
+  requires a passing check, non-fixture model inputs and stored live HMDA aggregates.
+  Failed or unavailable comparisons keep ranges hidden while property facts still publish.
+- The spec asks for an `inputs.py` declaration, but the owner's explicit core-file list
+  permits only `values.py` and `homes.py`. Keep the nine-column declaration in
+  `values.HMDA_INPUTS`, shared by the adapter and validation, and call the existing
+  `assert_no_demographics` guard directly. A test enforces exactly those nine columns and
+  checks the demographic guard. `inputs.py`, other core files and web code are unchanged.
+- A binary CSV scanner buffers/decodes only selected loan cells, not an entire text row.
+  It handles quoted commas/newlines, doubled quotes, CRLF and chunk boundaries; header
+  names are schema, not loan data. Invalid UTF-8 canaries in unselected applicant/lender
+  columns pass without decoding. `fetch` returns only tract aggregates and counts; no
+  source CSV, individual loan row, applicant/lender value or source exception is retained.
+- Count each rejected row under its first failing filter, with separate withheld/NA/blank/
+  non-digit value counts. Invalid tract identifiers are counted and skipped; wrong year,
+  wrong county, missing/duplicate headers and malformed CSV fail closed. Digit-only zero
+  values follow the source filter; a zero tract median makes validation unavailable instead
+  of dividing by zero. Tract percentiles (including its median) use nearest rank. Our
+  home-centre median and the median ratio use the ordinary median (mean of the middle pair).
+- Follow the CAD fixture pattern: tiny synthetic CSV fixtures bypass only production scale
+  checks (30,323 source rows ±5%, at least 250 tracts with 30 loans). All other checks remain.
+  One test generates a full 30,323-row/300-tract synthetic stream in memory and exercises
+  the production limits. A fixture can never authorize publishing ranges, even if its
+  check passes. Validation metadata separately labels the HMDA fixture; model/hood provenance
+  retains its existing CAD/parcel/HPI meaning. No WCAD sale-ratio data is read.
+- Full offline `mm publish` on stored real canonical files plus the HMDA fixture succeeded
+  in **140.590 s**, peak RSS **3,520.4 MiB**, producing **197,489,168 bytes** under `homes/`.
+  The fixture has 90 kept loans in three synthetic tracts; none overlaps 30 eligible real
+  single-family homes, so the check has **0 eligible tracts**, null ratio/share and
+  `passed: false`. `validation.test_data: true` and effective `published: false` are correct;
+  this is not a live HMDA validation result. Real HPI yields 681.16 / 686.52 =
+  **0.9921925071374469**, latest 2026Q2, as of 2026-06-30. Zero source-network attempts;
+  all canonical-file hashes are unchanged. No generated publication is committed. Claude
+  must perform the gated first live check and compare with the spec's 263-tract preview.
 ## 2026-10-28 — P2-07 home page, private prices and web-only ID lookup (Codex)
 
 - The existing home publication has address shards but no ID-to-shard directory. Build a
