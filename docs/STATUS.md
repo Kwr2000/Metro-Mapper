@@ -245,15 +245,18 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
   including persistence, fresh links and People independence. Claude should hand-check block
   groups against the source layers and review default weights with the owner.
 
+- **P3-01** (Codex, PR #127): Check many listings: Redfin CSV or pasted lines, matched in the
+  browser, sortable by position against the range and neighbourhood $/sq ft. **P3-03** (PR #125;
+  Claude fix for capped walk/bike times): Good place to live score with browser weights.
+
 ## Next
 
-1. Owner: try the Check a home page on the live site (ranges now shown).
-2. Claude: review P3-03 ("Good place to live" score), hand-check areas and discuss weights
-   with the owner. P3-01 (batch listing check) is separate.
-3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.
-4. Claude: spec P3-02, P3-04, P3-05.
-5. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
-6. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
+1. Owner: try Check a home, Check many listings (with a real Redfin "Download all" CSV) and the
+   Good place to live panel on the live site; tell Claude any wording, weights or columns to change.
+2. Claude: spec P3-02 (neighbourhood calibration), P3-04 (value-for-money map and the area score
+   in the batch table) and P3-05 ("why might it be cheap" checklist).
+3. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
+4. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
 
 ## Open issues
 
