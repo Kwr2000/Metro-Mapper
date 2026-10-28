@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (P2-06 built; strict value-range publish blocked by Travis coverage)._
+_Last updated 2026-10-28 (P2-07 built; Phase 3 approved; awaiting home-page review)._
 
 ## Phase
 
@@ -209,9 +209,19 @@ specs ready. **Phase 2 — in progress** (P2-01 to P2-06 done; P2-07 and P2-08 b
   homes size limit 300 MB): appraisal-based value ranges for 692,591 homes, built but unpublished.
   FHFA live (run 40607922630), ungated. HMDA preview: 263 tracts, median ratio 0.956, 85% within ±20%.
 
+- **P2-07** (Codex): Check a home search/card, ID-only links, nearest-home map panel/phone
+  sheet, per-home browser-only asking prices and methodology. Web build derives public ID
+  locators from existing shards; no pipeline, adapter, manifest, config or source changes.
+  All 120 shared address and 41 range vectors pass; `make test` passes (1,207 pipeline +
+  242 web tests, schema/type checks and builds). Fixture-only local e2e passes at 1440×900
+  and 390×844, including keyboard selection, fresh links, range off/on, price reload/privacy
+  and map lookup. Ranges obey the unpublished flag. Claude should check a dozen real addresses
+  across the counties, a condo unit, map click, hidden ranges and phone layout after merge.
+
 ## Next
 
-1. Codex (in progress): P2-07 ("Check a home" page) and P2-08 (HMDA check).
+1. Claude: review P2-07 ("Check a home"); P2-08 (HMDA check) is separate.
+   Keep ranges hidden until its validation authorizes publication.
 2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex now; it only needs
    Phase 1 data. P3-01 (batch listing check) waits for P2-07 and P2-08.
 3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.

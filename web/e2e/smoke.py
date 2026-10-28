@@ -10,6 +10,7 @@ from urllib.parse import quote, urlparse
 from urllib.request import urlopen
 
 from playwright.sync_api import sync_playwright, expect
+import homes as home_checks
 
 WEB = Path(__file__).resolve().parents[1]
 DIST = WEB / "dist"
@@ -211,6 +212,7 @@ def colour_smoke(browser, registry, width, height):
 
 
 def main():
+    home_checks.prepare(WEB)
     registry = json.loads((DIST / "registry.json").read_text())
     assert all(l["freshness"] == "fixture_only" for l in registry["layers"] if l["publish"] != "none"), "Run make test first: smoke requires fixture data"
     base = next(l for l in registry["layers"] if l["join"] == "block_group" and any(p["field"] == "name" for p in l["popup"]))
@@ -238,6 +240,7 @@ def main():
                 for width,height in [(1440,900),(390,844)]:
                     smoke(browser,registry,base,chosen,width,height)
                     colour_smoke(browser,registry,width,height)
+                    home_checks.smoke(browser,registry,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
                 browser.close()
         finally:
             server.terminate()

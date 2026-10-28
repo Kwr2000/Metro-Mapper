@@ -77,7 +77,7 @@ export function AboutPage() {
         <li><strong>Sourced and dated.</strong> Every number shows where it comes from and the date it describes.
           Estimates are shown as ranges, with what drives them.</li>
         <li><strong>No sale prices.</strong> Texas does not disclose home sale prices. Home values on this site
-          will be <em>appraisal-based value ranges</em>, not market prices or judgments of a good deal.</li>
+          are presented as <em>appraisal-based value ranges</em>, with their method and limitations.</li>
         <li><strong>No invented detail.</strong> Where data doesn't exist for a small area, the site says
           “Not available” or shows a larger area, clearly labeled. Missing data is never shown as zero.</li>
         <li><strong>Demographics are context only.</strong> Census demographics, including race and ethnicity,

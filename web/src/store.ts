@@ -34,3 +34,12 @@ export function readShortlist(): SavedArea[] {
   if (!Array.isArray(value)) return [];
   return value.filter((v): v is SavedArea => v && /^\d{12}$/.test(v.id) && typeof v.name === "string" && typeof v.note === "string");
 }
+
+/** Asking prices never enter view state, query strings, fetch URLs or shared links. */
+export function readAskingPrice(id: string): string {
+  const value=readLocal<unknown>("asking:"+id,"");
+  return typeof value==="string" && /^\d*(?:\.\d{0,2})?$/.test(value) ? value : "";
+}
+export function writeAskingPrice(id: string, value: string): boolean {
+  return writeLocal("asking:"+id,/^\d*(?:\.\d{0,2})?$/.test(value) ? value : "");
+}

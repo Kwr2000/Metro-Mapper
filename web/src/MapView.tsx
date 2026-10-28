@@ -43,6 +43,8 @@ export interface MapViewProps {
   matches: ReadonlySet<string> | null;
   onSelectArea: (id: string | null) => void;
   bottomInset?: number;
+  onHomeClick?: (point:[number,number])=>Promise<boolean>;
+  highlightedArea?: string|null;
 }
 
 export function MapView(props: MapViewProps) {
@@ -61,6 +63,7 @@ export function MapView(props: MapViewProps) {
     let inspection: maplibregl.Popup | null = null, inspectPoint: maplibregl.LngLat | null = null;
     let clicked: { meta: CompiledLayer; properties: Record<string, unknown> | null } | null = null;
     let unbind: (() => void) | undefined;
+    let clickSequence=0;
     const layerIsVisible = (l: CompiledLayer) => latest.current.visible.has(l.id) &&
       (l.style?.minzoom == null || map!.getZoom() >= l.style.minzoom) &&
       (l.style?.maxzoom == null || map!.getZoom() < l.style.maxzoom);
@@ -118,6 +121,7 @@ export function MapView(props: MapViewProps) {
         if (meta.compare && map.getLayer(id)) map.setPaintProperty(id, property,
           benchmark ? comparisonPaint(meta, benchmark) : meta.style!.paint[property]);
       }
+      if(map.getSource("home-area")) (map.getSource("home-area") as GeoJSONSource).setData({type:"FeatureCollection",features:latest.current.areas.filter(area=>featureId(area)===latest.current.highlightedArea)});
       indexSources(); renderInspection();
     };
 
@@ -157,9 +161,14 @@ export function MapView(props: MapViewProps) {
           paint: { "fill-color": "#f7f8fa", "fill-opacity": .8 }, layout: { visibility: "none" } }, before);
         map.addLayer({ id: "area-filter-outline", source: "area-filter", type: "line", filter: ["==", ["get", "matches"], true],
           paint: { "line-color": "#173d63", "line-width": 3 }, layout: { visibility: "none" } }, before);
-        map.on("click", (event) => {
+        map.addSource("home-area",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+        map.addLayer({id:"home-area-highlight",source:"home-area",type:"line",paint:{"line-color":"#173d63","line-width":4}});
+        map.on("click", async (event) => {
           if (!map) return;
+          const ticket=++clickSequence;
           inspection?.remove();
+          if(map.getZoom()>=15 && latest.current.onHomeClick && await latest.current.onHomeClick([event.lngLat.lng,event.lngLat.lat]))return;
+          if(cancelled || !map || ticket!==clickSequence)return;
           const base = areaLayer(registry), index = base && indexes.get(sourceFor(base));
           const area = index?.query([event.lngLat.lng, event.lngLat.lat]).features[0];
           latest.current.onSelectArea(area ? featureId(area) : null);
@@ -192,7 +201,7 @@ export function MapView(props: MapViewProps) {
     for (const layer of buildMapLayers(registry, visible).layers) if (map.getLayer(layer.id))
       map.setLayoutProperty(layer.id, "visibility", visible.has(layer.metadata.mmLayer) ? "visible" : "none");
     refresh.current?.();
-  }, [visible, registry, props.data, props.areas, props.matches, props.benchmarks, props.colour]);
+  }, [visible, registry, props.data, props.areas, props.matches, props.benchmarks, props.colour, props.highlightedArea]);
 
   useEffect(() => {
     const map = mapRef.current, camera = props.camera;
@@ -204,5 +213,5 @@ export function MapView(props: MapViewProps) {
 
   useEffect(() => { mapRef.current?.setPadding({ top: 0, left: 0, right: 0, bottom: props.bottomInset ?? 0 }); }, [props.bottomInset]);
 
-  return <div ref={el} className="map" data-testid="map" role="region" aria-label="Map" />;
+  return <div ref={el} className="map" data-testid="map" tabIndex={0} role="region" aria-label="Map" />;
 }
