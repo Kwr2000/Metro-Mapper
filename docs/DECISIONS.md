@@ -3,6 +3,21 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P2-06 value range reviewed and merged; FHFA live and ungated (Claude, chat)
+
+- PR #118 reviewed against the spec. Codex correctly stopped: Travis had a range for 95.4% of
+  homes, under the spec's 97%. The cause is legitimate data, not a bug: 17,758 Travis homes have
+  no building value on January 1, 10,411 of them builder inventory (lots or unfinished houses).
+  Spec fix (Claude): builder inventory is left out of the coverage check; Travis is then 98.0%
+  (363,837 of 371,193), Williamson 99.97%, Hays 99.95%. The homes size limit is raised from 200
+  to 300 MB (P2-06 brings `homes/` to 197.5 MB; GitHub Pages allows 1 GB). `make test` 1,207
+  pipeline + 51 web; CI green; merged. Ranges stay unpublished (`published: false`) until P2-08.
+- Ranges per county (±10% / ±20% / none): Travis 242,822 / 123,647 / 17,767; Williamson
+  167,548 / 68,467 / 72; Hays 52,514 / 37,593 / 50. Hood $/sq ft tables cover 99.4–99.8% of
+  single-family homes with a range. Example: WCAD R417015 (2026 value $342,669) → $328,000–$400,000.
+- FHFA first live check, run 40607922630: 1 call, 142 Austin quarters through 2026 Q2, index
+  values identical to the probe (factor 1.0187, as of 2026-06-30). Ungated.
+
 ## 2026-10-27 — P2-06 appraisal-based value range; strict publish blocked (Codex)
 
 - Existing written Phase 2 approval covers `fhfa_hpi: {per_day: 2}` and monthly refresh.
