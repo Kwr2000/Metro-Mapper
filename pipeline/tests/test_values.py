@@ -167,7 +167,8 @@ def test_monthly_no_publish_manifest_budget_gate_fixture_and_rebuild(context,rep
  layer=next(l for l in load_layers() if l.source=='fhfa_hpi')
  assert layer.publish=='none' and layer.geometry=='none' and layer.refresh=='monthly' and layer.license=='Public domain'
  assert yaml.safe_load((ROOT/'config/budgets.yaml').read_text())['adapters']['fhfa_hpi']=={'per_day':2}
- assert yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated']['fhfa_hpi']=="awaiting Claude's first live check"
+ # Ungated after Claude's first live check, run 40607922630 (2026-10-28).
+ assert 'fhfa_hpi' not in (yaml.safe_load((ROOT/'config/live_gates.yaml').read_text())['gated'] or {})
  run=runner.run('fhfa_hpi','fixture',NOW)
  assert run.status=='success' and run.planned_calls==1 and run.calls_made==0 and run.rows_out==142
  assert canonical.read('area_feature','fhfa_hpi') is None
