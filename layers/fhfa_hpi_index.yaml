@@ -1,0 +1,14 @@
+id: fhfa_hpi_index
+title: Austin metro house price index
+group: Homes
+description: Purchase-only seasonally adjusted HPI for the appraisal-based value range's time adjustment.
+source: fhfa_hpi
+geometry: none
+join: none
+dataset: hpi
+publish: none
+coverage: Austin-Round Rock-San Marcos metro, CBSA 12420
+refresh: monthly
+attribution: FHFA House Price Index (purchase-only)
+license: Public domain
+default_visible: false

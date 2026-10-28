@@ -24,7 +24,7 @@ from pathlib import Path
 import re
 import tempfile
 
-from . import adapter, canonical
+from . import adapter, canonical, values
 from .adapter import RunContext
 from .budget import CallBudget
 from .paths import paths
@@ -33,12 +33,13 @@ from .privacy import check_properties
 COUNTIES = {"Travis": ("tcad", "48453", 80), "Williamson": ("wcad", "48491", 98), "Hays": ("hays_cad", "48209", 98)}
 FIELDS = ["id", "number", "street_key", "unit", "zip", "situs", "city", "county", "category", "lon", "lat",
           "block_group", "hood_cd", "living_area", "year_built", "land_acres", "floors", "market_value",
-          "land_value", "improvement_value", "value_year", "certified", "placed"]
+          "land_value", "improvement_value", "value_year", "certified", "placed", "range_pct", "range_flags"]
 KEEP = ("county", "prop_id", "category", "situs_number", "situs_prefix", "situs_street", "situs_suffix",
         "situs_unit", "situs_city", "situs_zip", "situs", "hood_cd", "market_value", "land_value",
         "improvement_value", "value_year", "certified", "living_area", "year_built", "land_acres", "floors")
 MAX_SHARD_BYTES = 2_000_000
-MAX_TOTAL_BYTES = 200_000_000
+# Raised from 200 MB on 2026-10-27 (P2-06 adds two columns: 197.5 MB). GitHub Pages allows 1 GB.
+MAX_TOTAL_BYTES = 300_000_000
 DIRECTIONS = dict(zip("NORTH SOUTH EAST WEST NORTHEAST NORTHWEST SOUTHEAST SOUTHWEST".split(),
                       "N S E W NE NW SE SW".split()))
 DIRS = set(DIRECTIONS.values()) | set(DIRECTIONS)
@@ -316,6 +317,10 @@ def write_json(path, document):
 def publish():
     """Validate in staging, then replace homes/; a failed build keeps its last good files."""
     check_properties("home shard", FIELDS)
+    cfg = values.settings()
+    hpi_records, hpi_fixture = source_records("fhfa_hpi")
+    hpi = values.hpi_factor(hpi_records, "2026-01-01")
+    range_counties, hood_rows = {}, []
     parcels = {}; parcel_dates = defaultdict(set)
     parcel_records, parcel_fixture = source_records("parcels")
     for r in parcel_records:
@@ -332,8 +337,9 @@ def publish():
         inputs, fixture = source_records(source)
         test_data = fixture or parcel_fixture
         categories, placed_categories, unplaced_categories = Counter(), Counter(), Counter()
-        source_dates, certified_dates, values = set(), set(), set()
+        source_dates, certified_dates, value_dates = set(), set(), set()
         expected = None; eligible = misses = placed = 0; hoods = {}
+        value_rows = []
         for r in inputs:
             if r["dataset"] == "run_summary":
                 if expected is not None:
@@ -347,6 +353,10 @@ def publish():
                 raise ValueError("homes: duplicate or inconsistent home id")
             seen.add(identity)
             p = harmonize(r, parcels.get(identity))
+            value_home = {key:p.get(key) for key in values.HOME_INPUTS}
+            value_home["partial_owner"] = r["properties"].get("partial_owner") if source == "tcad" else None
+            if value_home["partial_owner"] is not None and type(value_home["partial_owner"]) is not bool:
+                raise ValueError("homes: invalid internal property-share indicator")
             categories[p["category"]] += 1
             (placed_categories if p["placed"] else unplaced_categories)[p["category"]] += 1
             placed += p["placed"] is not None
@@ -357,6 +367,7 @@ def publish():
                 eligible += 1
                 misses += not matches(row, query)
             buckets[shard_id(p["street_key"])].append(row)
+            value_rows.append((row,value_home))
             code = p["hood_cd"]
             desc = r["properties"].get("hood_desc")
             if code and desc:
@@ -364,7 +375,7 @@ def publish():
                 hoods[code] = min(hoods.get(code, desc), desc)
             if r.get("source_as_of"):source_dates.add(r["source_as_of"])
             if p["certified"]:certified_dates.add(p["certified"])
-            if r["properties"].get("value_as_of"):values.add(r["properties"]["value_as_of"])
+            if r["properties"].get("value_as_of"):value_dates.add(r["properties"]["value_as_of"])
         count = sum(categories.values())
         if not isinstance(expected, int) or isinstance(expected, bool) or expected != count:
             raise ValueError("homes: county home count differs from run summary")
@@ -372,13 +383,25 @@ def publish():
             raise ValueError("homes: county placement below required share")
         if misses*100 > eligible:
             raise ValueError(f"homes: round-trip misses exceed 1 percent for {county} - {misses} of {eligible}")
-        meta_counties[county] = {"source": source, "source_as_of": sorted(source_dates), "value_as_of": sorted(values),
+        meta_counties[county] = {"source": source, "source_as_of": sorted(source_dates), "value_as_of": sorted(value_dates),
             "certified": sorted(certified_dates), "parcel_as_of": sorted(parcel_dates[county]), "test_data": test_data,
             "homes": count, "placed": placed, "unplaced": count-placed,
             "by_category": dict(categories), "placed_by_category": dict(placed_categories), "unplaced_by_category": dict(unplaced_categories),
             "round_trip_eligible": eligible, "round_trip_misses": misses}
+        if value_dates and value_dates != {"2026-01-01"}:
+            raise ValueError("homes: value dates differ from the HPI base date")
+        annotations, stats, range_summary = values.prepare(
+            [home for _,home in value_rows], hpi["factor"], cfg, test_data=fixture)
+        limits = values.size_bounds([home for _,home in value_rows],cfg)
+        for (row,home),(pct,codes) in zip(value_rows,annotations):
+            row[-2:] = [pct,codes]
+            values.validate_annotation(home,row[-2],row[-1],limits,cfg)
+        range_counties[county] = range_summary
+        hood_rows.extend(stats)
         descriptions[county] = hoods
-    del parcels
+    del parcels, value_rows
+    range_test_data = hpi_fixture or any(c["test_data"] for c in meta_counties.values())
+    range_meta = values.metadata(cfg,hpi,range_test_data,range_counties)
     folder = paths().web_public/"data";folder.mkdir(parents=True, exist_ok=True)
     target = folder/"homes"
     with tempfile.TemporaryDirectory(prefix=".homes-", dir=folder) as temporary:
@@ -402,11 +425,12 @@ def publish():
         for cell, rows in sorted(grid.items()):
             write_json(stage/"grid"/(cell+".json"), {"v":1, "test_data":any(meta_counties[county_from_id(row[0])]["test_data"] for row in rows),
                 "rows":sorted(rows)})
+        write_json(stage/"hoods.json", {"v":1,"test_data":range_test_data,"rows":hood_rows})
         metadata = {"v":1, "test_data":any(c["test_data"] for c in meta_counties.values()), "counties":meta_counties,
             "sources":{"parcels":"TxGIO StratMap 2026 (CC0-1.0)", "tcad":"Travis Central Appraisal District",
                        "wcad":"Williamson Central Appraisal District", "hays_cad":"Hays Central Appraisal District"},
             "hood_desc":descriptions, "shards":shards, "cells":sorted(grid), "shard_count":len(sizes),
-            "largest_shard_bytes":max(sizes.values(), default=0)}
+            "largest_shard_bytes":max(sizes.values(), default=0), "value_range":range_meta}
         write_json(stage/"meta.json",metadata)
         total = sum(file.stat().st_size for file in stage.rglob("*.json"))
         if total >= MAX_TOTAL_BYTES:
@@ -418,7 +442,7 @@ def publish():
         except BaseException:
             if backup.exists():os.replace(backup,target)
             raise
-    report = {"bytes":total,"shard_count":len(sizes),"largest_shard_bytes":metadata["largest_shard_bytes"],"counties":meta_counties}
+    report = {"bytes":total,"shard_count":len(sizes),"largest_shard_bytes":metadata["largest_shard_bytes"],"counties":meta_counties,"value_range":range_meta}
     print("homes: "+json.dumps(report, sort_keys=True))
     return metadata
 

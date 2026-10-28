@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (P2-05 lookup built and published locally from stored live files)._
+_Last updated 2026-10-27 (P2-06 built; strict value-range publish blocked by Travis coverage)._
 
 ## Phase
 
@@ -196,9 +196,20 @@ are decided (`DECISIONS.md`).
   in all three counties (710,480), address shards and a map grid built by `mm publish` (190.6 MB,
   662 shards); 20 listing-style addresses checked. Travis condos have no map point yet.
 
+- **P2-06** (Codex): synthetic quoted-TSV FHFA adapter, approved 2/day monthly budget and
+  live gate, reference arithmetic/41 shared vectors, size/hood statistics and two appended
+  shard columns. Ranges stay switched off; no web code or demographics used. `make test` passes
+  (1,206 pipeline + 51 web tests, schema/type checks and builds).
+  Strict real-data `mm publish` failed after 159.1 s: Travis range coverage 366,469/384,236
+  (95.38%) is below the specified 97%, mostly zero-building-value builder inventory. The prior
+  190.6 MB homes build is byte-identical and preserved. An isolated, uninstalled diagnostic
+  candidate is 197.49 MB (homes-only 105.7 s), with >99% single-family hood coverage in all
+  counties. No source calls; FHFA remains fixture/Test data. Claude must resolve the coverage
+  expectation and first-live-check FHFA; full counts and the blocker are in DECISIONS/the PR.
+
 ## Next
 
-1. Owner: paste the P2-06 (value range) prompt into Codex (`docs/tasks/P2-06-value-range.md`).
+1. Claude: review P2-06, resolve Travis's 97% coverage blocker and perform the first FHFA live check.
 2. Owner decision (P2-05b): how to place about 54,000 Travis condos that have no parcel of their
    own (see Waiting on the owner).
 3. Claude: spec P2-07 ("Check a home" page) and P2-08 (HMDA validation) while P2-06 is built.

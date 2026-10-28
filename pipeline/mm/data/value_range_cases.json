@@ -1,0 +1,1114 @@
+{
+  "v": 1,
+  "test_data": true,
+  "rounding": "decimal nearest-even to $1000; endpoints from rounded centre",
+  "cases": [
+    {
+      "id": "travis-base",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "williamson-level",
+      "home": {
+        "county": "Williamson",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 480000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 450000,
+        "mid": 500000,
+        "high": 550000
+      }
+    },
+    {
+      "id": "hays-level",
+      "home": {
+        "county": "Hays",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 480000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 432000,
+        "mid": 480000,
+        "high": 528000
+      }
+    },
+    {
+      "id": "built-2024",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2024,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "new",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "built-2023",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2023,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "builder",
+      "home": {
+        "county": "Travis",
+        "category": "builder_inventory",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "new",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "one-acre",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 1,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "over-one-acre",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 1.0001,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "lot",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "condo",
+      "home": {
+        "county": "Travis",
+        "category": "condo",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "condo",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "size-at-p05",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 1000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "size-below-p05",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 999,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "size",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "size-at-p95",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 3000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "size-above-p95",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 3001,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "size",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "mobile_home",
+      "home": {
+        "county": "Travis",
+        "category": "mobile_home",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "type",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "two_to_four_units",
+      "home": {
+        "county": "Travis",
+        "category": "two_to_four_units",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "type",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "rural_home",
+      "home": {
+        "county": "Travis",
+        "category": "rural_home",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "type",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "ordered-flags",
+      "home": {
+        "county": "Travis",
+        "category": "rural_home",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2025,
+        "land_acres": 2,
+        "living_area": 4000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "new,lot,size,type",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "ordered-condo-flags",
+      "home": {
+        "county": "Travis",
+        "category": "condo",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2026,
+        "land_acres": 2,
+        "living_area": 4000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "new,lot,condo,size",
+        "low": 80000,
+        "mid": 100000,
+        "high": 120000
+      }
+    },
+    {
+      "id": "missing-value",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": null,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": null,
+        "range_flags": "no_value",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    },
+    {
+      "id": "zero-value",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 0,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": null,
+        "range_flags": "no_value",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    },
+    {
+      "id": "zero-building",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 0,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": null,
+        "range_flags": "no_building",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    },
+    {
+      "id": "partial",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": true
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": null,
+        "range_flags": "partial",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    },
+    {
+      "id": "no-value-precedence",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 0,
+        "improvement_value": 0,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": true
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": null,
+        "range_flags": "no_value",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    },
+    {
+      "id": "no-building-precedence",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 0,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": true
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": null,
+        "range_flags": "no_building",
+        "low": null,
+        "mid": null,
+        "high": null
+      }
+    },
+    {
+      "id": "non-tcad-share-ignored",
+      "home": {
+        "county": "Hays",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": true
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "missing-characteristics",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": null,
+        "land_acres": null,
+        "living_area": null,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    },
+    {
+      "id": "round-499",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 499,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      }
+    },
+    {
+      "id": "round-500",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 500,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      }
+    },
+    {
+      "id": "round-501",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 501,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 1000,
+        "mid": 1000,
+        "high": 1000
+      }
+    },
+    {
+      "id": "round-1499",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 1499,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 1000,
+        "mid": 1000,
+        "high": 1000
+      }
+    },
+    {
+      "id": "round-1500",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 1500,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 2000,
+        "mid": 2000,
+        "high": 2000
+      }
+    },
+    {
+      "id": "round-2500",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 2500,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 2000,
+        "mid": 2000,
+        "high": 2000
+      }
+    },
+    {
+      "id": "round-3500",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 3500,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 4000,
+        "mid": 4000,
+        "high": 4000
+      }
+    },
+    {
+      "id": "round-5000",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 5000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 4000,
+        "mid": 5000,
+        "high": 6000
+      }
+    },
+    {
+      "id": "round-15000",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 15000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 14000,
+        "mid": 15000,
+        "high": 16000
+      }
+    },
+    {
+      "id": "round-25000",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 25000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 22000,
+        "mid": 25000,
+        "high": 28000
+      }
+    },
+    {
+      "id": "wide-endpoints",
+      "home": {
+        "county": "Travis",
+        "category": "condo",
+        "hood_cd": "TEST",
+        "market_value": 5000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 20,
+        "range_flags": "condo",
+        "low": 4000,
+        "mid": 5000,
+        "high": 6000
+      }
+    },
+    {
+      "id": "time-adjustment-travis",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 480000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1.0186864872544548,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 440000,
+        "mid": 489000,
+        "high": 538000
+      }
+    },
+    {
+      "id": "time-adjustment-williamson",
+      "home": {
+        "county": "Williamson",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 480000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1.0186864872544548,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 458000,
+        "mid": 509000,
+        "high": 560000
+      }
+    },
+    {
+      "id": "time-decrease",
+      "home": {
+        "county": "Travis",
+        "category": "single_family",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 0.9,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 81000,
+        "mid": 90000,
+        "high": 99000
+      }
+    },
+    {
+      "id": "other-residential-no-type-flag",
+      "home": {
+        "county": "Travis",
+        "category": "other_residential",
+        "hood_cd": "TEST",
+        "market_value": 100000,
+        "improvement_value": 80000,
+        "value_year": 2026,
+        "year_built": 2000,
+        "land_acres": 0.2,
+        "living_area": 2000,
+        "partial_owner": null
+      },
+      "size_bounds": [
+        1000,
+        3000
+      ],
+      "factor": 1,
+      "expected": {
+        "range_pct": 10,
+        "range_flags": null,
+        "low": 90000,
+        "mid": 100000,
+        "high": 110000
+      }
+    }
+  ]
+}
