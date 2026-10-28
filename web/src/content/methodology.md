@@ -50,7 +50,7 @@ Election layers show official general-election results by voting precinct from t
 
 ## People are context only
 
-Census estimates and election results are for context only. They are not used in any score or ranking. These layers appear in People (context only), with no default selection. You may choose ranges or compare estimates, but they never sort or rank areas and never enter any combined score or home-value model. There is no combined score in this app.
+Census estimates and election results are for context only. They are not used in any score or ranking. These layers appear in People (context only), with no default selection. You may choose ranges or compare estimates, but they never sort or rank areas and never enter any combined score or home-value model.
 
 ## Refresh and private state
 
@@ -97,6 +97,15 @@ OpenStreetMap checks use the nearest motorway or trunk within 150 metres, primar
 The appraisal year built supplies the pre-1978 disclosure note or, for 1978–1989, the original-systems note. An unknown year produces neither. These records do not tell us whether systems have already been replaced. A small-lot fact requires a lot below the nearest-rank 10th percentile in the same county, appraisal neighbourhood and exact property category, with at least 20 recorded lot sizes; ties are not flagged and smaller groups have no fallback. Existing range flags retain their wording and do not imply a newly observed condition.
 
 Homes without a map point receive only non-location facts and an explicit location-unavailable message. Old stored FEMA/access records without the new geometry remain unavailable until refreshed; they are never replaced with fixture geometry. Fixtures carry Test data labels. Empty check lists describe only the available records and thresholds, not an absence of hazards.
+## Score vs price
+
+Score vs price compares the score under your current weights with the median appraisal-based centre per square foot of single-family homes in each block group. Each home uses the same centre formula as its card, including an accepted tract or county calibration factor, before division by living area. Take the ordinary median, then round to whole dollars using nearest-even rounding. At least ten single-family homes with a range, living area and block-group location are required. Unplaced homes are excluded; no location is inferred. Area prices stay unavailable while value ranges are unpublished. Sources and dates accompany the legend, list and popup; fixtures carry Test data labels.
+
+The four map colours describe higher/lower score and higher/lower price per sq ft. Both cut points are three-county medians over areas with both values; ties fall on the higher side. Missing values are grey. Changing weights recalculates scores and the splits. The price slider and other map filters do not change these reference medians. Score vs price and Colour by score are mutually exclusive, and turning either off restores the selected polygon layers.
+
+The Areas list shows scored areas at or below your max $ per sq ft, highest score first, then lower price per sq ft and Census identifier for ties. Its slider bounds come from all available area prices. Links zoom to the area. Prices are appraisal-based, not sale prices; a high score reflects only the factors and weights you chose.
+
+The batch table adds Area score under the same browser weights and Area $/sq ft percentile. The latter uses the area's median among all areas with sufficient measured homes, including areas without a score: 100 times the count below plus half the tied count, divided by all measured areas. These columns are sortable, with missing values kept unavailable; the default listing order is unchanged. The calculations read only the dedicated area score and area price files, never Census demographics or election results. Weights stay in the browser and shared view links; the list's price limit stays in the current panel.
 
 ## Checking many listings
 

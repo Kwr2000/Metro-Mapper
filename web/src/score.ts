@@ -4,7 +4,7 @@ import type { FeatureCollection } from "geojson";
 export const FACTOR_IDS = ["safety","schools","flood","daily","grocery_parks","transit"] as const;
 export const FACTOR_LABELS = ["Safety","Schools","Flood","Walk/bike to daily needs","Grocery and parks","Transit"];
 export const DEFAULT_WEIGHTS = [3,3,3,2,2,1];
-export type ScorePreferences = { weights:number[]; colour:boolean };
+export type ScorePreferences = { weights:number[]; colour:boolean; price?:boolean };
 export const DEFAULT_SCORE:ScorePreferences = {weights:DEFAULT_WEIGHTS,colour:false};
 export type ScoreFactor = { id:string;label:string;source:string;field:string[];raw_indices:number[];measure_labels:string[];units:string[];
   better:string;as_of:string;note:string;test_data:boolean };
@@ -16,7 +16,7 @@ export function cleanScorePreferences(value:unknown):ScorePreferences|null {
   if(!value || typeof value!=="object")return null;
   const v=value as Record<string,unknown>;
   if(!Array.isArray(v.weights) || v.weights.length!==6 || !v.weights.every(w=>typeof w==="number" && Number.isInteger(w) && w>=0 && w<=5))return null;
-  return {weights:[...v.weights],colour:v.colour===true};
+  return {weights:[...v.weights],colour:v.price===true?false:v.colour===true,...(v.price===true?{price:true}:{})};
 }
 export function validateScore(value:unknown):AreaScore {
   const d=value as AreaScore;

@@ -15,6 +15,7 @@ import scores as score_checks
 import batch as batch_checks
 import calibration as calibration_checks
 import checks as property_checks
+import value_price as value_price_checks
 
 WEB = Path(__file__).resolve().parents[1]
 DIST = WEB / "dist"
@@ -249,6 +250,7 @@ def main():
                     batch_checks.smoke(browser,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
                     calibration_checks.smoke(browser,width,height,URL,DIST,ARTIFACTS)
                     property_checks.smoke(browser,width,height,URL,DIST,ARTIFACTS)
+                    value_price_checks.smoke(browser,registry,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
                 browser.close()
         finally:
             server.terminate()

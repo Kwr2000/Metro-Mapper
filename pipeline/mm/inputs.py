@@ -11,6 +11,7 @@ from collections.abc import Iterable
 
 # score/model id -> every home/HPI feature property read by the model.
 SCORE_INPUTS: dict[str, list[str]] = {
+    "area_price": ["category", "market_value", "living_area", "block_group", "range_pct", "id", "factor", "levels", "published", "calibration", "county", "tract", "k"],
     "area_score": ["rate_part1", "overall_score", "flood_share_1pct", "walk_basket", "bike_basket",
                    "walk_grocery", "walk_park", "transit_per_hour",
                    # access notes: only to recognise "More than 60 minutes" (a measured value)
