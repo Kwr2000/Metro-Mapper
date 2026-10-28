@@ -1,3 +1,5 @@
+import { HomeCard } from "./homes/HomeCard";
+import { homeData, type Home, type HomeMeta } from "./homes/data";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { chooseColour } from "./colour";
 import { LayerPanel } from "./LayerPanel";
@@ -25,10 +27,12 @@ function initialView(registry: Registry, benchmarks: Benchmarks): ViewState {
   return registryView(readView(encodeView(raw))!, registry, benchmarks);
 }
 
-export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: { registry: Registry; active: boolean; benchmarks?: Benchmarks }) {
+export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, homeTarget }: { registry: Registry; active: boolean; benchmarks?: Benchmarks; homeTarget?:Home|null }) {
   const [view, setView] = useState<ViewState>(() => initialView(registry, benchmarks));
   const visible = useMemo(() => normalizeLayerVariants(registry, new Set(view.visible)), [registry, view.visible]);
   const [pane, setPane] = useState("Layers"), [expanded, setExpanded] = useState(true);
+  const [selectedHome,setSelectedHome]=useState<Home|null>(null),[homeMeta,setHomeMeta]=useState<HomeMeta|null>(null),[homeLoading,setHomeLoading]=useState(false);
+  const homeSequence=useRef(0);
   const [selected, setSelected] = useState<string | null>(null), [message, setMessage] = useState("");
   const [compareOpen, setCompareOpen] = useState(false);
   const [saved, setSaved] = useState<SavedArea[]>(readShortlist), [persistent, setPersistent] = useState(storageAvailable);
@@ -67,6 +71,26 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: {
     if (active) window.history.replaceState(null, "", encodeView({ ...view, visible: [...visible] }));
   }, [active, view, visible]);
 
+  useEffect(()=>{
+    if(!homeTarget || homeTarget.lon==null || homeTarget.lat==null)return;
+    update({camera:{center:[homeTarget.lon,homeTarget.lat],zoom:16}});
+    setSelected(homeTarget.block_group);setSelectedHome(null);setExpanded(false);
+  },[homeTarget,update]);
+  useEffect(()=>{if(!active){homeSequence.current++;setSelectedHome(null);setHomeLoading(false);}},[active]);
+  const selectHome=useCallback(async(point:[number,number])=>{
+    const ticket=++homeSequence.current;setHomeLoading(true);
+    try{
+      const [home,meta]=await Promise.all([homeData.atPoint(...point),homeData.meta()]);
+      if(ticket!==homeSequence.current)return true;
+      if(!home)return false;
+      setSelectedHome(home);setHomeMeta(meta);setSelected(null);setExpanded(false);return true;
+    }catch{if(ticket===homeSequence.current)setMessage("Home records could not load. Area information is still available.");return false;}
+    finally{if(ticket===homeSequence.current)setHomeLoading(false);}
+  },[]);
+  const showOnMap=(home:Home)=>{
+    if(home.lon==null || home.lat==null)return;
+    update({camera:{center:[home.lon,home.lat],zoom:16}});setSelected(home.block_group);setSelectedHome(null);setExpanded(false);
+  };
   const onCameraChange = useCallback((camera: Camera) => { update({ camera }); writeLocal("camera", camera); }, [update]);
   const changeVisible = (next: Set<string>) => { update({ visible: [...next] }); writeLocal("visible", [...next]); };
   const toggle = (id: string) => { const next = new Set(visible); if (next.has(id)) next.delete(id); else next.add(id); changeVisible(next); };
@@ -113,12 +137,16 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS }: {
         {(benchmarks.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
         {base?.data_url && errors[base.data_url] && <p className="map-error" role="alert">{errors[base.data_url]}</p>}
         <MapView colour={view.colour} benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
-          bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
-            setSelected(id); setMessage("");
+          onHomeClick={selectHome} highlightedArea={selected} bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
+            setSelectedHome(null); setSelected(id); setMessage("");
             // On a phone the tools sheet covers the lower map: fold it so the popup is visible.
             if (window.matchMedia?.("(max-width: 760px)").matches) setExpanded(false);
           }} />
-        {chosen && <section className="selected-area" aria-label="Selected area"><button className="close-selection" aria-label="Close selected area" onClick={() => setSelected(null)}>×</button>
+        {homeLoading && <p className="home-map-status" role="status">Loading home records…</p>}
+        {selectedHome && homeMeta && <aside className="map-home-panel" aria-label="Home panel"><HomeCard key={selectedHome.id} home={selectedHome} meta={homeMeta}
+          areaName={areas.find(a=>featureId(a)===selectedHome.block_group) ? areaName(areas.find(a=>featureId(a)===selectedHome.block_group)!) : undefined}
+          onShowMap={showOnMap} onClose={()=>{setSelectedHome(null);document.querySelector<HTMLElement>('[data-testid="map"]')?.focus();}} /></aside>}
+        {chosen && !selectedHome && <section className="selected-area" aria-label="Selected area"><button className="close-selection" aria-label="Close selected area" onClick={() => setSelected(null)}>×</button>
           <div className="selected-head"><strong>{areaName(chosen)}</strong>
             <span className="small muted" title={`Source: ${base?.attribution ?? ""}`}>{featureId(chosen)} · {base && asOfLabel(base)}</span></div>
           <div className="selected-actions"><button onClick={() => compare(featureId(chosen))}>Add to compare</button><button onClick={() => save(featureId(chosen))}>Save area</button></div>
