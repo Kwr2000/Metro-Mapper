@@ -41,8 +41,14 @@ def flood_records(hazards, retrieved):
         geom = union_all([g for g, _ in selected])
         if identity == "x02":geom = geom.difference(sfha)
         if not geom.is_empty:
-            geom = reproject(geom.simplify(2, preserve_topology=True), TO_WGS84)
-            geom = MultiPolygon(polygon_parts(geom))
+            # A county-sized union can turn invalid after simplification or reprojection (live run
+            # 40780375874, 2026-10-28): repair at each step and keep only polygonal parts.
+            simple = MultiPolygon(polygon_parts(make_valid(geom.simplify(2, preserve_topology=True))))
+            def coordinates(xy):
+                result = xy.copy()
+                result[:, 0], result[:, 1] = TO_WGS84(xy[:, 0], xy[:, 1])
+                return result
+            geom = MultiPolygon(polygon_parts(make_valid(transform(simple, coordinates))))
         else:geom = MultiPolygon([])
         doc = mapping(geom)
         def rounded(v):return [rounded(x) for x in v] if isinstance(v, (list, tuple)) else round(v, 6)
