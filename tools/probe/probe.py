@@ -762,6 +762,71 @@ def _():
     return " ;; ".join(out)
 
 
+@check("calibration_preview", "Preview of P3-02: tract calibration fitted on HMDA 2025, tested on HMDA 2024 (aggregates only)")
+def _():
+    import csv, gzip, io, json, statistics, math
+    from collections import defaultdict
+    def hmda(year):
+        status, _, body, _ = _req(f"https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?counties=48453,48491,48209&years={year}&actions_taken=1&loan_purposes=1", max_bytes=400_000_000)
+        t = defaultdict(list)
+        for r in csv.DictReader(io.StringIO(body.decode("latin-1"))):
+            if r["lien_status"] == "1" and r["derived_dwelling_category"] == "Single Family (1-4 Units):Site-Built" and r["total_units"] == "1" and r["property_value"].isdigit():
+                t[r["census_tract"]].append(int(r["property_value"]))
+        return t
+    sa = {}
+    with gzip.open("data/canonical/area_feature/fhfa_hpi.ndjson.gz", "rt") as g:
+        for line in g:
+            r = json.loads(line); p = r["properties"]; sa[(p["year"], p["quarter"])] = p["index_sa"]
+    latest = sa[max(sa)]
+    adj = {y: latest / statistics.mean(sa[(y, q)] for q in (1, 2, 3, 4)) for y in (2024, 2025)}
+    tract = {}
+    with gzip.open("data/canonical/area_feature/parcels.ndjson.gz", "rt") as g:
+        for line in g:
+            r = json.loads(line)
+            if r["dataset"] == "parcel": tract[r["feature_id"]] = r["properties"].get("tract")
+    levels = {"48453": 1.00, "48491": 0.96, "48209": 1.00}
+    F = latest / ((sa[(2025, 4)] + sa[(2026, 1)]) / 2)
+    ours = defaultdict(list)
+    for src in ("tcad", "wcad", "hays_cad"):
+        with gzip.open(f"data/canonical/area_feature/{src}.ndjson.gz", "rt") as g:
+            for line in g:
+                r = json.loads(line)
+                if r["dataset"] != "property": continue
+                p = r["properties"]
+                if p["category"] != "single_family" or not p.get("market_value") or not p.get("improvement_value"): continue
+                t = tract.get(r["feature_id"])
+                if t: ours[t].append(p["market_value"] / levels[r["feature_id"][:5]] * F)
+    med = {t: statistics.median(v) for t, v in ours.items() if len(v) >= 30}
+    h25, h24 = hmda(2025), hmda(2024)
+    out = []
+    # county factor from 2025: median of (HMDA/ours) over tracts with >= 30 loans
+    fit, county_k = {}, defaultdict(list)
+    for t, v in h25.items():
+        if t in med and len(v) >= 10:
+            k = statistics.median(v) * adj[2025] / med[t]
+            fit[t] = (k, len(v))
+            if len(v) >= 30: county_k[t[:5]].append(k)
+    ck = {c: statistics.median(v) for c, v in county_k.items()}
+    def evaluate(label, factor):
+        ratios = []
+        for t, v in h24.items():
+            if len(v) >= 30 and t in med:
+                ratios.append(med[t] * factor(t) / (statistics.median(v) * adj[2024]))
+        logs = [abs(math.log(r)) for r in ratios]
+        out.append(f"{label}: tracts {len(ratios)}, median ratio {statistics.median(ratios):.3f}, within ±20% {sum(.8<=r<=1.2 for r in ratios)/len(ratios):.1%}, within ±10% {sum(.9<=r<=1.1 for r in ratios)/len(ratios):.1%}, median |log| {statistics.median(logs):.3f}")
+    evaluate("2024 holdout, no calibration", lambda t: 1.0)
+    evaluate("county factor only", lambda t: ck.get(t[:5], 1.0))
+    for n0 in (15, 30, 60):
+        def f(t, n0=n0):
+            base = ck.get(t[:5], 1.0)
+            if t not in fit: return base
+            k, n = fit[t]; w = n / (n + n0)
+            return min(1.25, max(0.8, base * (k / base) ** w))
+        evaluate(f"tract, shrink n0={n0}", f)
+    out.append("county factors (HMDA/ours) " + ", ".join(f"{c} {k:.3f}" for c, k in sorted(ck.items())))
+    return " ;; ".join(out)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
