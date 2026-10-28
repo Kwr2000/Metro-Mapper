@@ -10,6 +10,7 @@ from collections import Counter, defaultdict
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
 import math
+from statistics import median
 
 import yaml
 
@@ -21,6 +22,17 @@ COUNTY_FIPS = {"Travis":"48453", "Williamson":"48491", "Hays":"48209"}
 FLAG_ORDER = ("new", "lot", "condo", "size", "type")
 NO_RANGE = ("no_value", "no_building", "partial")
 HOME_INPUTS = tuple(field for field in SCORE_INPUTS["value_range"] if field not in {"cbsa","year","quarter","index_sa"})
+# P2-08's explicit core-file scope excludes inputs.py. Keep its native-column
+# declaration here, shared with the adapter, and run the same demographic guard.
+HMDA_INPUTS = ("activity_year", "county_code", "census_tract", "action_taken", "loan_purpose",
+               "lien_status", "derived_dwelling_category", "total_units", "property_value")
+HMDA_THRESHOLDS = {"min_loans":30, "min_homes":30, "median_ratio_min":.90, "median_ratio_max":1.10,
+                   "ratio_min":.80, "ratio_max":1.20, "min_share_within_20":.75}
+HMDA_NOTE = ("Compared with what 2025 home buyers' lenders recorded as the property value, "
+    "this checks tract medians of single-family appraisal-based centres against HMDA purchase-loan "
+    "property values, adjusted to the same FHFA quarter. HMDA values are midpoints of $10,000 bands. "
+    "Sold homes are newer and larger on average than all homes, so this is an area-level check, "
+    "not a test of any one home. No sale prices or applicant characteristics are used.")
 FLAG_TEXT = {
     "new":"Built in the last two years or held as builder inventory",
     "lot":"Lot larger than one acre",
@@ -236,9 +248,108 @@ def prepare(homes, factor, cfg, *, test_data):
     return annotations,stats,summary
 
 
-def metadata(cfg, hpi, test_data, counties):
+def hmda_adjustment(records, year):
+    """Move the HMDA year's values to the latest SA quarter, using all four quarters."""
+    rows = {}
+    for record in records:
+        r = record.model_dump(mode="json") if hasattr(record,"model_dump") else record
+        if r["dataset"] != "hpi":continue
+        p = r["properties"]
+        if str(p["cbsa"]) != "12420" or type(p["year"]) is not int or type(p["quarter"]) is not int or not 1 <= p["quarter"] <= 4:
+            raise ValueError("Invalid Austin HPI period for HMDA adjustment.")
+        serial = p["year"]*4+p["quarter"]-1
+        if serial in rows or decimal(p["index_sa"]) <= 0:
+            raise ValueError("Duplicate or nonpositive HPI quarter for HMDA adjustment.")
+        rows[serial] = decimal(p["index_sa"])
+    quarters = [year*4+i for i in range(4)]
+    if not set(quarters) <= rows.keys():
+        raise ValueError("The HMDA year's four HPI quarters are unavailable.")
+    latest = max(rows)
+    if latest < quarters[-1]:
+        raise ValueError("The latest HPI quarter precedes the HMDA year.")
+    base = sum(rows[q] for q in quarters)/4
+    return {"factor":float(rows[latest]/base), "base_quarters":[quarter_label(q) for q in quarters],
+            "base_index":float(base), "latest_quarter":quarter_label(latest),
+            "latest_index":float(rows[latest]), "as_of":quarter_end(latest).isoformat(),
+            "source":"FHFA House Price Index (purchase-only)", "seasonally_adjusted":True}
+
+
+def hmda_check(tract_centres, records, hpi_records, *, test_data=False):
+    """Aggregate-only check; failure hides ranges and leaves property facts publishable.
+
+    Our tract median and the median ratio use the ordinary median (mean of the two
+    middle values for even groups). HMDA's stored percentiles follow its adapter's
+    nearest-rank contract. Decimal comparisons include every specified boundary.
+    """
+    assert_no_demographics("hmda_validation", (*HMDA_INPUTS, *SCORE_INPUTS["value_range"], "tract", "loans", "median_value"))
+    result = {"passed":False, "tracts":0, "median_ratio":None, "share_within_20":None,
+              "per_county":{county:{"tracts":0,"median_ratio":None,"share_within_20":None,
+                  "warning":"No eligible comparison is available."} for county in COUNTY_FIPS},
+              "hmda_year":2025, "hmda_loans":0, "hmda_tracts":0,
+              "source":"FFIEC Home Mortgage Disclosure Act data, 2025", "source_as_of":"2025-12-31",
+              "test_data":test_data, "adjustment":None, "thresholds":dict(HMDA_THRESHOLDS),
+              "note":HMDA_NOTE, "reasons":[]}
+    rows = {}
+    for record in records:
+        r = record.model_dump(mode="json") if hasattr(record,"model_dump") else record
+        if r["dataset"] != "hmda_tract":continue
+        p = r["properties"]
+        tract = p["tract"]
+        if (not isinstance(tract,str) or len(tract) != 11 or not tract.isascii() or not tract.isdigit()
+            or tract[:5] not in COUNTY_FIPS.values() or r["feature_id"] != tract or tract in rows
+            or p["county"] != next(c for c,fips in COUNTY_FIPS.items() if fips == tract[:5])
+            or p["year"] != 2025 or type(p["loans"]) is not int or p["loans"] < 1
+            or decimal(p["median_value"]) <= 0):
+            result["reasons"].append("HMDA tract aggregates are invalid or duplicated.")
+            return result
+        rows[tract] = p
+    result.update(hmda_loans=sum(p["loans"] for p in rows.values()),hmda_tracts=len(rows))
+    try:
+        adjustment = hmda_adjustment(hpi_records,2025)
+    except ValueError:
+        result["reasons"].append("The HMDA FHFA time adjustment is unavailable.")
+        return result
+    result["adjustment"] = adjustment
+    # Use the exact quotient for thresholds; serialize a float only in the report.
+    factor = decimal(adjustment["latest_index"])/decimal(adjustment["base_index"])
+    ratios = []; counties = defaultdict(list)
+    for tract,p in sorted(rows.items()):
+        ours = tract_centres.get(tract,[])
+        if p["loans"] < 30 or len(ours) < 30:continue
+        ratio = median([decimal(value) for value in ours])/(decimal(p["median_value"])*factor)
+        ratios.append(ratio);counties[p["county"]].append(ratio)
+
+    def figures(observations):
+        within = sum(Decimal("0.80") <= value <= Decimal("1.20") for value in observations)
+        return {"tracts":len(observations), "median_ratio":float(median(observations)) if observations else None,
+                "share_within_20":within/len(observations) if observations else None}
+
+    result.update(figures(ratios))
+    for county in COUNTY_FIPS:
+        observations = counties[county]
+        result["per_county"][county] = {**figures(observations), "warning":
+            "No tracts meet both minimum counts." if not observations else
+            "County median ratio is outside 0.90–1.10." if not Decimal(".90") <= median(observations) <= Decimal("1.10") else None}
+    if not ratios:
+        result["reasons"].append("No overlapping tracts have at least 30 loans and 30 single-family homes with a range.")
+    else:
+        if not Decimal(".90") <= median(ratios) <= Decimal("1.10"):
+            result["reasons"].append("Median tract ratio is outside 0.90–1.10.")
+        if sum(Decimal(".80") <= r <= Decimal("1.20") for r in ratios)*4 < len(ratios)*3:
+            result["reasons"].append("Fewer than 75% of tract ratios are within 0.80–1.20.")
+    result["passed"] = not result["reasons"]
+    check_properties("HMDA validation",result)
+    return result
+
+
+def ranges_published(configured, validation, test_data, hmda_live):
+    return configured is True and validation.get("passed") is True and not test_data and hmda_live is True
+
+
+def metadata(cfg, hpi, test_data, counties, *, validation=None, hmda_live=False):
     assert_no_demographics("value_range",SCORE_INPUTS["value_range"])
-    result = {"published":cfg["published"],"test_data":test_data,"label":"Appraisal-based value range",
+    validation = validation if validation is not None else {"passed":False,"reasons":["HMDA validation is unavailable."]}
+    result = {"published":ranges_published(cfg["published"],validation,test_data,hmda_live),"test_data":test_data,"label":"Appraisal-based value range",
         "method":METHOD,"study":cfg["study"],"study_year":2024,"levels":cfg["levels"],"within_10pct":cfg["within_10pct"],
         "hpi":{**hpi,"source":"FHFA House Price Index (purchase-only)","cbsa":"12420","seasonally_adjusted":True},
         "widths":{"base":cfg["base_width"],"wide":cfg["wide_width"]},"flags":FLAG_TEXT,
@@ -246,6 +357,6 @@ def metadata(cfg, hpi, test_data, counties):
         "rules":{k:cfg[k] for k in ("new_years","large_lot_acres","size_percentiles","size_min_group","hood_min_group")},
         "size_note":"Size percentiles use the same category, county and appraisal neighbourhood with at least 20 measured homes; otherwise the same category county-wide. Percentiles use nearest rank; homes on the percentile edges are not flagged.",
         "hood_stats_note":"Neighbourhood statistics require at least ten homes with living area and a range; single-family and condo groups are separate, with other categories grouped together. Prices per square foot use the rounded centre.",
-        "counties":counties}
+        "counties":counties, "validation":validation}
     check_properties("value range metadata",result)
     return result

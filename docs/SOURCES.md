@@ -231,11 +231,23 @@ published in 2027.
 
 ### HMDA (FFIEC/CFPB Data Browser)
 - `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?counties=48453,48491,48209&years=2025&actions_taken=1&loan_purposes=1`.
-  Public U.S. government loan-level data; credit "FFIEC Home Mortgage Disclosure Act data".
+  Public U.S. government loan-level data; credit "FFIEC Home Mortgage Disclosure Act data, 2025".
   Checked by probes 40608377396 and 40608476927 (2026-10-28): 30,323 originated 2025 purchase
   loans (2024: 32,641), 99 columns incl. `property_value` (midpoint of a $10,000 band; "Exempt" on
   616) and `census_tract`; 281 tracts with ≥ 30 loans. Only tract aggregates are stored; applicant
   demographic columns are never read. Used only for the value-range check (P2-08).
+- **P2-08 implementation:** decode only `activity_year`, `county_code`, `census_tract`,
+  `action_taken`, `loan_purpose`, `lien_status`, `derived_dwelling_category`, `total_units`
+  and `property_value`. Other data cells pass through a streaming byte scanner without
+  field buffering or decoding, including applicant/co-applicant characteristics and lender
+  identifiers. Select first-lien, site-built, one-unit purchases with digit-only property
+  values; count withheld/missing values and other exclusions. Only tract counts and
+  nearest-rank property-value percentiles, plus a count-only run summary, leave the adapter.
+  The CSV is neither retained nor recordable. Annual, one call per run, approved 6/day;
+  `publish: none` and gated until Claude's first live check. Republication/field verification
+  is from the cited probes; Codex made no publisher calls and used native synthetic fixtures.
+  The check compares tract medians at the same FHFA quarter; it neither validates an
+  individual home nor uses applicant or lender information. WCAD sales ratios remain out of scope.
 
 ## Parcel shapes
 

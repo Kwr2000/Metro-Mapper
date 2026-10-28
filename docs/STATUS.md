@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (P2-06 built; strict value-range publish blocked by Travis coverage)._
+_Last updated 2026-10-27 (P2-08 built; awaiting HMDA first live check)._
 
 ## Phase
 
@@ -209,9 +209,21 @@ specs ready. **Phase 2 — in progress** (P2-01 to P2-06 done; P2-07 and P2-08 b
   homes size limit 300 MB): appraisal-based value ranges for 692,591 homes, built but unpublished.
   FHFA live (run 40607922630), ungated. HMDA preview: 263 tracts, median ratio 0.956, 85% within ±20%.
 
+- **P2-08** (Codex): nine-column HMDA parser, tract aggregates/count-only audit, canary
+  tests, annual non-published manifest, approved 6/day budget and first-live-check gate.
+  Tract comparison and effective range switch are confined to `values.py`/`homes.py`;
+  config requests publication, but fixtures/failing checks keep it off. No web changes.
+  `make test` passes (1,255 pipeline + 51 web tests, schemas/types and build).
+  Full offline `mm publish` with real canonical files and the HMDA fixture: 140.6 s,
+  197.49 MB, zero source calls, canonical hashes unchanged. The three synthetic HMDA tracts
+  have no eligible real-home overlap: check not passed, ratio/share unavailable, ranges
+  hidden and facts published. Claude should first-live-check HMDA, compare with the
+  263-tract / 0.956 median ratio / 85.2% within ±20% preview, then ungate per REVIEW.
+
 ## Next
 
-1. Codex (in progress): P2-07 ("Check a home" page) and P2-08 (HMDA check).
+1. Claude: review P2-07 ("Check a home", PR #122) and P2-08 (HMDA check).
+   Keep ranges hidden until HMDA has passed its first live check.
 2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex now; it only needs
    Phase 1 data. P3-01 (batch listing check) waits for P2-07 and P2-08.
 3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.

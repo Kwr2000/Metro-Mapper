@@ -319,8 +319,10 @@ def publish():
     check_properties("home shard", FIELDS)
     cfg = values.settings()
     hpi_records, hpi_fixture = source_records("fhfa_hpi")
+    hpi_records = list(hpi_records)
     hpi = values.hpi_factor(hpi_records, "2026-01-01")
     range_counties, hood_rows = {}, []
+    tract_centres = defaultdict(list)
     parcels = {}; parcel_dates = defaultdict(set)
     parcel_records, parcel_fixture = source_records("parcels")
     for r in parcel_records:
@@ -367,7 +369,7 @@ def publish():
                 eligible += 1
                 misses += not matches(row, query)
             buckets[shard_id(p["street_key"])].append(row)
-            value_rows.append((row,value_home))
+            value_rows.append((row,value_home,p["tract"]))
             code = p["hood_cd"]
             desc = r["properties"].get("hood_desc")
             if code and desc:
@@ -391,17 +393,21 @@ def publish():
         if value_dates and value_dates != {"2026-01-01"}:
             raise ValueError("homes: value dates differ from the HPI base date")
         annotations, stats, range_summary = values.prepare(
-            [home for _,home in value_rows], hpi["factor"], cfg, test_data=fixture)
-        limits = values.size_bounds([home for _,home in value_rows],cfg)
-        for (row,home),(pct,codes) in zip(value_rows,annotations):
+            [home for _,home,_ in value_rows], hpi["factor"], cfg, test_data=fixture)
+        limits = values.size_bounds([home for _,home,_ in value_rows],cfg)
+        for (row,home,tract),(pct,codes) in zip(value_rows,annotations):
             row[-2:] = [pct,codes]
             values.validate_annotation(home,row[-2],row[-1],limits,cfg)
+            if tract and home["category"] == "single_family" and pct is not None:
+                tract_centres[tract].append(values.value_range(home["market_value"],fips,pct,hpi["factor"],cfg["levels"])["mid"])
         range_counties[county] = range_summary
         hood_rows.extend(stats)
         descriptions[county] = hoods
     del parcels, value_rows
     range_test_data = hpi_fixture or any(c["test_data"] for c in meta_counties.values())
-    range_meta = values.metadata(cfg,hpi,range_test_data,range_counties)
+    hmda_records, hmda_fixture = source_records("hmda")
+    validation = values.hmda_check(tract_centres,hmda_records,hpi_records,test_data=hmda_fixture)
+    range_meta = values.metadata(cfg,hpi,range_test_data,range_counties,validation=validation,hmda_live=not hmda_fixture)
     folder = paths().web_public/"data";folder.mkdir(parents=True, exist_ok=True)
     target = folder/"homes"
     with tempfile.TemporaryDirectory(prefix=".homes-", dir=folder) as temporary:
