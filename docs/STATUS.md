@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-28 (P3-02 built; awaiting calibration review)._
+_Last updated 2026-10-28 (P3-04 built; awaiting review)._
 
 ## Phase
 
@@ -11,6 +11,14 @@ _Last updated 2026-10-28 (P3-02 built; awaiting calibration review)._
 P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
 
 ## Done
+
+- **P3-04 score vs price** (Codex, 2026-10-28): offline, guarded single-family area-price
+  medians using the current calibrated centre; four-class map, weighted areas list with
+  max-price slider, sourced popup and two sortable batch columns. No source calls or new
+  sources/budgets. `make test`: 1,294 pipeline + 289 web tests and build pass; synthetic e2e
+  at 1440×900 and 390×844 checks modes, weights, filter, map links/popup and batch sorting.
+  Methodology and copy/import guards updated. Claude should check real-data quadrants and
+  list a few higher-score areas below $250/sq ft; this plausibility review is still pending.
 
 - **P3-02 neighbourhood calibration** (Codex, 2026-10-28): two-year aggregate-only HMDA,
   latest-year county/shrunk tract factors, strictly prior-year selection and uncalibrated
@@ -261,8 +269,8 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
 
 ## Next
 
-1. Owner: paste the P3-04 (value for money) and P3-05 ("things to check") prompts into two Codex
-   tasks; P3-02 (calibration) is merged and live.
+1. Claude: review P3-04 (score vs price); owner: paste the P3-05 ("things to check") prompt
+   into a Codex task. P3-02 (calibration) is merged and live.
 2. Claude: review each PR; HMDA live run (2 calls) after P3-02; `fema_nfhl` and `access` live
    re-runs after P3-05.
 3. Owner: try the live tools (Check a home, Check many listings with a real Redfin CSV, Good place

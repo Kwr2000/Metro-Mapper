@@ -6,7 +6,7 @@ import {valueRange,calibrationFactor,adjustmentText,type Calibration} from "../h
 import {percentilePosition,flagLabels,reasons} from "../homes/HomeCard";
 import {pause,type Listing} from "./parse";
 
-export type Metrics={low:number|null;mid:number|null;high:number|null;position:number|null;psf:number|null;percentile:number|null;n:number|null;rangePct:number|null;flags:string;areaWarning:boolean;testData:boolean};
+export type Metrics={low:number|null;mid:number|null;high:number|null;position:number|null;psf:number|null;percentile:number|null;n:number|null;rangePct:number|null;flags:string;areaWarning:boolean;testData:boolean;areaScore?:number|null;areaPercentile?:number|null};
 export type BatchRow={listing:Listing;normalized:Address;home:Home|null;candidates:Home[];reason:string|null;metrics:Metrics|null};
 export type BatchResult={rows:BatchRow[];meta:HomeMeta;hoods:HoodData|null;hoodError:boolean;calibration?:Calibration|null};
 export const published=(meta:HomeMeta)=>meta.value_range?.published===true;
@@ -80,8 +80,8 @@ export async function processListings(listings:Listing[],options:{loader?:Loader
   return {rows,meta,hoods,hoodError:hoods===null,calibration};
 }
 
-export type SortKey="default"|"beds"|"baths"|"sqft"|"living_area"|"year_built"|"price"|"psf"|"low"|"high"|"position"|"rangePct"|"percentile"|"n"|"days"|"hoa";
-export const SORT_LABELS:Record<SortKey,string>={default:"Default order",beds:"Beds",baths:"Baths",sqft:"Listing sq ft",living_area:"Appraisal sq ft",year_built:"Year built",price:"Asking price",psf:"Asking $ per sq ft",low:"Range low",high:"Range high",position:"Position",rangePct:"Range width",percentile:"Neighbourhood percentile",n:"Neighbourhood homes",days:"Days on market",hoa:"HOA per month"};
+export type SortKey="default"|"beds"|"baths"|"sqft"|"living_area"|"year_built"|"price"|"psf"|"low"|"high"|"position"|"rangePct"|"percentile"|"n"|"days"|"hoa"|"areaScore"|"areaPercentile";
+export const SORT_LABELS:Record<SortKey,string>={default:"Default order",beds:"Beds",baths:"Baths",sqft:"Listing sq ft",living_area:"Appraisal sq ft",year_built:"Year built",price:"Asking price",psf:"Asking $ per sq ft",low:"Range low",high:"Range high",position:"Position",rangePct:"Range width",percentile:"Neighbourhood percentile",n:"Neighbourhood homes",days:"Days on market",hoa:"HOA per month",areaScore:"Area score",areaPercentile:"Area $/sq ft percentile"};
 export function numericValue(row:BatchRow,key:SortKey):number|null {
   if(["beds","baths","sqft","price","days","hoa"].includes(key))return row.listing[key as "beds"];
   if(key==="living_area"||key==="year_built")return row.home?.[key]??null;

@@ -1,6 +1,8 @@
 import { HomeCard } from "./homes/HomeCard";
 import { homeData, type Home, type HomeMeta } from "./homes/data";
-import { DEFAULT_SCORE, validateScore, type AreaScore } from "./score";
+import { DEFAULT_SCORE } from "./score";
+import {PriceLegend} from "./AreaPricePanel";
+import {useAreaData} from "./use-area-data";
 import { ScoreLegend, ScorePanel } from "./ScorePanel";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { chooseColour } from "./colour";
@@ -11,7 +13,7 @@ import { CompareTable, CompareTray } from "./ComparePanel";
 import { ShortlistPanel } from "./ShortlistPanel";
 import { addCompare, areaLayer, areaName, blockGroupLayers, featuresFor, featureId, filterLayers, interiorPoint, matchAreas } from "./areas";
 import { normalizeLayerVariants, switchLayerVariant } from "./layer-variants";
-import { asOfLabel, initialVisible, showsTestData, loadJSON, type Registry } from "./registry";
+import { asOfLabel, initialVisible, showsTestData, type Registry } from "./registry";
 import { readLocal, readShortlist, readScorePreferences, writeScorePreferences, storageAvailable, writeLocal, type SavedArea } from "./store";
 import { encodeView, readView, registryView, type Camera, type ViewState } from "./view-state";
 import { EMPTY_BENCHMARKS, type Benchmarks } from "./benchmarks";
@@ -33,9 +35,9 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, hom
   const [view, setView] = useState<ViewState>(() => initialSnapshot&&!readView(window.location.hash)?registryView(initialSnapshot,registry,benchmarks):initialView(registry, benchmarks));
   const latestView=useRef(view);latestView.current=view;
   useEffect(()=>()=>{onSnapshot?.(latestView.current);},[]);
-  const [scoreData,setScoreData]=useState<AreaScore|null>(null),[scoreError,setScoreError]=useState("");
+  const {score:scoreData,price:priceData,scoreError,priceError}=useAreaData();
   const scorePreferences=view.score??DEFAULT_SCORE;
-  useEffect(()=>{let cancelled=false;loadJSON<unknown>("data/area_score.json").then(validateScore).then(data=>{if(!cancelled)setScoreData(data);},()=>{if(!cancelled)setScoreError("Score data is unavailable. Reload to retry.");});return()=>{cancelled=true;};},[]);
+  useEffect(()=>{writeScorePreferences(scorePreferences);},[scorePreferences]);
   const visible = useMemo(() => normalizeLayerVariants(registry, new Set(view.visible)), [registry, view.visible]);
   const [pane, setPane] = useState("Layers"), [expanded, setExpanded] = useState(true);
   const [selectedHome,setSelectedHome]=useState<Home|null>(null),[homeMeta,setHomeMeta]=useState<HomeMeta|null>(null),[homeLoading,setHomeLoading]=useState(false);
@@ -137,19 +139,21 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, hom
           </div>
           <div hidden={pane !== "Shortlist"}><ShortlistPanel saved={saved} persistent={persistent} onChange={(next) => { setSaved(next); setPersistent(writeLocal("shortlist", next)); }}
             onFly={fly} onCompare={() => { update({ compare: saved.slice(0, 4).map((s) => s.id) }); setPane("Compare"); setExpanded(true); }} /></div>
-          <div hidden={pane !== "Score"}><ScorePanel data={scoreData} error={scoreError} preferences={scorePreferences} onChange={score=>{update({score});writeScorePreferences(score);}}/></div>
+          <div hidden={pane !== "Score"}><ScorePanel data={scoreData} error={scoreError} prices={priceData} priceError={priceError}
+            names={Object.fromEntries(areas.map(a=>[featureId(a),areaName(a)]))} links={Object.fromEntries(areas.map(a=>[featureId(a),encodeView({...view,camera:interiorPoint(a)?{center:interiorPoint(a)!,zoom:12}:view.camera})]))} onFly={fly} preferences={scorePreferences} onChange={score=>update({score})}/></div>
           {message && !chosen && <p className="action-message" role="status">{message}</p>}
         </div>
       </aside>
       <div className="map-wrap">
-        {(benchmarks.test_data || scorePreferences.colour && scoreData?.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
+        {(benchmarks.test_data || (scorePreferences.colour||scorePreferences.price) && scoreData?.test_data || scorePreferences.price && priceData?.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
         {base?.data_url && errors[base.data_url] && <p className="map-error" role="alert">{errors[base.data_url]}</p>}
-        <MapView areaScore={scoreData} scorePreferences={scorePreferences} colour={view.colour} benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
+        <MapView areaPrice={priceData} areaScore={scoreData} scorePreferences={scorePreferences} colour={view.colour} benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
           onHomeClick={selectHome} highlightedArea={selected} bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
             setSelectedHome(null); setSelected(id); setMessage("");
             // On a phone the tools sheet covers the lower map: fold it so the popup is visible.
             if (window.matchMedia?.("(max-width: 760px)").matches) setExpanded(false);
           }} />
+        {scorePreferences.price&&<details className="map-score-legend"><summary>Score vs price · your weights</summary><PriceLegend scores={scoreData} prices={priceData} weights={scorePreferences.weights}/>{(scoreError||priceError)&&<p>{scoreError||priceError}</p>}</details>}
         {scorePreferences.colour && <details className="map-score-legend"><summary>Good place to live · your weights</summary><ScoreLegend/>{scoreData?.test_data && <span className="badge">Test data</span>}{scoreError && <p>{scoreError}</p>}</details>}
         {homeLoading && <p className="home-map-status" role="status">Loading home records…</p>}
         {selectedHome && homeMeta && <aside className="map-home-panel" aria-label="Home panel"><HomeCard key={selectedHome.id} home={selectedHome} meta={homeMeta}

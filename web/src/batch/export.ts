@@ -8,15 +8,15 @@ function cell(value:unknown):string {
   if(typeof value==="string" && /^[\s]*[=+@-]/.test(text))text="'"+text;
   return '"'+text.replaceAll('"','""')+'"';
 }
-export function exportTable(rows:BatchRow[],meta:HomeMeta):string {
+export function exportTable(rows:BatchRow[],meta:HomeMeta,areaSources?:{score:string;price:string}):string {
   const show=published(meta);
   const header=["Address","County","Category","Listing beds","Listing baths","Listing sq ft","Appraisal living sq ft","Appraisal year built","Asking price","Asking per appraisal sq ft",
     ...(show?["Range low","Range centre","Range high","Position percent of centre","Range width percent","Range flags"]:[]),
-    "Approx neighbourhood percentile","Neighbourhood homes","Days on market","HOA per month","Home id","Listing URL","CAD source","Value as of","CAD export date","FHFA as of","Study year","Test data"];
+    "Approx neighbourhood percentile","Neighbourhood homes","Days on market","HOA per month","Area score (your weights)","Area $/sq ft percentile","Area score sources","Area price as of","Home id","Listing URL","CAD source","Value as of","CAD export date","FHFA as of","Study year","Test data"];
   const lines=[header.map(cell).join(",")];
   for(const row of rows){if(!row.home||!row.metrics)continue;const h=row.home,m=row.metrics,l=row.listing,c=meta.counties[h.county];
     const values=[h.situs,h.county,categoryLabel(h.category),l.beds,l.baths,l.sqft,h.living_area,h.year_built,l.price,m.psf,
-      ...(show?[m.low,m.mid,m.high,m.position,m.rangePct,m.flags]:[]),m.percentile,m.n,l.days,l.hoa,h.id,l.url,meta.sources[c?.source]??c?.source,c?.value_as_of?.join("; "),h.certified,
+      ...(show?[m.low,m.mid,m.high,m.position,m.rangePct,m.flags]:[]),m.percentile,m.n,l.days,l.hoa,m.areaScore,m.areaPercentile,areaSources?.score,areaSources?.price,h.id,l.url,meta.sources[c?.source]??c?.source,c?.value_as_of?.join("; "),h.certified,
       meta.value_range?.hpi.as_of,meta.value_range?.study_year,m.testData?"Test data":""];
     lines.push(values.map(cell).join(","));
   }

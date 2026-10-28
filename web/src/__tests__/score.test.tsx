@@ -62,7 +62,7 @@ it("score modules import no People-group, ACS, election, layer-data or benchmark
  for(const file of ["score.ts","ScorePanel.tsx"]){
   const text=readFileSync(resolve(__dirname,"..",file),"utf8");
   const imports=[...text.matchAll(/from\s+["']([^"']+)["']/g)].map(m=>m[1]);
-  expect(imports.every(name=>["geojson","./score","./popup"].includes(name))).toBe(true);
+  expect(imports.every(name=>["react","geojson","./score","./popup","./AreaPricePanel","./area-price"].includes(name))).toBe(true);
   expect(text).not.toMatch(/\.demographic\b|\.group\b|\.layers\b|\.benchmarks\b|\.filters\b|\.compare\b/);
  }
 });

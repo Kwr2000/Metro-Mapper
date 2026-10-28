@@ -11,6 +11,7 @@ import { areaLayer, contextGroups, featureId, PEOPLE, PEOPLE_NOTE } from "./area
 import type { FeatureCollection } from "geojson";
 import type { PolygonFeature } from "./map-polygons";
 import { DEFAULT_SCORE, scoreFeatures, type AreaScore, type ScorePreferences } from "./score";
+import {comparePrices,priceFeatures,type AreaPrice} from "./area-price";
 import { scorePopup } from "./ScorePanel";
 
 // If the basemap can't load, keep the data layers usable on a plain background.
@@ -35,6 +36,7 @@ export function featureHtml(meta: CompiledLayer, properties: Record<string, unkn
 
 export interface MapViewProps {
   areaScore?:AreaScore|null;
+  areaPrice?:AreaPrice|null;
   scorePreferences?:ScorePreferences;
   registry: Registry;
   colour?: Record<string, string>;
@@ -77,7 +79,7 @@ export function MapView(props: MapViewProps) {
       const seen = new Set<string>(), point = [inspectPoint.lng, inspectPoint.lat];
       let html = "", pending = 0, unavailable = 0;
       const base=areaLayer(registry),baseIndex=base && indexes.get(sourceFor(base)),area=baseIndex?.query(point).features[0];
-      if(area)html+=scorePopup(latest.current.areaScore,featureId(area),(latest.current.scorePreferences??DEFAULT_SCORE).weights);
+      if(area)html+=scorePopup(latest.current.areaScore,featureId(area),(latest.current.scorePreferences??DEFAULT_SCORE).weights,latest.current.areaPrice);
       if (clicked && clicked.meta.geometry !== "polygon" && layerIsVisible(clicked.meta)) html += featureHtml(clicked.meta, clicked.properties, clicked.meta.popup, latest.current.benchmarks, latest.current.colour?.[clicked.meta.id]);
       for (const [group, layers] of contextGroups(registry, polygonMetas.filter(layerIsVisible))) {
         let section = "";
@@ -119,8 +121,8 @@ export function MapView(props: MapViewProps) {
       const { areas, matches } = latest.current;
       const preferences=latest.current.scorePreferences??DEFAULT_SCORE;
       if(map.getSource("area-score")){
-        (map.getSource("area-score") as GeoJSONSource).setData(scoreFeatures(areas,latest.current.areaScore,preferences.weights));
-        map.setLayoutProperty("area-score-fill","visibility",preferences.colour?"visible":"none");
+        (map.getSource("area-score") as GeoJSONSource).setData(preferences.price?priceFeatures(areas,comparePrices(latest.current.areaScore,latest.current.areaPrice,preferences.weights)):scoreFeatures(areas,latest.current.areaScore,preferences.weights));
+        map.setLayoutProperty("area-score-fill","visibility",(preferences.colour||preferences.price)?"visible":"none");
       }
       if (map.getSource("area-filter")) {
         (map.getSource("area-filter") as GeoJSONSource).setData({ type: "FeatureCollection", features: areas.map((f) => ({ ...f, properties: { matches: matches?.has(featureId(f)) ?? true } })) });
@@ -129,7 +131,7 @@ export function MapView(props: MapViewProps) {
       for (const meta of drawable(registry)) {
         const property = meta.style?.type === "circle" ? "circle-color" : "fill-color";
         const id = mapLayerId(meta.id), benchmark = selectedBenchmark(meta, latest.current.colour ?? {}, latest.current.benchmarks);
-        if(map.getLayer(id))map.setLayoutProperty(id,"visibility",latest.current.visible.has(meta.id) && !(preferences.colour && meta.style?.type==="fill")?"visible":"none");
+        if(map.getLayer(id))map.setLayoutProperty(id,"visibility",latest.current.visible.has(meta.id) && !((preferences.colour||preferences.price) && meta.style?.type==="fill")?"visible":"none");
         if (meta.compare && map.getLayer(id)) map.setPaintProperty(id, property,
           benchmark ? comparisonPaint(meta, benchmark) : meta.style!.paint[property]);
       }
@@ -216,7 +218,7 @@ export function MapView(props: MapViewProps) {
     for (const layer of buildMapLayers(registry, visible).layers) if (map.getLayer(layer.id))
       map.setLayoutProperty(layer.id, "visibility", visible.has(layer.metadata.mmLayer) ? "visible" : "none");
     refresh.current?.();
-  }, [visible, registry, props.data, props.areas, props.matches, props.benchmarks, props.colour, props.highlightedArea,props.areaScore,props.scorePreferences]);
+  }, [visible, registry, props.data, props.areas, props.matches, props.benchmarks, props.colour, props.highlightedArea,props.areaScore,props.areaPrice,props.scorePreferences]);
 
   useEffect(() => {
     const map = mapRef.current, camera = props.camera;

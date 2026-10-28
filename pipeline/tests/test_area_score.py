@@ -123,6 +123,7 @@ def test_fixture_only_publish_never_loads_demographic_or_election_source(repo,mo
 @pytest.mark.slow
 def test_mm_publish_calls_area_publisher_offline(repo):
     assert cli._cmd_publish(argparse.Namespace())==0
+    assert json.loads((paths().web_public/"data/area_price.json").read_text())["test_data"]
     document=json.loads((paths().web_public/"data/area_score.json").read_text())
     assert document["v"]==1 and document["test_data"] and len(document["rows"])==8
 

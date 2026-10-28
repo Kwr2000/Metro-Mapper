@@ -1,3 +1,6 @@
+import {areaScore} from "../score";
+import {comparePrices} from "../area-price";
+import {useAreaData,useScoreWeights} from "../use-area-data";
 import {memo,useEffect,useMemo,useRef,useState} from "react";
 import type {FeatureCollection} from "geojson";
 import {areaLayer} from "../areas";
@@ -27,22 +30,25 @@ export const columns:Column[]=[
   {label:"Neighbourhood homes (n)",sort:"n",render:r=>amount(r.metrics?.n)},
   {label:"Days on market",sort:"days",render:r=>amount(r.listing.days)},
   {label:"HOA per month",sort:"hoa",render:r=>money(r.listing.hoa)},
+  {label:"Area score",sort:"areaScore",render:r=>amount(r.metrics?.areaScore)},
+  {label:"Area $/sq ft percentile",sort:"areaPercentile",render:r=>r.metrics?.areaPercentile==null?"Not available":amount(r.metrics.areaPercentile)+" / 100"},
 ];
 function readFile(file:File):Promise<string>{
   return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result??""));reader.onerror=()=>reject(new Error("The file could not be read."));reader.readAsText(file);});
 }
-function SourceDetails({row,meta}:{row:BatchRow;meta:HomeMeta}){
+function SourceDetails({row,meta,areaSources}:{row:BatchRow;meta:HomeMeta;areaSources:{score:string;price:string}}){
   const h=row.home!,c=meta.counties[h.county],range=meta.value_range;
   return <details className="batch-source"><summary>Sources and file details{row.metrics?.testData?" · Test data":""}</summary>
     <p>{meta.sources[c?.source]??c?.source} · appraisal as of {dateLabel(c?.value_as_of?.[0])} · export {dateLabel(h.certified)}.</p>
+    <p>Area score (your weights): {areaSources.score||"Not available"}. Area price percentile: {areaSources.price||"Not available"}.</p>
     <p>Asking price, beds/baths, listing area, days and HOA are supplied by your file.</p>
     <p>Listing year: {row.listing.year==null?"Not available":String(row.listing.year)} · Lot: {amount(row.listing.lot)} (file units) · Status: {row.listing.status||"Not available"} · Property type: {row.listing.propertyType||"Not available"}.</p>
     {range&&<p>Neighbourhood appraisal-based $ per sq ft uses {range.study} ({range.study_year}) and FHFA as of {dateLabel(range.hpi.as_of)}. Approximate percentile position interpolates between published quantiles and is capped at the 10th and 90th percentiles.</p>}
     {range?.calibration?.used&&<p>Neighbourhood adjustments use FFIEC Home Mortgage Disclosure Act data: {range.calibration.fit_year} home-purchase loans for fitting, checked against {range.calibration.test_year}. Tracts without their own factor use the county factor.</p>}
   </details>;
 }
-const ResultRow=memo(function ResultRow({row,meta,showRange}:{row:BatchRow;meta:HomeMeta;showRange:boolean}){
-  return <tr data-listing-key={row.listing.key}>{columns.filter(c=>showRange||!c.range).map(c=><td key={c.label}><span className="batch-mobile-label">{c.label}</span><div>{c.render(row)}</div></td>)}<td><SourceDetails row={row} meta={meta}/></td></tr>;
+const ResultRow=memo(function ResultRow({row,meta,showRange,areaSources}:{row:BatchRow;meta:HomeMeta;showRange:boolean;areaSources:{score:string;price:string}}){
+  return <tr data-listing-key={row.listing.key}>{columns.filter(c=>showRange||!c.range).map(c=><td key={c.label}><span className="batch-mobile-label">{c.label}</span><div>{c.render(row)}</div></td>)}<td><SourceDetails row={row} meta={meta} areaSources={areaSources}/></td></tr>;
 });
 export function BatchPage({registry}:{registry:Registry|null}){
   const [paste,setPaste]=useState(""),[result,setResult]=useState<BatchResult|null>(null),[ignored,setIgnored]=useState<string[]>([]);
@@ -54,8 +60,15 @@ export function BatchPage({registry}:{registry:Registry|null}){
   const bounds=useRef<Promise<FeatureCollection|null>>();
   useEffect(()=>()=>{ticket.current++;controller.current?.abort();},[]);
   useEffect(()=>{if(result&&focusedTicket.current!==ticket.current){heading.current?.focus();focusedTicket.current=ticket.current;}},[result]);
+  const areaData=useAreaData(),weights=useScoreWeights();
+  const areaComparison=useMemo(()=>comparePrices(areaData.score,areaData.price,weights),[areaData.score,areaData.price,weights]);
+  const areaSources=useMemo(()=>({score:areaData.score?.factors.map(f=>`${f.label}: ${f.source}, ${f.as_of}`).join("; ")??"",price:areaData.price?`${areaData.price.as_of}. ${areaData.price.method}`:""}),[areaData.score,areaData.price]);
+  const enriched=useMemo(()=>(result?.rows??[]).map(row=>{
+    if(!row.home||!row.metrics)return row;const id=row.home.block_group??"",score=areaScore(areaData.score?.rows[id],weights).value,percentile=areaComparison.byId.get(id)?.percentile??null;
+    return {...row,metrics:{...row.metrics,areaScore:score,areaPercentile:percentile,testData:row.metrics.testData||score!=null&&!!areaData.score?.test_data||percentile!=null&&!!areaData.price?.test_data}};
+  }),[result,areaData.score,areaData.price,weights,areaComparison]);
   const showRange=!!result&&published(result.meta);
-  const matched=useMemo(()=>tableRows(result?.rows??[],filters,sort.key,sort.descending,showRange),[result,filters,sort,showRange]);
+  const matched=useMemo(()=>tableRows(enriched,filters,sort.key,sort.descending,showRange),[enriched,filters,sort,showRange]);
   const unresolved=result?.rows.filter(row=>!row.home)??[];
   useEffect(()=>{
     setLimit(25);let timer:ReturnType<typeof setTimeout>;let count=25;
@@ -107,6 +120,8 @@ export function BatchPage({registry}:{registry:Registry|null}){
       <h2 ref={heading} tabIndex={-1}>Listing results</h2>
       {(result.meta.test_data || result.hoods?.test_data || showRange&&result.meta.value_range?.test_data)&&<p className="badge">Test data</p>}
       <p className="batch-sort-note">{showRange?"Listings priced furthest below their appraisal-based range come first. A low price often has a reason the appraisal can't see — condition, layout, noise. Check the home's card before deciding.":"The value range is being validated and will appear here. Listings are ordered by their neighbourhood appraisal-based $ per sq ft percentile."}</p>
+      <p className="small">Area scores use your browser weights. Area $/sq ft percentile compares the area median with all areas having sufficient measured homes; it describes higher/lower price per sq ft. Areas without these values stay Not available.</p>
+      {(areaData.scoreError||areaData.priceError)&&<p role="status">{areaData.scoreError||areaData.priceError}</p>}
       <p className="small">Listing figures come from your import. Sources and dates for the public records are available in every row. Percentile positions are approximate and bounded at the 10th and 90th percentiles.</p>
       {result.hoodError&&<p role="status">Neighbourhood comparisons could not load; those fields are Not available.</p>}
       <div className="batch-controls">
@@ -117,9 +132,9 @@ export function BatchPage({registry}:{registry:Registry|null}){
         <button disabled={sort.key==="default"} onClick={()=>setSort({...sort,descending:!sort.descending})}>{sort.descending?"Descending":"Ascending"}</button>
       </div>
       <p role="status">{matched.length} matched listings shown · {unresolved.length} need attention</p>
-      <div className="batch-actions"><label>List name<input value={name} maxLength={80} onChange={e=>setName(e.target.value)}/></label><button onClick={save} disabled={!name.trim()}>Save list</button><button disabled={!matched.length} onClick={()=>downloadCSV(exportTable(matched,result.meta))}>Export table CSV</button><span className="small">Export uses the filtered table in its current order. Clear removes this import and all saved listing lists.</span></div>
+      <div className="batch-actions"><label>List name<input value={name} maxLength={80} onChange={e=>setName(e.target.value)}/></label><button onClick={save} disabled={!name.trim()}>Save list</button><button disabled={!matched.length} onClick={()=>downloadCSV(exportTable(matched,result.meta,areaSources))}>Export table CSV</button><span className="small">Export uses the filtered table in its current order. Clear removes this import and all saved listing lists.</span></div>
       <div className="batch-table-wrap"><table className="batch-table"><caption>Matched listings</caption><thead><tr>{columns.filter(c=>showRange||!c.range).map(c=><th key={c.label} scope="col" aria-sort={c.sort&&sort.key===c.sort?(sort.descending?"descending":"ascending"):undefined}>{c.sort?<button onClick={()=>sortBy(c.sort!)} aria-label={`Sort by ${c.label}`}>{c.label}</button>:c.label}</th>)}<th scope="col">Sources / file details</th></tr></thead>
-        <tbody>{matched.slice(0,limit).map(row=><ResultRow key={row.listing.key} row={row} meta={result.meta} showRange={showRange}/>)}</tbody></table></div>
+        <tbody>{matched.slice(0,limit).map(row=><ResultRow key={row.listing.key} row={row} meta={result.meta} showRange={showRange} areaSources={areaSources}/>)}</tbody></table></div>
       {limit<matched.length&&<p role="status">Rendering more listings…</p>}
       {!!unresolved.length&&<section className="batch-unmatched" aria-label="Listings needing attention"><h2>Listings needing attention</h2><ul>{unresolved.map(row=><li key={row.listing.key}><h3>{row.listing.query||"Address not available"}</h3><p>{row.reason}</p><p className="small">Normalized search: {[row.normalized.number,row.normalized.street_key,row.normalized.unit?`Unit ${row.normalized.unit}`:"",row.normalized.zip].filter(Boolean).join(" ")||"No street address"}</p>
         {!!row.candidates.length&&<><label>Choose appraisal record<select aria-label={`Choose appraisal record for listing ${Number(row.listing.key)+1}`} value={choices[row.listing.key]??""} onChange={e=>setChoices({...choices,[row.listing.key]:e.target.value})}><option value="">Choose a record</option>{row.candidates.map(home=><option key={home.id} value={home.id}>{home.situs} · {home.county} · {categoryLabel(home.category)} · {amount(home.living_area)} sq ft</option>)}</select></label><button disabled={!choices[row.listing.key]} onClick={()=>setResult(old=>old?{...old,rows:old.rows.map(r=>r.listing.key===row.listing.key?chooseMatch(r,choices[row.listing.key],old.meta,old.hoods,old.calibration):r)}:old)}>Use this record</button></>}

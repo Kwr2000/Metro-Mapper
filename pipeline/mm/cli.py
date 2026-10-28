@@ -136,6 +136,8 @@ def _cmd_publish(a: argparse.Namespace) -> int:
             for e in run.errors:
                 print("  error:", e.splitlines()[0])
     homes.publish()
+    from . import area_price
+    area_price.publish()
     from . import area_score
     area_score.publish()
     _cmd_compile(a)

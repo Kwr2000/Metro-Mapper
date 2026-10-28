@@ -304,3 +304,12 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
  .home-facts > div { gap: 12px; }
  .map-home-panel { right: 0; left: 0; bottom: 0; top: auto; width: 100%; max-height: 72dvh; border-radius: 16px 16px 0 0; }
 }
+
+.score-panel [role="tablist"] { display:flex; gap:8px; margin:12px 0; }
+.score-panel [role="tab"][aria-selected="true"] { background:var(--brand); color:#fff; }
+.areas-price-list label { display:block; margin:14px 0; }.areas-price-list input { display:block; width:100%; }
+.areas-price-list output { font-weight:600; margin-left:8px; }
+.areas-price-list table { width:100%; border-collapse:collapse; font-size:.8rem; table-layout:fixed; }
+.areas-price-list th,.areas-price-list td { padding:8px 4px; border-bottom:1px solid var(--line); overflow-wrap:anywhere; text-align:left; }
+.areas-price-list th:first-child { width:40%; }.areas-price-list small { display:block; font-weight:normal; }
+.areas-price-list caption { text-align:left; padding:10px 0; }

@@ -50,7 +50,7 @@ Election layers show official general-election results by voting precinct from t
 
 ## People are context only
 
-Census estimates and election results are for context only. They are not used in any score or ranking. These layers appear in People (context only), with no default selection. You may choose ranges or compare estimates, but they never sort or rank areas and never enter any combined score or home-value model. There is no combined score in this app.
+Census estimates and election results are for context only. They are not used in any score or ranking. These layers appear in People (context only), with no default selection. You may choose ranges or compare estimates, but they never sort or rank areas and never enter any combined score or home-value model.
 
 ## Refresh and private state
 
@@ -85,6 +85,16 @@ Each measured field becomes a mid-rank percentile: 100 times the number of block
 The default weights are safety 3, schools 3, flood 3, walk/bike 2, grocery/parks 2 and transit 1. Change any slider from 0 to 5. The score is the sum of each present percentile times its weight, divided by the weights present. At least half of your total chosen weight must have data; exactly half is sufficient. With no positive weight or too little data, the score is Not available. Missing positively weighted factors make the result partial; a zero-weight factor cannot reduce coverage. No missing value is substituted with zero.
 
 Colour by score uses five classes based on the displayed whole score: 0–19, 20–39, 40–59, 60–79 and 80–100. Higher scores are greener under your weights. Partial results use a lighter fill and missing results are grey. Other polygon fills are hidden in this mode so their colours cannot be confused with the score; point markers and filters still work. Turn the mode off to restore the selected layers. Weights remain in this browser, with a session fallback when storage is blocked, and are included as six numbers in shared view links. They are never sent to a data source or written to the published score file.
+
+## Score vs price
+
+Score vs price compares the score under your current weights with the median appraisal-based centre per square foot of single-family homes in each block group. Each home uses the same centre formula as its card, including an accepted tract or county calibration factor, before division by living area. Take the ordinary median, then round to whole dollars using nearest-even rounding. At least ten single-family homes with a range, living area and block-group location are required. Unplaced homes are excluded; no location is inferred. Area prices stay unavailable while value ranges are unpublished. Sources and dates accompany the legend, list and popup; fixtures carry Test data labels.
+
+The four map colours describe higher/lower score and higher/lower price per sq ft. Both cut points are three-county medians over areas with both values; ties fall on the higher side. Missing values are grey. Changing weights recalculates scores and the splits. The price slider and other map filters do not change these reference medians. Score vs price and Colour by score are mutually exclusive, and turning either off restores the selected polygon layers.
+
+The Areas list shows scored areas at or below your max $ per sq ft, highest score first, then lower price per sq ft and Census identifier for ties. Its slider bounds come from all available area prices. Links zoom to the area. Prices are appraisal-based, not sale prices; a high score reflects only the factors and weights you chose.
+
+The batch table adds Area score under the same browser weights and Area $/sq ft percentile. The latter uses the area's median among all areas with sufficient measured homes, including areas without a score: 100 times the count below plus half the tied count, divided by all measured areas. These columns are sortable, with missing values kept unavailable; the default listing order is unchanged. The calculations read only the dedicated area score and area price files, never Census demographics or election results. Weights stay in the browser and shared view links; the list's price limit stays in the current panel.
 
 ## Checking many listings
 
