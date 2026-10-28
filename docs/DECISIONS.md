@@ -3,6 +3,42 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P3-02 fitting boundary and effective calibration (Codex)
+
+- Keep HMDA's existing 6/day annual budget. Request 2025 and 2024 separately; apply the
+  recorded source-row baselines (30,323 and 32,641, each ±5%) and ≥250 tracts with 30 loans
+  per year in live mode. Synthetic fixtures bypass scale only. The same nine-column byte
+  scanner and canaries protect both years; no individual loan rows leave fetch.
+- Use `<year>:<tract>` aggregate identities so years cannot collide. The validation reader
+  also accepts the existing stored 2025 tract-only identities, allowing an uncalibrated
+  publish before Claude's first two-year run. Summaries and dates remain separate per year.
+- Follow the calibration probe's ≥30-home minimum for both county and tract fitting. With
+  no eligible fitting tract in a county use factor 1; a publish with no eligible fitting
+  tracts falls back. Clamp only tract factors, as specified; county medians are unchanged.
+  The test year never enters the fitting function beyond selecting its year for exclusion.
+- Evaluate calibrated medians by applying k to each home's unrounded formula and rounding
+  again. Do not multiply an already-rounded tract median. The `cal` note is appended at
+  |k−1| ≥0.10 after widths/exclusion reasons are chosen, so it never widens a range. Rebuild
+  neighbourhood statistics with the same effective factors as the card and batch table.
+- Publish identity county factors and no tract factors when calibration is rejected; retain
+  attempted hold-out figures and the reason in metadata. The fallback switch uses the
+  original P2-08 check on the latest year. Label the fitting-year result and both held-out
+  results separately. Fixture inputs cannot switch publication on; calibration-derived
+  ranges and neighbourhood statistics carry fixture provenance when applicable.
+- The browser caches and validates `calibration.json`, looks up the block group's first
+  11 digits within the home's county, and otherwise uses that county's factor. If an
+  accepted calibration file cannot load, withhold its computed range instead of silently
+  using factor 1. Metadata with calibration off uses the existing range without a new fetch.
+  Keep the model's geographic/aggregate input declaration and demographic guard in
+  `values.py`, within this task's allowed core scope; no other core module changes.
+- Full `mm publish` entry point on stored real canonical data with only HMDA replaced by
+  its two synthetic fixtures: 153.700 s, homes output 197,497,779 bytes; all canonical SHA-256
+  hashes unchanged, source networking blocked. Each fixture year has 90 kept loans across
+  three tracts, but 0 tracts overlap ≥30 real single-family homes. Both 2024 hold-out methods
+  therefore have no median ratio, ±10%/±20% share or log error; selection fails, effective
+  factors are 1 and publication stays off. The fit-year check is also unavailable. These
+  are Test data diagnostics, not the real held-out figures from Claude's probe.
+
 ## 2026-10-28 — Phase 3 specs P3-02, P3-04, P3-05 (Claude, chat)
 
 - Calibration preview (probe 40720982283): a tract factor fitted on HMDA 2025 and tested on 2024

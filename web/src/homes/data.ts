@@ -1,4 +1,5 @@
 import { loadJSON } from "../registry";
+import {validateCalibration,type Calibration} from "./range";
 import { idBucket } from "./id";
 import { matches, normalizeQuery, shardId, shardThird } from "./address";
 
@@ -7,6 +8,7 @@ export type Home = { id:string; number:string|null; street_key:string|null; unit
   market_value:number|null; land_value:number|null; improvement_value:number|null; value_year:number|null; certified:string|null; placed:string|null; range_pct:number|null; range_flags:string|null; test_data?:boolean };
 export type RangeMeta = { published:boolean; test_data:boolean; label:string; method:string; study:string; study_year:number; levels:Record<string,number>; within_10pct:Record<string,number>;
   hpi:{factor:number;base_quarters:string[];base_index:number;latest_quarter:string;latest_index:number;as_of:string;source:string};
+  calibration?:{used:boolean;fit_year:number;test_year:number;test_data:boolean;method:string};
   flags:Record<string,string>; year_over_year_note:string; size_note?:string; hood_stats_note?:string };
 export type HomeMeta = { v:number; test_data:boolean; counties:Record<string,{source:string;test_data:boolean;value_as_of:string[];certified:string[];parcel_as_of:string[]}>;
   sources:Record<string,string>; hood_desc:Record<string,Record<string,string>>; shards:Record<string,string[]>; cells:string[]; value_range?:RangeMeta };
@@ -41,6 +43,7 @@ export function nearest(rows:GridRow[],lon:number,lat:number,maxMetres=30):GridR
 export class HomeData {
   private metaRequest?:Promise<HomeMeta>;
   private hoodRequest?:Promise<HoodData>;
+  private calibrationRequest?:Promise<Calibration>;
   private shards=new Cache<Home[]>(20);
   private cells=new Cache<GridRow[]>(50);
   private locators=new Cache<Record<string,string>>(8);
@@ -57,6 +60,10 @@ export class HomeData {
     if(!this.hoodRequest)this.hoodRequest=loadJSON<HoodData>("data/homes/hoods.json").then(data=>{
       if(!Array.isArray(data.rows))throw new Error("Neighbourhood table is unavailable");return data;
     }).catch(e=>{this.hoodRequest=undefined;throw e;});return this.hoodRequest;
+  }
+  calibration():Promise<Calibration>{
+    if(!this.calibrationRequest)this.calibrationRequest=loadJSON<unknown>("data/homes/calibration.json").then(validateCalibration).catch(e=>{this.calibrationRequest=undefined;throw e;});
+    return this.calibrationRequest;
   }
   remember(home:Home,shard:string){
     if(!validHomeId(home.id)||!validShard(shard))return;

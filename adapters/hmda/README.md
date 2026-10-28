@@ -1,16 +1,17 @@
-# HMDA tract check
+# HMDA tract calibration and check
 
-One annual CSV request through the budgeted runner, restricted to 2025 purchase originations
-in the three study counties. The API returns a wide file. A streaming byte scanner retains
-only the nine columns declared in `mm.values.HMDA_INPUTS`; other cells are never buffered as
-fields or decoded. The response is reduced to tract aggregates before `fetch` returns.
-Raw retention and recording are disabled. Logs contain counts only; errors contain no cells.
+Two annual CSV requests through the existing budgeted runner, for 2025 and 2024 purchase
+originations in the three study counties. The budget remains 6/day. Each wide response is
+scanned as bytes: only the nine columns in `mm.values.HMDA_INPUTS` are buffered/decoded.
+Only tract aggregates and a count-only summary leave `fetch`; no raw CSV or loan rows are
+retained or recordable. The aggregate identity is `<year>:<tract>` so the years cannot collide.
 
-`make_fixtures.py` rebuilds the synthetic native-column CSV fixture: 30 measured loans per
-county plus explicit filter/invalid-value cases. Like the CAD adapters, fixture mode skips
-only the production scale checks (30,323 ±5% source rows and ≥250 tracts with ≥30 loans).
-Every county, column, filter, aggregation and privacy check still applies. Tests generate a
-production-sized synthetic CSV in memory to verify the full live thresholds without calling
-the source. Fixture records never authorize publishing a value range.
+`make_fixtures.py` rebuilds both small native-column synthetic CSV fixtures. Fixture mode
+skips only scale checks: 2025 source rows 30,323 ±5%, 2024 source rows 32,641 ±5%, and at
+least 250 tracts with 30 loans in each year. County, schema, filter and privacy checks apply
+to both. Tests serve full-sized synthetic streams in memory, without contacting the source.
 
-Publisher verification and terms are in `docs/SOURCES.md`; first live use remains gated.
+The latest year alone fits the factors; the preceding year is held out for selection. If
+that check fails, the original range and its P2-08 check apply. Fixtures cannot authorize
+publishing ranges. Terms, source counts and verification are recorded in `docs/SOURCES.md`;
+Claude performs the first two-year live check after review.

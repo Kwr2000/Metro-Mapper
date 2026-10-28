@@ -9,3 +9,9 @@ large_lot_acres: 1.0
 size_percentiles: [5, 95]
 size_min_group: 20
 hood_min_group: 10
+calibration:
+  enabled: true
+  fit_year: 2025
+  test_year: 2024
+  n0: 30
+  clamps: [0.80, 1.25]

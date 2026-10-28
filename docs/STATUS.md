@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-28 (P3-01 built; awaiting batch review)._
+_Last updated 2026-10-28 (P3-02 built; awaiting calibration review)._
 
 ## Phase
 
@@ -11,6 +11,16 @@ _Last updated 2026-10-28 (P3-01 built; awaiting batch review)._
 P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
 
 ## Done
+
+- **P3-02 neighbourhood calibration** (Codex, 2026-10-28): two-year aggregate-only HMDA,
+  latest-year county/shrunk tract factors, strictly prior-year selection and uncalibrated
+  fallback; dated adjustments on home cards and batch results. All 41 original range vectors
+  retain k=1, with 12 additional cases shared by Python and TypeScript. No source calls.
+  `make test`: 1,288 pipeline + 282 web tests and build; local e2e passes at 1440×900 and
+  390×844. Full offline publish: 153.7 s, homes output 197,497,779 bytes; canonical hashes
+  unchanged. Both synthetic HMDA years are Test data with 0 eligible real-home comparisons:
+  hold-out ratio/±10%/±20%/log error unavailable, k=1 fallback and unpublished ranges.
+  Claude should run HMDA twice, compare real held-out figures and spot-check live ranges.
 
 - **P3-01 batch listing check** (Codex, 2026-10-28): browser-only CSV/paste matching,
   range/percentile table and phone cards, filters/sorts, explicit named saves and CSV export.

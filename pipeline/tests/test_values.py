@@ -43,10 +43,10 @@ def hpi_records(context,body=None):
 def test_shared_reference_vectors(repo,case):
  assert len(CASES)>=30
  cfg=values.settings();p=case['home'];limits={(p['county'],p['category'],None):case['size_bounds']}
- pct,codes=values.annotation(p,limits,cfg)
- result={'range_pct':pct,'range_flags':codes,**values.value_range(p['market_value'],values.COUNTY_FIPS[p['county']],pct,case['factor'],cfg['levels'])}
+ pct,codes=values.annotation(p,limits,cfg,case["k"])
+ result={'range_pct':pct,'range_flags':codes,**values.value_range(p['market_value'],values.COUNTY_FIPS[p['county']],pct,case['factor'],cfg['levels'],case['k'])}
  assert result==case['expected']
- assert values.flags(p,limits)==([] if codes is None else codes.split(','))
+ assert values.flags(p,limits)==([] if codes is None else [c for c in codes.split(',') if c!='cal'])
 
 
 def test_native_fhfa_shape_quotes_fields_dates_and_factor(context):

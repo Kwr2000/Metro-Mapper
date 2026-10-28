@@ -55,7 +55,7 @@ def production_csv():
 
 
 def test_native_header_filters_tract_percentiles_and_count_only_audit(repo,capsys):
-    ad=hmda.HMDA();assert ad.plan(context(repo))==[hmda.REQUEST]
+    ad=hmda.HMDA();assert ad.plan(context(repo))==list(hmda.REQUESTS)
     records=list(ad.normalize(RawPayload(hmda.REQUEST,fixtures.native_text())))
     tracts=[r for r in records if r.dataset=="hmda_tract"]
     assert len(tracts)==3
@@ -67,7 +67,8 @@ def test_native_header_filters_tract_percentiles_and_count_only_audit(repo,capsy
     assert sum(summary["skipped_by_reason"].values())==10
     assert set(summary["skipped_by_reason"])=={"action_taken","loan_purpose","lien_status","derived_dwelling_category","total_units",
         "value_exempt","value_na","value_blank","value_non_digits","tract_invalid"}
-    assert ad.finalize(records)==records and ad.source_as_of([])==hmda.AS_OF
+    both=records+list(ad.normalize(RawPayload(hmda.REQUESTS[1],fixtures.native_text(2024))))
+    assert ad.finalize(both)==both and ad.source_as_of([])==hmda.AS_OF
     assert "run note" in capsys.readouterr().out
     # Even-sized groups use nearest-rank, not the mean of the middle observations.
     parsed=hmda.parse(BytesIO(csv_bytes([native_row(property_value=str(v)) for v in (40000,10000,30000,20000)] +
@@ -76,14 +77,15 @@ def test_native_header_filters_tract_percentiles_and_count_only_audit(repo,capsy
 
 
 @pytest.mark.parametrize("chunk_size",[1,2,7,65536])
-def test_only_nine_cells_are_buffered_or_decoded_even_with_quoted_canaries(monkeypatch,chunk_size,capsys):
+@pytest.mark.parametrize("year",[2025,2024])
+def test_only_nine_cells_are_buffered_or_decoded_even_with_quoted_canaries(monkeypatch,chunk_size,year,capsys):
     private=("lei","derived_race","derived_ethnicity","derived_sex","income","debt_to_income_ratio",
         "applicant_age","co-applicant_age","applicant_credit_score_type","co-applicant_credit_score_type",
         "applicant_sex","co-applicant_sex","applicant_race-1","co-applicant_race-1",
         "applicant_ethnicity-1","co-applicant_ethnicity-1","tract_minority_population_percent",
         "ffiec_msa_md_median_family_income")
     fields=[private[0],*reversed(values.HMDA_INPUTS),*private[1:]]
-    row={**native_row(),**{field:'CANARY_'+field+',"\r\nNEXT' for field in private}}
+    row={**native_row(activity_year=str(year)),**{field:'CANARY_'+field+',"\r\nNEXT' for field in private}}
     payload=csv_bytes([row],fields).replace(b"CANARY_lei",b"\xff\xfeCANARY_lei")
     class Chunked(BytesIO):
         def read(self,n=-1):return super().read(min(n,chunk_size))
@@ -93,7 +95,7 @@ def test_only_nine_cells_are_buffered_or_decoded_even_with_quoted_canaries(monke
         decoded.append(name);return original(name,value)
     monkeypatch.setattr(hmda,"decode_cell",guarded)
     rows=list(hmda.selected_rows(Chunked(payload)))
-    assert rows==[native_row()] and set(decoded)==set(values.HMDA_INPUTS) and len(decoded)==9
+    assert rows==[native_row(activity_year=str(year))] and set(decoded)==set(values.HMDA_INPUTS) and len(decoded)==9
     assert "CANARY" not in json.dumps(rows)+capsys.readouterr().out
 
 
@@ -167,7 +169,7 @@ def test_manifest_budget_gate_fixture_runner_and_rebuild(repo,monkeypatch,capsys
     body=csv_bytes([{**row,"lei":"CANARY_LENDER","applicant_age":"CANARY_AGE","derived_race":"CANARY_RACE"} for row in rows],fields).decode()
     path=repo/"adapters/hmda/fixtures/purchase_2025.json";path.write_text(json.dumps({"status":200,"body":body}))
     run=runner.run("hmda","fixture",NOW)
-    assert run.status=="success" and run.calls_made==0 and run.planned_calls==1 and run.rows_out==4
+    assert run.status=="success" and run.calls_made==0 and run.planned_calls==2 and run.rows_out==8
     assert "CANARY" not in capsys.readouterr().out+run.model_dump_json()
     assert canonical.read("area_feature","hmda") is None and not (paths().raw/"hmda").exists()
     (repo/"config/live_gates.yaml").write_text("gated:\n  hmda: awaiting Claude's first live check\n");config.clear_cache()

@@ -2,13 +2,13 @@ import type {FeatureCollection} from "geojson";
 import {polygonContains,polygonFeatures} from "../map-polygons";
 import {matches,normalizeQuery,shardId,shardThird,type Address} from "../homes/address";
 import {homeData,type Home,type HomeMeta,type HoodData} from "../homes/data";
-import {valueRange} from "../homes/range";
+import {valueRange,calibrationFactor,adjustmentText,type Calibration} from "../homes/range";
 import {percentilePosition,flagLabels,reasons} from "../homes/HomeCard";
 import {pause,type Listing} from "./parse";
 
 export type Metrics={low:number|null;mid:number|null;high:number|null;position:number|null;psf:number|null;percentile:number|null;n:number|null;rangePct:number|null;flags:string;areaWarning:boolean;testData:boolean};
 export type BatchRow={listing:Listing;normalized:Address;home:Home|null;candidates:Home[];reason:string|null;metrics:Metrics|null};
-export type BatchResult={rows:BatchRow[];meta:HomeMeta;hoods:HoodData|null;hoodError:boolean};
+export type BatchResult={rows:BatchRow[];meta:HomeMeta;hoods:HoodData|null;hoodError:boolean;calibration?:Calibration|null};
 export const published=(meta:HomeMeta)=>meta.value_range?.published===true;
 export function position(price:number,range:{low:number;mid:number;high:number}):number {
   return (price<range.low?price-range.low:price>range.high?price-range.high:0)/range.mid*100;
@@ -17,28 +17,29 @@ export function positionLabel(value:number|null):string {
   if(value==null)return "Not available";if(value===0)return "Inside the range";
   const n=Math.abs(value);return `${n<.1?"<0.1":n.toFixed(1)}% ${value<0?"below":"above"} the range`;
 }
-export function analyse(listing:Listing,home:Home,meta:HomeMeta,hoods:HoodData|null):Metrics {
+export function analyse(listing:Listing,home:Home,meta:HomeMeta,hoods:HoodData|null,calibration:Calibration|null=null):Metrics {
   let endpoints:{low:number|null;mid:number|null;high:number|null}={low:null,mid:null,high:null};
-  const range=meta.value_range;
-  if(published(meta) && range && home.range_pct!=null)try{endpoints=valueRange(home.market_value,home.id.split(":")[0],home.range_pct,range.hpi.factor,range.levels);}catch{/* Unusable inputs never expose a range. */}
+  const range=meta.value_range,k=range?.calibration?.used?calibrationFactor(home,calibration):1;
+  if(published(meta) && range && (!range.calibration?.used||calibration) && home.range_pct!=null)try{endpoints=valueRange(home.market_value,home.id.split(":")[0],home.range_pct,range.hpi.factor,range.levels,k);}catch{/* Unusable inputs never expose a range. */}
   const psf=listing.price!=null && home.living_area!=null && home.living_area>0?listing.price/home.living_area:null;
   const category=["single_family","condo"].includes(home.category)?home.category:"other";
   const stat=hoods?.rows.find(s=>s.county===home.county && s.hood_cd===home.hood_cd && s.category===category);
-  const flags=(home.range_flags??"").split(",").filter(Boolean).map(code=>flagLabels[code]??reasons[code]??range?.flags[code]??code).join("; ");
+  const flags=(home.range_flags??"").split(",").filter(Boolean).map(code=>code==="cal"&&calibration?adjustmentText(k,calibration.fit_year):flagLabels[code]??reasons[code]??range?.flags[code]??code).join("; ");
   return {...endpoints,position:listing.price!=null && endpoints.low!=null && endpoints.mid!=null && endpoints.mid>0 && endpoints.high!=null?position(listing.price,{low:endpoints.low,mid:endpoints.mid,high:endpoints.high}):null,
     psf,percentile:psf!=null && stat?percentilePosition(psf,stat):null,n:psf!=null && stat?stat.n:null,
     rangePct:published(meta)?home.range_pct:null,flags:published(meta)?flags:"",areaWarning:listing.sqft!=null && home.living_area!=null && home.living_area>0 && Math.abs(listing.sqft-home.living_area)*10>home.living_area,
-    testData:!!(meta.test_data || meta.counties[home.county]?.test_data || home.test_data || hoods?.test_data || published(meta)&&range?.test_data)};
+    testData:!!(meta.test_data || meta.counties[home.county]?.test_data || home.test_data || hoods?.test_data || published(meta)&&(range?.test_data||calibration?.test_data))};
 }
-export function chooseMatch(row:BatchRow,id:string,meta:HomeMeta,hoods:HoodData|null):BatchRow {
+export function chooseMatch(row:BatchRow,id:string,meta:HomeMeta,hoods:HoodData|null,calibration:Calibration|null=null):BatchRow {
   const home=row.candidates.find(h=>h.id===id && matches(h,row.normalized));if(!home)return row;
-  const listing={...row.listing,selectedId:id};return {...row,listing,home,reason:null,metrics:analyse(listing,home,meta,hoods)};
+  const listing={...row.listing,selectedId:id};return {...row,listing,home,reason:null,metrics:analyse(listing,home,meta,hoods,calibration)};
 }
 const aborted=(signal?:AbortSignal)=>{if(signal?.aborted)throw new DOMException("Cancelled","AbortError");};
-type Loader=Pick<typeof homeData,"meta"|"search"|"hoods">;
+type Loader=Pick<typeof homeData,"meta"|"search"|"hoods"|"calibration">;
 export async function processListings(listings:Listing[],options:{loader?:Loader;signal?:AbortSignal;onProgress?:(done:number,total:number)=>void;loadBounds?:()=>Promise<FeatureCollection|null>}={}):Promise<BatchResult>{
   const loader=options.loader??homeData;aborted(options.signal);
   const [meta,hoods]=await Promise.all([loader.meta(),loader.hoods().catch(()=>null)]);aborted(options.signal);
+  const calibration=published(meta)&&meta.value_range?.calibration?.used?await loader.calibration():null;aborted(options.signal);
   const rows:BatchRow[]=listings.map(listing=>({listing,normalized:normalizeQuery(listing.query),home:null,candidates:[],reason:null,metrics:null}));
   const groups=new Map<string,BatchRow[]>();let done=0;let bounds:Promise<FeatureCollection|null>|undefined;
   for(const row of rows){
@@ -60,7 +61,7 @@ export async function processListings(listings:Listing[],options:{loader?:Loader
             row.candidates=(await loader.search(l.query)).filter(h=>matches(h,row.normalized));aborted(options.signal);
             const selected=row.candidates.find(h=>h.id===l.selectedId);
             row.home=selected??(row.candidates.length===1?row.candidates[0]:null);
-            if(row.home){row.metrics=analyse(l,row.home,meta,hoods);}
+            if(row.home){row.metrics=analyse(l,row.home,meta,hoods,calibration);}
             else if(row.candidates.length>1)row.reason="Several matches — pick one";
             else {
               row.reason="Not found in the 2026 appraisal records";
@@ -76,7 +77,7 @@ export async function processListings(listings:Listing[],options:{loader?:Loader
     }
   }
   await Promise.all(Array.from({length:Math.min(4,queue.length)},worker));aborted(options.signal);
-  return {rows,meta,hoods,hoodError:hoods===null};
+  return {rows,meta,hoods,hoodError:hoods===null,calibration};
 }
 
 export type SortKey="default"|"beds"|"baths"|"sqft"|"living_area"|"year_built"|"price"|"psf"|"low"|"high"|"position"|"rangePct"|"percentile"|"n"|"days"|"hoa";
