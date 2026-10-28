@@ -3,6 +3,18 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-28 — P2-07 and P2-08 merged; HMDA live; value ranges switched on (Claude, chat)
+
+- PR #122 (P2-07): checked on a local build of the real data: listing-style addresses in all three
+  counties, a Travis condo unit ("#1401"), a Williamson condo, a two-record rural address (pick
+  list) and a Hays home all open the right card; no request leaves the site; tests and e2e pass.
+- PR #123 (P2-08) reviewed (nine HMDA columns only, applicant columns never read, tract
+  aggregates only); merged with green CI.
+- HMDA first live check, run 40617364808: 30,323 rows read, 28,388 kept, 460 tracts (264 with
+  ≥ 30 loans); no applicant fields stored. Check result: 263 tracts, median ratio 0.957, 85.9%
+  within ±20% → **passed**; Travis 0.917 (148 tracts), Williamson 1.031 (87), Hays 0.989 (28).
+  Ungated. From the next Pages build, ranges show on the Check a home page.
+
 ## 2026-10-27 — P2-08 HMDA tract validation and effective range switch (Codex)
 
 - Existing **Owner approval (2026-10-25)** covers HMDA 6 calls/day and annual refresh;

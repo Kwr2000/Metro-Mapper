@@ -9,7 +9,7 @@ _Last updated 2026-10-28 (P2-07 built; Phase 3 approved; awaiting home-page revi
 ## Phase
 
 **Phase 3 — approved 2026-10-27** (find value in good areas; plan in `docs/PLAN.md`). P3-01 and P3-03
-specs ready. **Phase 2 — in progress** (P2-01 to P2-06 done; P2-07 and P2-08 being built).
+specs ready. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
 
 ## Done
 
@@ -232,9 +232,9 @@ specs ready. **Phase 2 — in progress** (P2-01 to P2-06 done; P2-07 and P2-08 b
 
 ## Next
 
-1. Claude: P2-08 HMDA first live check; then ranges show on the live site.
+1. Owner: try the Check a home page on the live site (ranges now shown).
 2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex; P3-01 (batch listing
-   check) can start once P2-08 is live.
+   check) can start now.
 3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.
 4. Claude: spec P3-02, P3-04, P3-05.
 5. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
