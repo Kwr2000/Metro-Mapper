@@ -221,11 +221,15 @@ def prepare(homes, factor, cfg, *, test_data):
             sf += 1
             covered += (home["county"],home.get("hood_cd"),"single_family") in covered_groups and (home.get("living_area") or 0) > 0
     has_range = len(homes)-counts["none"]
-    if not test_data and has_range*100 < len(homes)*97:
-        raise ValueError(f"value range: county range coverage below 97 percent - {homes[0]['county']} {has_range} of {len(homes)}")
+    # Builder inventory on January 1 is mostly lots or unfinished houses with no building value
+    # (Travis: 10,411 of 13,043 on 2026-10-27), so it is left out of the coverage check.
+    built = [(home,pct) for home,(pct,_) in zip(homes,annotations) if home["category"] != "builder_inventory"]
+    built_with_range = sum(pct is not None for _,pct in built)
+    if not test_data and built_with_range*100 < len(built)*97:
+        raise ValueError(f"value range: county range coverage below 97 percent (builder inventory excluded) - {homes[0]['county']} {built_with_range} of {len(built)}")
     if not test_data and covered*100 < sf*90:
         raise ValueError(f"value range: hood statistics coverage below 90 percent - {homes[0]['county']} {covered} of {sf}")
-    summary = {"homes":len(homes),"with_range":has_range,"range_share":has_range/len(homes) if homes else None,
+    summary = {"homes":len(homes),"with_range":has_range,"coverage_homes":len(built),"coverage_with_range":built_with_range,"range_share":has_range/len(homes) if homes else None,
         "by_range_pct":{p:counts[p] for p in ("10","20","none")},
         "by_flag":{p:flag_counts[p] for p in (*FLAG_ORDER,*NO_RANGE)},
         "single_family_with_range":sf,"hood_stats_covered":covered,"hood_stats_coverage":covered/sf if sf else None}

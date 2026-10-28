@@ -261,3 +261,14 @@ def test_parcel_fixture_cannot_relax_real_cad_range_gate(repo):
  data['tcad'][0].properties['improvement_value']=0
  canonical.write('area_feature','tcad',data['tcad'])
  with pytest.raises(ValueError,match='97 percent'):homes.publish()
+
+
+def test_builder_inventory_is_left_out_of_the_range_coverage_check(repo):
+ # Real Travis 2026: 10,411 of 13,043 builder-inventory homes have no building value on January 1.
+ cfg=values.settings();hs=[dict(BASE) for _ in range(100)]
+ for h in hs[:3]:h['market_value']=0
+ hs+=[{**BASE,'category':'builder_inventory','improvement_value':0} for _ in range(50)]
+ _,_,counts=values.prepare(hs,1,cfg,test_data=False)
+ assert counts['coverage_homes']==100 and counts['coverage_with_range']==97 and counts['with_range']==97
+ hs[3]['market_value']=0
+ with pytest.raises(ValueError,match='builder inventory excluded'):values.prepare(hs,1,cfg,test_data=False)

@@ -38,7 +38,8 @@ KEEP = ("county", "prop_id", "category", "situs_number", "situs_prefix", "situs_
         "situs_unit", "situs_city", "situs_zip", "situs", "hood_cd", "market_value", "land_value",
         "improvement_value", "value_year", "certified", "living_area", "year_built", "land_acres", "floors")
 MAX_SHARD_BYTES = 2_000_000
-MAX_TOTAL_BYTES = 200_000_000
+# Raised from 200 MB on 2026-10-27 (P2-06 adds two columns: 197.5 MB). GitHub Pages allows 1 GB.
+MAX_TOTAL_BYTES = 300_000_000
 DIRECTIONS = dict(zip("NORTH SOUTH EAST WEST NORTHEAST NORTHWEST SOUTHEAST SOUTHWEST".split(),
                       "N S E W NE NW SE SW".split()))
 DIRS = set(DIRECTIONS.values()) | set(DIRECTIONS)
