@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // MapLibre needs WebGL, which jsdom lacks; the map itself is covered by browser checks.
@@ -11,12 +11,13 @@ const pub = (name: string) => readFileSync(join(__dirname, "../../public", name)
 
 describe("app shell", () => {
   beforeEach(() => {
+    window.history.replaceState(null,"","#/");
     vi.stubGlobal("fetch", vi.fn(async (url: string) => {
       const name = String(url).replace(/^\.?\//, "");
       try { return new Response(pub(name), { status: 200 }); } catch { return new Response("", { status: 404 }); }
     }));
   });
-  afterEach(() => { vi.unstubAllGlobals(); window.location.hash = ""; });
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.history.replaceState(null,"","#/"); });
 
   it("loads the registry, lists layers and labels test data", async () => {
     render(<App />);
@@ -26,7 +27,7 @@ describe("app shell", () => {
   });
 
   it("sources page shows each layer's source and as-of", async () => {
-    window.location.hash = "#/sources";
+    window.history.replaceState(null,"","#/sources");
     render(<App />);
     const table = await screen.findByTestId("sources-table");
     expect(table.textContent).toMatch(/as of \d{4}-\d{2}-\d{2}/);

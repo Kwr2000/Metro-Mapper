@@ -28,3 +28,11 @@ hood table remain labeled Test data. All external map requests are fulfilled loc
 Screenshots `home-hidden-*`, `home-range-*` and `home-map-*` go into ignored `artifacts/`.
 The build scans every generated JS/HTML file for prohibited home-value wording; browser
 checks scan rendered page text too. Playwright remains a local check, outside CI.
+
+P3-03 also publishes the score from native adapter fixtures in the isolated root. The score
+browser context supplies a coherent, explicitly Test data GEOID join because the adapters'
+independent fixtures use different areas. At both sizes it checks slider defaults, keyboard
+changes, reload persistence, fresh-browser view links, score mode and partial legend, a
+source/dated popup breakdown and unchanged score settings when a People layer is switched on.
+`score-panel-*` and `score-popup-*` screenshots are ignored local artifacts. No source requests
+or Playwright CI steps are added.
