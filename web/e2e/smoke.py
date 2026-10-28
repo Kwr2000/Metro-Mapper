@@ -11,6 +11,7 @@ from urllib.request import urlopen
 
 from playwright.sync_api import sync_playwright, expect
 import homes as home_checks
+import scores as score_checks
 
 WEB = Path(__file__).resolve().parents[1]
 DIST = WEB / "dist"
@@ -241,6 +242,7 @@ def main():
                     smoke(browser,registry,base,chosen,width,height)
                     colour_smoke(browser,registry,width,height)
                     home_checks.smoke(browser,registry,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
+                    score_checks.smoke(browser,registry,width,height,URL,DIST,ARTIFACTS,PLAIN_STYLE)
                 browser.close()
         finally:
             server.terminate()

@@ -232,6 +232,25 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
 .map-home-panel { position: absolute; right: 10px; top: 10px; bottom: 10px; width: min(460px,calc(100% - 20px)); overflow-y: auto; z-index: 5; box-shadow: 0 4px 20px #16344b36; border-radius: 10px; }
 .map-home-panel .home-card { border: 0; }
 .home-map-status { position: absolute; top: 10px; left: 10px; padding: 10px; background: #fff; z-index: 4; }
+.score-panel h2 { font-size: 1.2rem; }
+.score-weight { display: grid; grid-template-columns: 1fr auto; gap: 5px; margin: 17px 0; }
+.score-weight input { grid-column: 1 / -1; width: 100%; accent-color: var(--brand); }
+.score-weight output { font-weight: bold; }
+.score-mode { display: flex; gap: 8px; align-items: center; padding: 10px 0; font-weight: 600; }
+.score-panel details { margin-top: 16px; font-size: .85rem; }
+.score-panel summary,.map-score-legend summary { cursor: pointer; }
+.score-legend { font-size: .8rem; }
+.score-legend ul { display: flex; flex-wrap: wrap; list-style: none; padding: 0; gap: 7px 12px; }
+.score-legend li { display: flex; gap: 5px; align-items: center; }
+.score-legend li span,.score-partial-swatch { display: inline-block; width: 20px; height: 13px; border: 1px solid #8c9c91; vertical-align: middle; }
+.score-partial-swatch { background: #dbe8d4; margin-right: 5px; }
+.map-score-legend { position: absolute; bottom: 12px; left: 12px; z-index: 2; background: #fff; padding: 9px 12px; border: 1px solid var(--line); border-radius: 7px; max-width: min(330px,calc(100% - 24px)); }
+.map-score-legend p { margin: 7px 0; }
+.score-popup { border-bottom: 1px solid var(--line); margin-bottom: 12px; padding-bottom: 10px; }
+.score-popup details { margin: 10px 0; }
+.score-popup th,.score-popup td { overflow-wrap: anywhere; }
+.map-wrap .inspection-popup { z-index: 4; }
+@media(max-width:760px){.map-score-legend { bottom: 62px; font-size: .75rem; }.score-panel { padding-bottom: 12px; }}
 @media(max-width:760px){
  .home-page { padding: 18px 12px; }
  .home-search { padding: 12px; }

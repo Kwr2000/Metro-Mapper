@@ -3,13 +3,12 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (P2-08 built; awaiting HMDA first live check)._
-_Last updated 2026-10-28 (P2-07 built; Phase 3 approved; awaiting home-page review)._
+_Last updated 2026-10-27 (P3-03 built; awaiting score review)._
 
 ## Phase
 
-**Phase 3 — approved 2026-10-27** (find value in good areas; plan in `docs/PLAN.md`). P3-01 and P3-03
-specs ready. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
+**Phase 3 — approved 2026-10-27** (find value in good areas; plan in `docs/PLAN.md`). P3-01 spec ready;
+P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
 
 ## Done
 
@@ -230,11 +229,20 @@ specs ready. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
   and map lookup. Ranges obey the unpublished flag. Claude should check a dozen real addresses
   across the counties, a condo unit, map click, hidden ranges and phone layout after merge. Merged as PR #122 after Claude checked real addresses.
 
+- **P3-03** (Codex): Good place to live score, restricted to eight safety/district-school/
+  flood/access fields, registered demographic guard and isolated web score code. Browser-only
+  0–5 weights, shared links, five-class map with partial marker, dated popup breakdown and
+  methodology. No source, adapter, manifest or budget changes. Stored-data publisher: 1,206
+  block groups, 85,951 bytes, 1.037 s; no fixture inputs or source calls. `make test` passes
+  (1,262 pipeline + 249 web tests and builds); fixture e2e passes at 1440×900 and 390×844,
+  including persistence, fresh links and People independence. Claude should hand-check block
+  groups against the source layers and review default weights with the owner.
+
 ## Next
 
 1. Owner: try the Check a home page on the live site (ranges now shown).
-2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex; P3-01 (batch listing
-   check) can start now.
+2. Claude: review P3-03 ("Good place to live" score), hand-check areas and discuss weights
+   with the owner. P3-01 (batch listing check) is separate.
 3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.
 4. Claude: spec P3-02, P3-04, P3-05.
 5. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).

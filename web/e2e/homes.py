@@ -26,11 +26,12 @@ def prepare(web):
             temp=Path(folder)
             for name in ['adapters','config','layers']:(temp/name).symlink_to(root/name,target_is_directory=True)
             os.environ['MM_ROOT']=str(temp)
-            from mm import config,homes
-            config.clear_cache();homes.publish()
+            from mm import config,homes,area_score
+            config.clear_cache();homes.publish();area_score.publish()
             target=web/'public/data/homes'
             if target.exists():shutil.rmtree(target)
             shutil.copytree(temp/'web/public/data/homes',target)
+            shutil.copyfile(temp/'web/public/data/area_score.json',web/'public/data/area_score.json')
     finally:
         urllib.request.urlopen=original_open;socket.create_connection=original_socket
         if prior is None:os.environ.pop('MM_ROOT',None)

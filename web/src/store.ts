@@ -1,4 +1,5 @@
 // Browser-only conveniences (AGENTS.md: personal state lives only in the browser).
+import { cleanScorePreferences, DEFAULT_SCORE, type ScorePreferences } from "./score";
 // localStorage can be missing or throw (private windows, blocked storage); every
 // read and write is guarded, and the site works without it.
 const PREFIX = "metro-mapper:";
@@ -43,3 +44,6 @@ export function readAskingPrice(id: string): string {
 export function writeAskingPrice(id: string, value: string): boolean {
   return writeLocal("asking:"+id,/^\d*(?:\.\d{0,2})?$/.test(value) ? value : "");
 }
+
+export function readScorePreferences():ScorePreferences {return cleanScorePreferences(readLocal("area-score",null)) ?? {...DEFAULT_SCORE,weights:[...DEFAULT_SCORE.weights]};}
+export function writeScorePreferences(value:ScorePreferences):boolean {return writeLocal("area-score",cleanScorePreferences(value) ?? DEFAULT_SCORE);}

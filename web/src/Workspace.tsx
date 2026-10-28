@@ -1,5 +1,7 @@
 import { HomeCard } from "./homes/HomeCard";
 import { homeData, type Home, type HomeMeta } from "./homes/data";
+import { DEFAULT_SCORE, validateScore, type AreaScore } from "./score";
+import { ScoreLegend, ScorePanel } from "./ScorePanel";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { chooseColour } from "./colour";
 import { LayerPanel } from "./LayerPanel";
@@ -9,26 +11,29 @@ import { CompareTable, CompareTray } from "./ComparePanel";
 import { ShortlistPanel } from "./ShortlistPanel";
 import { addCompare, areaLayer, areaName, blockGroupLayers, featuresFor, featureId, filterLayers, interiorPoint, matchAreas } from "./areas";
 import { normalizeLayerVariants, switchLayerVariant } from "./layer-variants";
-import { asOfLabel, initialVisible, showsTestData, type Registry } from "./registry";
-import { readLocal, readShortlist, storageAvailable, writeLocal, type SavedArea } from "./store";
+import { asOfLabel, initialVisible, showsTestData, loadJSON, type Registry } from "./registry";
+import { readLocal, readShortlist, readScorePreferences, writeScorePreferences, storageAvailable, writeLocal, type SavedArea } from "./store";
 import { encodeView, readView, registryView, type Camera, type ViewState } from "./view-state";
 import { EMPTY_BENCHMARKS, type Benchmarks } from "./benchmarks";
 import { useLayerData } from "./use-layer-data";
 
 function initialView(registry: Registry, benchmarks: Benchmarks): ViewState {
   const shared = readView(window.location.hash);
-  if (shared) return registryView(shared, registry, benchmarks);
+  if (shared) return registryView({...shared,score:shared.score??readScorePreferences()}, registry, benchmarks);
   const saved = readLocal<unknown>("visible", null);
   const known = new Set(registry.layers.map((l) => l.id));
   const visible = Array.isArray(saved) ? saved.filter((id) => typeof id === "string" && known.has(id)) :
     [...initialVisible(registry)].filter((id) => !registry.layers.find((l) => l.id === id)?.demographic);
   const raw: ViewState = { camera: readLocal<Camera>("camera", { center: registry.basemap.center as [number, number], zoom: registry.basemap.zoom }),
-    visible, variants: {}, filters: {}, compare: [], colour: {} };
+    visible, variants: {}, filters: {}, compare: [], colour: {}, score:readScorePreferences() };
   return registryView(readView(encodeView(raw))!, registry, benchmarks);
 }
 
 export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, homeTarget }: { registry: Registry; active: boolean; benchmarks?: Benchmarks; homeTarget?:Home|null }) {
   const [view, setView] = useState<ViewState>(() => initialView(registry, benchmarks));
+  const [scoreData,setScoreData]=useState<AreaScore|null>(null),[scoreError,setScoreError]=useState("");
+  const scorePreferences=view.score??DEFAULT_SCORE;
+  useEffect(()=>{let cancelled=false;loadJSON<unknown>("data/area_score.json").then(validateScore).then(data=>{if(!cancelled)setScoreData(data);},()=>{if(!cancelled)setScoreError("Score data is unavailable. Reload to retry.");});return()=>{cancelled=true;};},[]);
   const visible = useMemo(() => normalizeLayerVariants(registry, new Set(view.visible)), [registry, view.visible]);
   const [pane, setPane] = useState("Layers"), [expanded, setExpanded] = useState(true);
   const [selectedHome,setSelectedHome]=useState<Home|null>(null),[homeMeta,setHomeMeta]=useState<HomeMeta|null>(null),[homeLoading,setHomeLoading]=useState(false);
@@ -116,7 +121,7 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, hom
     {share && <label className="share-link small">View link (no notes or shortlist)<input aria-label="View link" readOnly value={new URL(encodeView({ ...view, visible: [...visible] }), window.location.href).href} onFocus={(e) => e.target.select()} /></label>}
     <div className="workspace">
       <aside ref={tools} className={`workbench ${expanded ? "expanded" : "collapsed"}`} aria-label="Area tools">
-        <nav className="tool-tabs" aria-label="Area tools tabs">{["Layers", "Filters", "Compare", "Shortlist"].map((name) =>
+        <nav className="tool-tabs" aria-label="Area tools tabs">{["Layers", "Filters", "Compare", "Shortlist", "Score"].map((name) =>
           <button key={name} aria-pressed={pane === name && expanded} onClick={() => { setExpanded(pane === name ? !expanded : true); setPane(name); }}>{name}{name === "Compare" && view.compare.length ? ` (${view.compare.length})` : ""}</button>)}</nav>
         <div className="tool-body">
           <div hidden={pane !== "Layers"}><LayerPanel colour={view.colour} benchmarks={benchmarks} onColour={(layer, geo) => update({ colour: chooseColour(registry, view.colour, layer, geo) })} registry={registry} visible={visible} onToggle={toggle} choices={view.variants}
@@ -130,18 +135,20 @@ export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, hom
           </div>
           <div hidden={pane !== "Shortlist"}><ShortlistPanel saved={saved} persistent={persistent} onChange={(next) => { setSaved(next); setPersistent(writeLocal("shortlist", next)); }}
             onFly={fly} onCompare={() => { update({ compare: saved.slice(0, 4).map((s) => s.id) }); setPane("Compare"); setExpanded(true); }} /></div>
+          <div hidden={pane !== "Score"}><ScorePanel data={scoreData} error={scoreError} preferences={scorePreferences} onChange={score=>{update({score});writeScorePreferences(score);}}/></div>
           {message && !chosen && <p className="action-message" role="status">{message}</p>}
         </div>
       </aside>
       <div className="map-wrap">
-        {(benchmarks.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
+        {(benchmarks.test_data || scorePreferences.colour && scoreData?.test_data || showsTestData(registry, new Set([...visible, ...Object.keys(view.filters)]))) && <div className="test-banner" data-testid="test-banner" role="status">Test data: some displayed values are made-up samples, not real data.</div>}
         {base?.data_url && errors[base.data_url] && <p className="map-error" role="alert">{errors[base.data_url]}</p>}
-        <MapView colour={view.colour} benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
+        <MapView areaScore={scoreData} scorePreferences={scorePreferences} colour={view.colour} benchmarks={benchmarks} registry={registry} visible={visible} camera={view.camera} onCameraChange={onCameraChange} data={data}
           onHomeClick={selectHome} highlightedArea={selected} bottomInset={bottomInset} areas={areas} matches={activeFilters.length && filterReady ? result.matches : null} onSelectArea={(id) => {
             setSelectedHome(null); setSelected(id); setMessage("");
             // On a phone the tools sheet covers the lower map: fold it so the popup is visible.
             if (window.matchMedia?.("(max-width: 760px)").matches) setExpanded(false);
           }} />
+        {scorePreferences.colour && <details className="map-score-legend"><summary>Good place to live · your weights</summary><ScoreLegend/>{scoreData?.test_data && <span className="badge">Test data</span>}{scoreError && <p>{scoreError}</p>}</details>}
         {homeLoading && <p className="home-map-status" role="status">Loading home records…</p>}
         {selectedHome && homeMeta && <aside className="map-home-panel" aria-label="Home panel"><HomeCard key={selectedHome.id} home={selectedHome} meta={homeMeta}
           areaName={areas.find(a=>featureId(a)===selectedHome.block_group) ? areaName(areas.find(a=>featureId(a)===selectedHome.block_group)!) : undefined}

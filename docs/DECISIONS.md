@@ -3,6 +3,49 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — P3-03 non-demographic area score (Codex)
+
+- Phase 3 and this score are already approved in the owner's 2026-10-27 entry. Read only
+  areas for geometry and the listed eight numeric fields from DPS agency, school districts,
+  FEMA and access. Register exactly those fields in `SCORE_INPUTS["area_score"]` and apply
+  the demographic guard. No ACS, election, APD block-group or campus value enters the score.
+  Geography and source-period metadata serve only the join and provenance.
+- Define mid-rank as `100 × (below + tied/2) / measured`, reversing lower-is-better before
+  rounding. Round halves upward; all ties and a singleton give 50. Composite factors require
+  both component values: average their rounded percentiles and round with the same rule.
+  Missing remains missing. Transit zero is measured. This makes the unspecified percentile
+  convention and the one-missing-component case explicit without inventing observations.
+- Canonical areas have no retained official Census interior point. Use Shapely's guaranteed
+  interior representative point of the stored polygon, never its centroid or largest district
+  overlap. Assign the covering district; a shared-boundary tie uses the smallest district ID.
+  No covering district or no district score gives missing. Never select a nearby campus.
+- Personal weights stay in `store.ts` and six-number view-link arrays, default 3/3/3/2/2/1.
+  Zero-weight factors do not affect coverage. Exactly half the total weight is sufficient;
+  all-zero weights or less than half measured gives Not available. Missing positively weighted
+  factors mark a score partial. Classes follow the displayed rounded score (0–19 through
+  80–100); partial fills are lighter and unavailable is grey. Other polygon fills are hidden
+  while score mode is active, so their colours cannot be confused with the score. Their own
+  paints, including all neutral People paints, remain unchanged and restore when it is off.
+- The score model and panel never consume layer-registry values or People-group data. A web
+  import guard, guarded-property test and browser People-toggle check enforce that boundary.
+  Popup breakdowns show raw values, percentiles, weights, source/date, agency-wide safety,
+  district-only school and CapMetro-only transit caveats. No weight is published or sent.
+- The publisher reads stored canonical files; its pure fixture fallback has a frozen UTC
+  2026-10-28 context matching existing DPS/GTFS fixtures. The older home's January fixture
+  helper asks DPS for 2024, so this module supplies its own fixture-only execution without
+  changing homes or any adapter. No fetch, runner, raw retention or source calls. Fixture
+  dates are explicitly labelled; school ratings carry their period and FEMA dates are
+  labelled retrieval dates where that is the available provenance.
+- Stored-data publish: **1,206 block groups, 85,951 bytes, 1.037 seconds**, no fixture input
+  and no source calls. Present factors: safety 1,200; schools 1,202; flood 1,194; walk/bike
+  basket 592; grocery/parks 949; transit 1,205. These are coverage counts, not imputed values.
+  Generated data is ignored. Native adapter fixtures have independent GEOIDs; local browser
+  tests supply a coherent, explicitly Test data score join to exercise complete, partial and
+  unavailable cases. App-shell tests explicitly unmount each app and set routes synchronously
+  so a previous test cannot rewrite the next route. Playwright remains local, outside CI.
+  Claude should check a handful of real block groups against the layers and review defaults
+  with the owner.
+
 ## 2026-10-28 — P2-07 and P2-08 merged; HMDA live; value ranges switched on (Claude, chat)
 
 - PR #122 (P2-07): checked on a local build of the real data: listing-style addresses in all three

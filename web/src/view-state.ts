@@ -2,9 +2,10 @@ import { validColours } from "./colour";
 import { EMPTY_BENCHMARKS, type Benchmarks } from "./benchmarks";
 import type { Registry } from "./registry";
 import { filterLayers, type Filters } from "./areas";
+import { cleanScorePreferences, type ScorePreferences } from "./score";
 
 export type Camera = { center: [number, number]; zoom: number };
-export type ViewState = { camera: Camera | null; visible: string[]; variants: Record<string, string>; filters: Filters; compare: string[]; colour: Record<string, string> };
+export type ViewState = { camera: Camera | null; visible: string[]; variants: Record<string, string>; filters: Filters; compare: string[]; colour: Record<string, string>; score?:ScorePreferences };
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
@@ -25,7 +26,8 @@ export function cleanView(value: unknown): ViewState | null {
   }
   const colour = record(value.colour) ? Object.fromEntries(Object.entries(value.colour).slice(0, 100)
     .filter(([id, geo]) => /^[a-z0-9_]+$/.test(id) && typeof geo === "string" && /^[a-z0-9_]+$/.test(geo))) as Record<string, string> : {};
-  return { camera, visible, variants, filters, compare, colour };
+  const score=cleanScorePreferences(value.score);
+  return { camera, visible, variants, filters, compare, colour, ...(score?{score}:{}) };
 }
 
 export function encodeView(view: ViewState): string {
