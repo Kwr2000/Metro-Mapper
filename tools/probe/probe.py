@@ -692,6 +692,32 @@ def _():
             f"Austin rows {len(austin)}; last 12: " + " // ".join(a.strip()[:140] for a in austin[-12:]))
 
 
+@check("hmda_browser", "HMDA data browser: 2025 home-purchase loans in the three counties (format and counts only)")
+def _():
+    import csv, io
+    from collections import Counter
+    base = "https://ffiec.cfpb.gov/v2/data-browser-api/view"
+    out = []
+    for year in (2025, 2024):
+        q = f"counties=48453,48491,48209&years={year}&actions_taken=1&loan_purposes=1"
+        status, _, body, _ = _req(f"{base}/aggregations?{q}", max_bytes=200_000)
+        out.append(f"{year} aggregations HTTP {status}: {body[:300].decode('latin-1')!r}")
+    status, hdrs, body, _ = _req(f"{base}/csv?counties=48453,48491,48209&years=2025&actions_taken=1&loan_purposes=1", max_bytes=400_000_000)
+    out.append(f"2025 csv HTTP {status}, {len(body):,} bytes, type {hdrs.get('content-type', '?')}")
+    if status == 200 and body:
+        rows = list(csv.DictReader(io.StringIO(body.decode("latin-1"))))
+        cols = list(rows[0].keys()) if rows else []
+        out.append(f"rows {len(rows):,}; {len(cols)} columns; has property_value {'property_value' in cols}, census_tract {'census_tract' in cols}, "
+                   f"occupancy_type {'occupancy_type' in cols}, derived_dwelling_category {'derived_dwelling_category' in cols}, total_units {'total_units' in cols}")
+        for c in ("county_code", "occupancy_type", "derived_dwelling_category", "lien_status", "total_units", "derived_loan_product_type"):
+            if c in cols: out.append(f"{c}: {dict(Counter(r[c] for r in rows).most_common(8))}")
+        pv = [r.get("property_value", "") for r in rows]
+        out.append(f"property_value blank/Exempt/NA {sum(1 for v in pv if not v.replace('.', '').isdigit()):,}; sample shapes {sorted({re.sub('[0-9]', '9', v) for v in pv})[:6]}")
+        tr = Counter(r.get("census_tract") for r in rows)
+        out.append(f"tracts {len(tr):,}; tracts with >= 30 loans {sum(1 for n in tr.values() if n >= 30):,}")
+    return " ;; ".join(out)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
