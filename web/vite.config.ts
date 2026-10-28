@@ -8,7 +8,7 @@ function checkBuiltCopy(folder = "dist") {
   for (const file of readdirSync(folder, { withFileTypes: true })) {
     const path = join(folder, file.name);
     if (file.isDirectory()) checkBuiltCopy(path);
-    else if (/\.(js|html)$/.test(file.name) && /\b(fair value|good deal|overpriced|worth)\b/i.test(readFileSync(path, "utf8")))
+    else if (/\.(js|html)$/.test(file.name) && /\b(fair value|good deal|overpriced|worth|bargain|undervalued)\b/i.test(readFileSync(path, "utf8")))
       throw new Error("Built site contains prohibited home-value wording");
   }
 }

@@ -195,6 +195,49 @@ input[type="number"], select, textarea { border: 1px solid #bdc9d6; border-radiu
 .comparison-class { display: block; margin-top: .25rem; }
 
 .home-page { width: min(760px,100%); margin: 0 auto; }
+.home-tabs { display: flex; gap: 8px; padding: 12px 20px 0; flex-wrap: wrap; }
+.home-tabs a { border: 1px solid var(--line); border-radius: 6px 6px 0 0; padding: 8px 14px; background: #fff; text-decoration: none; }
+.home-tabs a[aria-current="page"] { background: var(--brand); color: #fff; }
+.batch-page { min-width: 0; width: 100%; }
+.batch-import { background: #fff; padding: 18px; border: 1px solid var(--line); border-radius: 8px; margin: 20px 0; }
+.batch-import label { display: block; margin: 12px 0; }
+.batch-import textarea { display: block; width: 100%; padding: 10px; margin-top: 6px; }
+.batch-file { border: 2px dashed #a8b8c8; padding: 18px; border-radius: 6px; }
+.batch-file input { display: block; max-width: 100%; margin-top: 10px; }
+.batch-saved,.batch-controls,.batch-actions { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin: 18px 0; }
+.batch-saved label,.batch-controls label,.batch-actions label { display: flex; flex-direction: column; gap: 5px; max-width: 100%; }
+.batch-controls label:has(input[type="checkbox"]) { flex-direction: row; align-items: center; align-self: center; }
+.batch-saved select,.batch-controls select,.batch-actions input { max-width: 100%; padding: 7px; }
+.batch-sort-note { max-width: 900px; line-height: 1.6; }
+.batch-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--line); background: #fff; }
+.batch-table { width: 100%; min-width: 2300px; border-collapse: collapse; font-size: .82rem; }
+.batch-table caption { text-align: left; font-weight: 650; padding: 14px; }
+.batch-table th,.batch-table td { border: 1px solid var(--line); padding: 10px; vertical-align: top; min-width: 100px; }
+.batch-table th { background: #edf2f7; text-align: left; }
+.batch-table th button { border: 0; padding: 0; background: none; text-align: left; font-weight: 600; text-decoration: underline; }
+.batch-table td:first-child { min-width: 240px; }
+.batch-table small { display: block; line-height: 1.5; margin-top: 6px; }
+.batch-links { display: flex; gap: 12px; margin-top: 8px; }
+.batch-area-warning { display: block; margin-top: 8px; color: var(--warn-ink); }
+.batch-source { min-width: 210px; max-width: 300px; line-height: 1.5; }
+.batch-source summary { cursor: pointer; }
+.batch-mobile-label { display: none; }
+.batch-unmatched ul { list-style: none; padding: 0; }
+.batch-unmatched li { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 12px 0; overflow-wrap: anywhere; }
+.batch-unmatched h3 { font-size: 1rem; }
+.batch-unmatched select { max-width: 100%; padding: 8px; display: block; margin: 7px 0; }
+@media(max-width:760px){
+ .home-tabs { padding: 8px 12px 0; }.home-tabs a { padding: 8px 10px; font-size: .85rem; }
+ .batch-page { padding: 14px 12px; }.batch-import { padding: 12px; }.batch-file { padding: 12px; }
+ .batch-table-wrap { overflow: visible; border: 0; background: transparent; }
+ .batch-table,.batch-table tbody { display: block; min-width: 0; width: 100%; }
+ .batch-table thead { display: none; }.batch-table caption { display: block; padding: 10px 0; }
+ .batch-table tbody tr { display: block; padding: 14px; background: #fff; border: 1px solid var(--line); border-radius: 9px; margin: 14px 0; }
+ .batch-table td,.batch-table td:first-child { display: grid; grid-template-columns: minmax(0,40%) minmax(0,60%); gap: 8px; min-width: 0; padding: 8px 0; border: 0; border-bottom: 1px solid #edf0f3; overflow-wrap: anywhere; }
+ .batch-mobile-label { display: block; color: var(--muted); }
+ .batch-table td:last-child { display: block; }.batch-source { min-width: 0; max-width: none; }
+ .batch-saved,.batch-controls,.batch-actions { align-items: start; }.batch-controls label { max-width: 100%; }
+}
 .home-intro h1 { margin-bottom: .4rem; }
 .home-intro > p { color: var(--muted); line-height: 1.6; }
 .home-search { padding: 18px; margin: 20px 0; border: 1px solid var(--line); border-radius: 10px; background: #fff; }

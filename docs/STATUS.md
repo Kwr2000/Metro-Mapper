@@ -3,7 +3,7 @@
 Where the build stands, for whoever picks it up next (a new chat, Codex, or the owner).
 Update at the end of each work session. History and reasons live in `DECISIONS.md`.
 
-_Last updated 2026-10-27 (P3-03 built; awaiting score review)._
+_Last updated 2026-10-28 (P3-01 built; awaiting batch review)._
 
 ## Phase
 
@@ -11,6 +11,13 @@ _Last updated 2026-10-27 (P3-03 built; awaiting score review)._
 P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
 
 ## Done
+
+- **P3-01 batch listing check** (Codex, 2026-10-28): browser-only CSV/paste matching,
+  range/percentile table and phone cards, filters/sorts, explicit named saves and CSV export.
+  `make test`: 1,263 pipeline + 265 web tests and build pass. Synthetic 25-listing browser
+  checks pass at 1440×900 and 390×844, including the own-data-only request boundary;
+  350 rows render in 2.5–3.6 seconds with no main-thread task over 51 ms in the final run.
+  Claude still needs the owner's real Redfin download to check headers, match rate and cards.
 
 - Scaffold: `AGENTS.md`, `LICENSE` (MIT), `.gitignore`, `docs/reference/austin-watch-lessons.md` (PR #1).
 - Source probe: `tools/probe/probe.py` + `.github/workflows/probe.yml`, manual only (PRs #2, #3).

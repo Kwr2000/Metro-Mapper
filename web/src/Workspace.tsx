@@ -29,8 +29,10 @@ function initialView(registry: Registry, benchmarks: Benchmarks): ViewState {
   return registryView(readView(encodeView(raw))!, registry, benchmarks);
 }
 
-export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, homeTarget }: { registry: Registry; active: boolean; benchmarks?: Benchmarks; homeTarget?:Home|null }) {
-  const [view, setView] = useState<ViewState>(() => initialView(registry, benchmarks));
+export function Workspace({ registry, active, benchmarks = EMPTY_BENCHMARKS, homeTarget, initialSnapshot, onSnapshot }: { registry: Registry; active: boolean; benchmarks?: Benchmarks; homeTarget?:Home|null; initialSnapshot?:ViewState|null;onSnapshot?:(view:ViewState)=>void }) {
+  const [view, setView] = useState<ViewState>(() => initialSnapshot&&!readView(window.location.hash)?registryView(initialSnapshot,registry,benchmarks):initialView(registry, benchmarks));
+  const latestView=useRef(view);latestView.current=view;
+  useEffect(()=>()=>{onSnapshot?.(latestView.current);},[]);
   const [scoreData,setScoreData]=useState<AreaScore|null>(null),[scoreError,setScoreError]=useState("");
   const scorePreferences=view.score??DEFAULT_SCORE;
   useEffect(()=>{let cancelled=false;loadJSON<unknown>("data/area_score.json").then(validateScore).then(data=>{if(!cancelled)setScoreData(data);},()=>{if(!cancelled)setScoreError("Score data is unavailable. Reload to retry.");});return()=>{cancelled=true;};},[]);
