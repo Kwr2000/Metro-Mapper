@@ -692,6 +692,76 @@ def _():
             f"Austin rows {len(austin)}; last 12: " + " // ".join(a.strip()[:140] for a in austin[-12:]))
 
 
+@check("hmda_browser", "HMDA data browser: 2025 home-purchase loans in the three counties (format and counts only)")
+def _():
+    import csv, io
+    from collections import Counter
+    base = "https://ffiec.cfpb.gov/v2/data-browser-api/view"
+    out = []
+    for year in (2025, 2024):
+        q = f"counties=48453,48491,48209&years={year}&actions_taken=1&loan_purposes=1"
+        status, _, body, _ = _req(f"{base}/aggregations?{q}", max_bytes=200_000)
+        out.append(f"{year} aggregations HTTP {status}: {body[:300].decode('latin-1')!r}")
+    status, hdrs, body, _ = _req(f"{base}/csv?counties=48453,48491,48209&years=2025&actions_taken=1&loan_purposes=1", max_bytes=400_000_000)
+    out.append(f"2025 csv HTTP {status}, {len(body):,} bytes, type {hdrs.get('content-type', '?')}")
+    if status == 200 and body:
+        rows = list(csv.DictReader(io.StringIO(body.decode("latin-1"))))
+        cols = list(rows[0].keys()) if rows else []
+        out.append(f"rows {len(rows):,}; {len(cols)} columns; has property_value {'property_value' in cols}, census_tract {'census_tract' in cols}, "
+                   f"occupancy_type {'occupancy_type' in cols}, derived_dwelling_category {'derived_dwelling_category' in cols}, total_units {'total_units' in cols}")
+        for c in ("county_code", "occupancy_type", "derived_dwelling_category", "lien_status", "total_units", "derived_loan_product_type"):
+            if c in cols: out.append(f"{c}: {dict(Counter(r[c] for r in rows).most_common(8))}")
+        pv = [r.get("property_value", "") for r in rows]
+        out.append(f"property_value blank/Exempt/NA {sum(1 for v in pv if not v.replace('.', '').isdigit()):,}; sample shapes {sorted({re.sub('[0-9]', '9', v) for v in pv})[:6]}")
+        tr = Counter(r.get("census_tract") for r in rows)
+        out.append(f"tracts {len(tr):,}; tracts with >= 30 loans {sum(1 for n in tr.values() if n >= 30):,}")
+    return " ;; ".join(out)
+
+
+@check("hmda_validation_preview", "Preview of the P2-08 check: tract medians of value-range centres vs HMDA 2025 (aggregates only)")
+def _():
+    import csv, gzip, io, json, statistics
+    from collections import defaultdict
+    status, _, body, _ = _req("https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?counties=48453,48491,48209&years=2025&actions_taken=1&loan_purposes=1", max_bytes=400_000_000)
+    hm = defaultdict(list)
+    for r in csv.DictReader(io.StringIO(body.decode("latin-1"))):
+        if r["lien_status"] == "1" and r["derived_dwelling_category"] == "Single Family (1-4 Units):Site-Built" and r["total_units"] == "1" and r["property_value"].isdigit():
+            hm[r["census_tract"]].append(int(r["property_value"]))
+    tract = {}
+    with gzip.open("data/canonical/area_feature/parcels.ndjson.gz", "rt") as g:
+        for line in g:
+            r = json.loads(line)
+            if r["dataset"] == "parcel": tract[r["feature_id"]] = r["properties"].get("tract")
+    levels = {"48453": 1.00, "48491": 0.96, "48209": 1.00}; F = 681.16 / ((680.77 + 656.56) / 2)
+    hmda_f = 681.16 / ((705.28 + 683.03 + 677.00 + 680.77) / 4)
+    ours = defaultdict(list); ours_new = defaultdict(list)
+    for src in ("tcad", "wcad", "hays_cad"):
+        with gzip.open(f"data/canonical/area_feature/{src}.ndjson.gz", "rt") as g:
+            for line in g:
+                r = json.loads(line)
+                if r["dataset"] != "property": continue
+                p = r["properties"]
+                if p["category"] != "single_family" or not p.get("market_value") or not p.get("improvement_value"): continue
+                t = tract.get(r["feature_id"])
+                if not t: continue
+                mid = p["market_value"] / levels[r["feature_id"][:5]] * F
+                ours[t].append(mid)
+                if (p.get("year_built") or 0) >= 2020: ours_new[t].append(mid)
+    out = []
+    for label, adj in (("HMDA as reported", 1.0), ("HMDA time-adjusted to 2026Q2", hmda_f)):
+        ratios = []; bycounty = defaultdict(list)
+        for t, vals in hm.items():
+            if len(vals) >= 30 and len(ours.get(t, [])) >= 30:
+                r = statistics.median(ours[t]) / (statistics.median(vals) * adj)
+                ratios.append(r); bycounty[t[:5]].append(r)
+        within = sum(1 for r in ratios if 0.8 <= r <= 1.2)
+        out.append(f"{label}: tracts {len(ratios)}; median ratio {statistics.median(ratios):.3f}; within ±20% {within}/{len(ratios)} = {within/len(ratios):.1%}; "
+                   + "; ".join(f"{c} n={len(v)} med {statistics.median(v):.3f} within {sum(1 for r in v if .8<=r<=1.2)/len(v):.0%}" for c, v in sorted(bycounty.items())))
+    q = sorted(ratios)
+    out.append("ratio deciles " + ", ".join(f"{q[int(i*(len(q)-1)/10)]:.2f}" for i in range(11)))
+    return " ;; ".join(out)
+
+
 @check("comptroller_pvs", "Comptroller 2024 property value study page (Travis, category A)")
 def _():
     status, _, body, _ = _req("https://comptroller.texas.gov/auto-data/PT2/ratio-study/2024/2270000001A.php")
