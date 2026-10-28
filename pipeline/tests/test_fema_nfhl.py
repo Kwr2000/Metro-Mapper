@@ -310,7 +310,7 @@ def test_fetch_mocked_transport_only(context, monkeypatch):
 def test_fixture_publication_is_only_block_groups_and_test_data(context):
     run = runner.run("fema_nfhl", now=NOW)
     assert run.status == "success", run.errors
-    assert run.calls_made == 0 and run.planned_calls == 3 and run.rows_out == 3
+    assert run.calls_made == 0 and run.planned_calls == 3 and run.rows_out == 5
     root = context.adapter_dir.parents[1]
     output = root / "web/public/data/layers/flood_share.geojson"
     doc = json.loads(output.read_text())

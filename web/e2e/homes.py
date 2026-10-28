@@ -11,7 +11,7 @@ import urllib.request
 from urllib.parse import quote, urlparse
 from playwright.sync_api import expect
 
-BANNED=re.compile(r'\b(fair value|good deal|overpriced|worth|bargain|undervalued)\b',re.I)
+BANNED=re.compile(r'\b(fair value|good deal|overpriced|worth|bargain|undervalued|bad|avoid|deal)\b',re.I)
 
 
 def prepare(web):
@@ -41,7 +41,7 @@ def prepare(web):
     # Vite derives the small ID locator files; the pipeline remains unchanged.
     subprocess.run(['npm','run','build'],cwd=web,check=True)
     for file in (web/'dist').rglob('*'):
-        if file.suffix in {'.js','.html'}:assert not BANNED.search(file.read_text()),f'Prohibited wording in {file.name}'
+        if file.suffix in {'.js','.html'}:assert not (re.compile(r'\b(fair value|good deal|overpriced|worth|bargain|undervalued)\b',re.I) if file.name.startswith('maplibre-') else BANNED).search(file.read_text()),f'Prohibited wording in {file.name}'
 
 
 def read_homes(dist):

@@ -121,6 +121,41 @@
         "osm_id": "n5"
       }
     ],
-    "osm_as_of": "2026-10-21"
+    "osm_as_of": "2026-10-21",
+    "nuisance_ways": [
+      {
+        "id": 201,
+        "nodes": [
+          "1",
+          "2"
+        ],
+        "tags": {
+          "highway": "motorway",
+          "ref": "I 35",
+          "name": "Synthetic Highway"
+        }
+      },
+      {
+        "id": 202,
+        "nodes": [
+          "2",
+          "3"
+        ],
+        "tags": {
+          "highway": "primary",
+          "name": "Synthetic Major Road"
+        }
+      },
+      {
+        "id": 203,
+        "nodes": [
+          "3",
+          "4"
+        ],
+        "tags": {
+          "railway": "rail"
+        }
+      }
+    ]
   }
 }

@@ -8,6 +8,7 @@ import {homeLink,type HomeMeta} from "../homes/data";
 import {MAX_FILE_BYTES,parseImport,type Listing} from "./parse";
 import {chooseMatch,positionLabel,processListings,published,SORT_LABELS,tableRows,type BatchResult,type BatchRow,type SortKey} from "./model";
 import {downloadCSV,exportTable} from "./export";
+import {ThingsToCheck} from "../homes/Checks";
 
 const amount=(n:number|null|undefined)=>n==null?"Not available":n.toLocaleString("en-US",{maximumFractionDigits:2});
 const money=(n:number|null|undefined)=>n==null?"Not available":n.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
@@ -42,7 +43,7 @@ function SourceDetails({row,meta}:{row:BatchRow;meta:HomeMeta}){
   </details>;
 }
 const ResultRow=memo(function ResultRow({row,meta,showRange}:{row:BatchRow;meta:HomeMeta;showRange:boolean}){
-  return <tr data-listing-key={row.listing.key}>{columns.filter(c=>showRange||!c.range).map(c=><td key={c.label}><span className="batch-mobile-label">{c.label}</span><div>{c.render(row)}</div></td>)}<td><SourceDetails row={row} meta={meta}/></td></tr>;
+  return <tr data-listing-key={row.listing.key}>{columns.filter(c=>showRange||!c.range).map(c=><td key={c.label}><span className="batch-mobile-label">{c.label}</span><div>{c.render(row)}</div></td>)}<td><span className="batch-mobile-label">Things to check</span><ThingsToCheck home={row.home!} meta={meta} compact rangeFlags={row.metrics?.flags}/></td><td><SourceDetails row={row} meta={meta}/></td></tr>;
 });
 export function BatchPage({registry}:{registry:Registry|null}){
   const [paste,setPaste]=useState(""),[result,setResult]=useState<BatchResult|null>(null),[ignored,setIgnored]=useState<string[]>([]);
@@ -118,7 +119,7 @@ export function BatchPage({registry}:{registry:Registry|null}){
       </div>
       <p role="status">{matched.length} matched listings shown · {unresolved.length} need attention</p>
       <div className="batch-actions"><label>List name<input value={name} maxLength={80} onChange={e=>setName(e.target.value)}/></label><button onClick={save} disabled={!name.trim()}>Save list</button><button disabled={!matched.length} onClick={()=>downloadCSV(exportTable(matched,result.meta))}>Export table CSV</button><span className="small">Export uses the filtered table in its current order. Clear removes this import and all saved listing lists.</span></div>
-      <div className="batch-table-wrap"><table className="batch-table"><caption>Matched listings</caption><thead><tr>{columns.filter(c=>showRange||!c.range).map(c=><th key={c.label} scope="col" aria-sort={c.sort&&sort.key===c.sort?(sort.descending?"descending":"ascending"):undefined}>{c.sort?<button onClick={()=>sortBy(c.sort!)} aria-label={`Sort by ${c.label}`}>{c.label}</button>:c.label}</th>)}<th scope="col">Sources / file details</th></tr></thead>
+      <div className="batch-table-wrap"><table className="batch-table"><caption>Matched listings</caption><thead><tr>{columns.filter(c=>showRange||!c.range).map(c=><th key={c.label} scope="col" aria-sort={c.sort&&sort.key===c.sort?(sort.descending?"descending":"ascending"):undefined}>{c.sort?<button onClick={()=>sortBy(c.sort!)} aria-label={`Sort by ${c.label}`}>{c.label}</button>:c.label}</th>)}<th scope="col">Things to check</th><th scope="col">Sources / file details</th></tr></thead>
         <tbody>{matched.slice(0,limit).map(row=><ResultRow key={row.listing.key} row={row} meta={result.meta} showRange={showRange}/>)}</tbody></table></div>
       {limit<matched.length&&<p role="status">Rendering more listings…</p>}
       {!!unresolved.length&&<section className="batch-unmatched" aria-label="Listings needing attention"><h2>Listings needing attention</h2><ul>{unresolved.map(row=><li key={row.listing.key}><h3>{row.listing.query||"Address not available"}</h3><p>{row.reason}</p><p className="small">Normalized search: {[row.normalized.number,row.normalized.street_key,row.normalized.unit?`Unit ${row.normalized.unit}`:"",row.normalized.zip].filter(Boolean).join(" ")||"No street address"}</p>

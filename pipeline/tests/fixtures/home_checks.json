@@ -1,0 +1,88 @@
+{
+  "test_data": true,
+  "meta": {
+    "v": 1,
+    "header": "Things that often go with a lower price. None of them is a verdict; check the home.",
+    "texts": {
+      "flood1": "In a FEMA 1% annual chance flood zone ({zone}). Flood insurance is usually required with a mortgage.",
+      "flood02": "In a FEMA 0.2% annual chance flood zone (moderate risk).",
+      "highway": "About {distance} m from a highway{label}. Traffic noise is likely.",
+      "major_road": "About {distance} m from a major road{label}.",
+      "rail": "About {distance} m from a railway line{label}.",
+      "pre1978": "Built before 1978: federal lead-based paint disclosure applies.",
+      "old_systems": "Built in {year}: original roof, HVAC or plumbing may be near the end of their life.",
+      "small_lot": "Lot smaller than about 90% of similar homes in its appraisal neighbourhood."
+    },
+    "thresholds": {
+      "highway": 150,
+      "major_road": 60,
+      "rail": 150,
+      "search_metres": 200,
+      "small_lot_percentile": 10,
+      "lot_min_group": 20
+    },
+    "distance_note": "Distances are approximate: OpenStreetMap centrelines and parcel interior points, not a building or noise measurement.",
+    "zone_note": "Zone labels describe the dissolved FEMA union; an individual zone boundary is not retained.",
+    "lot_note": "At least 20 recorded lots in the same county, neighbourhood and category.",
+    "test_data": true,
+    "sources": {
+      "fema": {
+        "source": "FEMA National Flood Hazard Layer",
+        "available": true,
+        "dates": [
+          "2026-10-28"
+        ],
+        "versions": [
+          "3.0"
+        ],
+        "test_data": true
+      },
+      "osm": {
+        "source": "OpenStreetMap contributors (ODbL 1.0)",
+        "available": true,
+        "dates": [
+          "2026-10-21"
+        ],
+        "test_data": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "encoded": "flood1:AE/AO",
+      "contains": "In a FEMA 1% annual chance flood zone (stored zone labels: AE, AO)."
+    },
+    {
+      "encoded": "flood02",
+      "contains": "In a FEMA 0.2% annual chance flood zone (moderate risk)."
+    },
+    {
+      "encoded": "highway:90:I 35",
+      "contains": "About 90 m from a highway (I 35). Traffic noise is likely."
+    },
+    {
+      "encoded": "major_road:40:S Lamar Blvd",
+      "contains": "About 40 m from a major road (S Lamar Blvd)."
+    },
+    {
+      "encoded": "rail:120:",
+      "contains": "About 120 m from a railway line."
+    },
+    {
+      "encoded": "pre1978",
+      "contains": "Built before 1978: federal lead-based paint disclosure applies."
+    },
+    {
+      "encoded": "old_systems",
+      "contains": "Built in 1985: original roof, HVAC or plumbing may be near the end of their life."
+    },
+    {
+      "encoded": "small_lot",
+      "contains": "Lot smaller than about 90% of similar homes in its appraisal neighbourhood."
+    },
+    {
+      "encoded": "range_flags",
+      "contains": "Condo"
+    }
+  ]
+}

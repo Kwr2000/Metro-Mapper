@@ -3,6 +3,7 @@ import type { Home, HomeMeta, HoodData, HoodStat } from "./data";
 import { homeData, homeLink } from "./data";
 import { valueRange,calibrationFactor,adjustmentText,type Calibration } from "./range";
 import { readAskingPrice, storageAvailable, writeAskingPrice } from "../store";
+import {ThingsToCheck} from "./Checks";
 
 export const categoryLabel = (category:string) => ({single_family:"Single-family home",condo:"Condo",mobile_home:"Mobile home",two_to_four_units:"2–4 units",rural_home:"Rural home",builder_inventory:"Builder inventory (new construction)",other_residential:"Other residential home"} as Record<string,string>)[category] ?? "Residential home";
 const currency=(n:number|null)=>n==null ? "Not available" : new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
@@ -98,6 +99,7 @@ export function HomeCard({home,meta,areaName,onShowMap,onClose,loadHoods=()=>hom
         <p className="home-source small">{source}, {home.value_year} appraisals · FHFA as of {dateLabel(range?.hpi.as_of)} · {range?.study_year} Comptroller study. {range?.hood_stats_note}</p>
       </div>)}
     </section>
+    <ThingsToCheck home={home} meta={meta} rangeFlags={codes.map(flagText).join("; ")}/>
     <section><h3>The area</h3><p>{home.block_group ? areaName || `Block group ${home.block_group}` : "Area name not available"}</p>
       {location ? <button onClick={()=>onShowMap(home)}>Show on map</button> : <p>No map location yet for this home (Travis condos are not yet placed)</p>}
     </section>

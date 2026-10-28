@@ -15,4 +15,7 @@
   <way id="102"><nd ref="5"/><nd ref="6"/><nd ref="7"/><nd ref="8"/><nd ref="5"/><tag k="leisure" v="park"/></way>
   <way id="103"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/><tag k="shop" v="supermarket"/></way>
   <way id="104"><nd ref="1"/><nd ref="9"/><nd ref="2"/><nd ref="3"/><tag k="highway" v="residential"/></way>
+  <way id="201"><nd ref="1"/><nd ref="2"/><tag k="highway" v="motorway"/><tag k="ref" v="I 35"/></way>
+  <way id="202"><nd ref="2"/><nd ref="3"/><tag k="highway" v="primary"/><tag k="name" v="Synthetic Major Road"/></way>
+  <way id="203"><nd ref="3"/><nd ref="4"/><tag k="railway" v="rail"/></way>
 </osm>

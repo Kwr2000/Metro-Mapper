@@ -99,7 +99,7 @@ def test_merge_exact_points_counts_compact_contract_meta_and_roundtrip(repo):
   assert meta['counties'][county]['certified']==['2026-10-19']
  published=rows();assert len(published)==15 and all(r['number']=='100' and r['street_key']=='S 8TH ST' for r in published)
  assert homes.FIELDS==['id','number','street_key','unit','zip','situs','city','county','category','lon','lat','block_group',
-  'hood_cd','living_area','year_built','land_acres','floors','market_value','land_value','improvement_value','value_year','certified','placed','range_pct','range_flags']
+  'hood_cd','living_area','year_built','land_acres','floors','market_value','land_value','improvement_value','value_year','certified','placed','range_pct','range_flags','checks']
  points={r.feature_id:r.geometry['coordinates'] for r in parcels}
  for r in published:
   assert set(r)==set(homes.FIELDS) and r['unit'] is None and r['city']=='Austin'
