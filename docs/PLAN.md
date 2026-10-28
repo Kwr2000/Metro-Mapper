@@ -21,7 +21,7 @@ tracts as the steadier view and H3 resolution 8 as a stability check.
 | 0 | Source verification, this plan, `SOURCES.md`, `DECISIONS.md`, Phase 1 specs | Done 2026-10-22 (awaiting approval) |
 | 1 | Pipeline skeleton; block-group map with names; layers for schools, safety, access, flood, ACS demographics; filters; side-by-side comparison; methodology page | Done 2026-10-25 (plus elections, comparisons in progress) |
 | 2 | Listing check: harmonized parcel base for T/W/H, static sharded address lookup, appraisal-based value range with flags | In progress (approved 2026-10-25) |
-| 3 | Value-for-money map with browser-side weights | |
+| 3 | Find value in good areas: batch listing check, neighbourhood-calibrated ranges, a non-demographic "good place to live" score with browser-side weights, value-for-money map, per-home "why might it be cheap" checklist | Approved 2026-10-27; starts after Phase 2 |
 | 4 | Market trends: appraisal history by area (WCAD 2015–2026; TCAD and Hays exports by year), HMDA tract values | |
 | Later | More counties, fixed destinations for commutes, verified sale prices and a calibrated model, launch polish | |
 
@@ -169,6 +169,32 @@ is a GitHub Release file read by the Pages build (still $0).
 weakest cases (hence wider ranges and flags). TCAD has no living-area field (sum of main-area
 segments, codes to confirm). Fixed-width TCAD files are large (4.9 GB unzipped): processing time
 and disk on Actions runners must be measured in P2-02.
+
+## Phase 3 plan — find value in good areas (approved by the owner 2026-10-27)
+
+**Goal (owner, 2026-10-27):** "find what would be good deals in good areas to live." The site
+screens and explains; the owner judges. Ground rule 2 stays: the site never calls a home a "good
+deal" or a "fair value". It says where an asking price sits against the appraisal-based range and
+against similar homes, how the area scores on what the owner chose to weigh, and what might explain
+a low price.
+
+**Why these pieces.** The site doesn't pull listings, appraisals miss condition and interiors (about
+1 in 4 sales land more than 10% from the appraisal), and Texas has no public sale prices. So: screen
+many of the owner's own listings at once (P3-01), make the range more local using what buyers paid
+by tract (P3-02), score areas on things a listing doesn't show (P3-03), combine price and score
+(P3-04), and list the usual reasons a home is cheap (P3-05).
+
+| ID | Task | Agent | Depends on |
+|---|---|---|---|
+| P3-01 | Batch listing check: drop a Redfin "Download all" CSV (or paste address + price lines); match every listing; sortable table of asking price vs range and vs neighbourhood $/sq ft; all in the browser, nothing stored or sent | Codex | P2-07, P2-08 |
+| P3-02 | Neighbourhood calibration: tract-level adjustment from HMDA (shrunk toward the county level), validated on a held-out year | Claude spec, Codex | P2-08 |
+| P3-03 | "Good place to live" score per block group: owner-weighted in the browser from non-demographic layers only (flood, schools, safety, access, transit); a test forbids demographic or election inputs | Claude spec, Codex | Phase 1 |
+| P3-04 | Value-for-money map and list: area score vs appraisal-based $/sq ft; in the batch table, each listing's area score | Codex | P3-01, P3-03 |
+| P3-05 | "Why might it be cheap" checklist per home: flood exposure, busy road or rail nearby, age, lot small for the area, range flags | Claude spec, Codex | P2-07 |
+
+**Rules.** $0; no listing data is published or stored outside the owner's browser; Redfin's CSV is
+the owner's own download, used only on the owner's device; scores never read demographic or
+election fields (`pipeline/mm/inputs.py` and a web test enforce it); weights live in the browser.
 
 ## Risks
 

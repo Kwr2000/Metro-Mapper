@@ -3,6 +3,17 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-27 — Owner approval: Phase 3 (find value in good areas)
+
+- **Owner approval:** "I'd like to find what would be good deals in good areas to live, which is a
+  key motivation to this project. Whatever steps needed to reach that goal seems like a good idea"
+  (2026-10-27), after Claude proposed a batch listing check, neighbourhood calibration from HMDA,
+  a non-demographic "good place to live" score with browser weights, a value-for-money map and a
+  "why might it be cheap" checklist. Phase 3 plan in `docs/PLAN.md`; it starts after Phase 2.
+- Ground rules 2 and 4 stay as written: no "good deal"/"fair value" wording, and no demographic or
+  election input to any score. Claude recommended keeping them; the site gives the evidence and the
+  owner judges.
+
 ## 2026-10-28 — P2-06 value range reviewed and merged; FHFA live and ungated (Claude, chat)
 
 - PR #118 reviewed against the spec. Codex correctly stopped: Travis had a range for 95.4% of

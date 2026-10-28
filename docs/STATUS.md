@@ -7,10 +7,8 @@ _Last updated 2026-10-27 (P2-06 built; strict value-range publish blocked by Tra
 
 ## Phase
 
-**Phase 2 — approved 2026-10-25, in progress** (P2-01 parcel base live). Phase 1 is complete.
-
-**Phase 1 — done 2026-10-25** (approved 2026-10-23). Phase 0 is done. All owner questions (Q1–Q3)
-are decided (`DECISIONS.md`).
+**Phase 3 — approved 2026-10-27** (find value in good areas; plan in `docs/PLAN.md`). P3-01 and P3-03
+specs ready. **Phase 2 — in progress** (P2-01 to P2-06 done; P2-07 and P2-08 being built).
 
 ## Done
 
@@ -213,11 +211,13 @@ are decided (`DECISIONS.md`).
 
 ## Next
 
-1. Owner: paste the P2-07 ("Check a home" page) prompt into Codex, and the P2-08 (HMDA check)
-   prompt into a second Codex task; they touch different files.
-2. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
-3. Claude: review both PRs, run the HMDA first live check, then check the live page.
-4. Check the 2026-11-03 refresh report (FHFA is now monthly; expect it to be due).
+1. Codex (in progress): P2-07 ("Check a home" page) and P2-08 (HMDA check).
+2. Owner: paste the P3-03 ("good place to live" score) prompt into Codex now; it only needs
+   Phase 1 data. P3-01 (batch listing check) waits for P2-07 and P2-08.
+3. Owner: download one real Redfin "Download all" CSV of a saved search, for checking P3-01.
+4. Claude: review P2-07/P2-08, run the HMDA first live check; spec P3-02, P3-04, P3-05.
+5. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
+6. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
 
 ## Open issues
 
