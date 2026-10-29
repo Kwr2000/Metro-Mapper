@@ -3,6 +3,25 @@
 Design decisions and the owner's approvals, newest first. Each entry says what was decided,
 why, and (for approvals) that the owner approved it in writing.
 
+## 2026-10-29 — P3-04 and P3-05 merged; FEMA and access live; flood checks on (Claude, chat)
+
+- PR #132 (P3-04): real-data check: 1,084 areas with a price; with default weights 265 are "higher
+  score, lower price per sq ft"; under $250/sq ft the top scores are Cedar Park/Round Rock areas
+  (Mesa Park, Mesa Ridge, Forest Oaks, Cat Hollow; about $202–245, scores 74–79). Medians: score 51,
+  $257/sq ft. Merged.
+- PR #133 (P3-05): merged after combining its batch-table, export and e2e changes with P3-04's.
+- Access live run 40780388818: 3,799 highway, 3,858 major-road and 562 rail lines kept (canonical
+  2.96 MB). FEMA run 40780375874 failed on an invalid simplified union (24 calls, logged); fixed
+  (repair before and after reprojection, PR #134); re-run 40792207063 succeeded: two flood unions,
+  canonical 5.3 MB (limit 25 MB).
+- Flood checks made `mm publish` take 14 minutes (every home tested against county-wide polygons);
+  now the flood parts are indexed separately and tested in bulk (same results; publish about 4.5
+  minutes locally). The Pages job timeout is raised from 10 to 20 minutes as headroom.
+- Homes with each check: range flags 390,198; pre-1978 97,077; 1978–89 92,144; small lot 38,862;
+  1% flood zone 12,062; 0.2% zone 10,296; rail 9,559; highway 5,455; major road 2,257. `homes/`
+  207.6 MB. Samples look right (e.g. Mohle Dr ~54 m from MoPac; 4000 Shoal Creek Blvd in the
+  1% zone; Gonzales St ~36 m from E 7th St).
+
 ## 2026-10-28 — P3-05 property and map facts (Codex)
 
 - Keep exactly two dissolved FEMA MultiPolygon records, simplified at 2 metres and rounded

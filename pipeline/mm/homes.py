@@ -23,6 +23,8 @@ import os
 from pathlib import Path
 import re
 import tempfile
+
+import shapely
 from urllib.parse import quote
 
 from pyproj import Transformer
@@ -85,8 +87,12 @@ class LocationChecks:
             if r["feature_id"] not in {"sfha","x02"}:raise ValueError("homes: invalid flood union")
             geom = shape(r["geometry"])
             if not geom.is_valid:raise ValueError("homes: invalid flood polygon")
-            self.flood.append((check_geometry(geom),r["feature_id"],r["properties"]))
-        self.flood.sort(key=lambda r:r[1])
+            # Index each polygon part separately: one county-wide MultiPolygon made every point
+            # test the whole union (publish 14 min on 2026-10-29); parts keep it to seconds.
+            projected = check_geometry(geom)
+            for part in getattr(projected, "geoms", [projected]):
+                self.flood.append((part,r["feature_id"],r["properties"]))
+        self.flood.sort(key=lambda r:(r[1],r[0].wkb_hex))
         self.flood_tree = STRtree([g for g,_,_ in self.flood])
         for r in lines:
             if r["dataset"] != "nuisance_line":continue
@@ -98,9 +104,24 @@ class LocationChecks:
         for group in self.lines.values():group.sort(key=lambda r:(r[1],r[0].wkb_hex))
         self.trees={kind:STRtree([g for g,_ in group]) for kind,group in self.lines.items()}
 
-    def at(self, lon, lat):
+    def flood_bulk(self, coordinates):
+        """Vectorized point-in-zone for all placed homes at once (index -> {zone id: properties})."""
+        if not coordinates or not self.flood:return {}
+        xs,ys=CHECK_PROJECT([c[0] for c in coordinates],[c[1] for c in coordinates])
+        points=shapely.points(xs,ys)
+        # Query the points with each flood part as the (internally prepared) input geometry:
+        # far faster than testing every point against large river polygons.
+        point_tree=STRtree(points)
+        result=defaultdict(dict)
+        for part,identity,properties in self.flood:
+            for point_index in point_tree.query(part,predicate="covers"):
+                result[int(point_index)][identity]=properties
+        return result
+
+    def at(self, lon, lat, found=None):
         point=Point(*CHECK_PROJECT(lon,lat));codes=[]
-        found={self.flood[i][1]:self.flood[i][2] for i in self.flood_tree.query(point,predicate="covered_by")}
+        if found is None:
+            found={self.flood[i][1]:self.flood[i][2] for i in self.flood_tree.query(point,predicate="covered_by")}
         if "sfha" in found:
             zones="/".join(found["sfha"].get("zones",[]))
             codes.append("flood1:"+quote(zones,safe="/"))
@@ -127,9 +148,12 @@ def annotate_checks(buckets, flood, access, flood_fixture, access_fixture):
         for r in rows:
             if r[12] and r[15] is not None:groups[(r[7],r[12],r[8])].append(r[15])
     limits={key:values.decimal(values.percentile(sorted(v),10)) for key,v in groups.items() if len(v)>=20}
+    placed=[r for rows in buckets.values() for r in rows if r[22]=="parcel"]
+    flood_hits=location.flood_bulk([(r[9],r[10]) for r in placed])
+    flood_by_row={id(r):flood_hits.get(i,{}) for i,r in enumerate(placed)}
     for rows in buckets.values():
         for r in rows:
-            codes=location.at(r[9],r[10]) if r[22]=="parcel" else []
+            codes=location.at(r[9],r[10],flood_by_row[id(r)]) if r[22]=="parcel" else []
             if r[14] is not None and 0<r[14]<1978:codes.append("pre1978")
             elif r[14] is not None and 0<r[14]<1990:codes.append("old_systems")
             bound=limits.get((r[7],r[12],r[8]))

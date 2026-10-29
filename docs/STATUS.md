@@ -8,8 +8,7 @@ _Last updated 2026-10-28 (P3-04 built; awaiting review)._
 
 ## Phase
 
-**Phase 3 — approved 2026-10-27** (find value in good areas; plan in `docs/PLAN.md`). P3-01 spec ready;
-P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live after the HMDA check passed).
+**Phase 3 — done 2026-10-29** (P3-01 to P3-05 live). **Phase 2 — done 2026-10-28.**
 
 ## Done
 
@@ -277,17 +276,17 @@ P3-03 built. **Phase 2 — done 2026-10-28** (all eight tasks; value ranges live
   browser, sortable by position against the range and neighbourhood $/sq ft. **P3-03** (PR #125;
   Claude fix for capped walk/bike times): Good place to live score with browser weights.
 
+- **P3-02, P3-04, P3-05** (Codex, PRs #130, #132, #133; Claude fixes: FEMA union repair, bulk
+  flood test): neighbourhood-calibrated ranges (held-out 2024: 80% of tracts within ±10%), score
+  vs price map and areas list, and "Things to check" on every home.
+
 ## Next
 
-1. Claude: review P3-04 (score vs price) and P3-05 (Things to check). P3-02 calibration is live.
-1. Claude: review P3-04 (score vs price); owner: paste the P3-05 ("things to check") prompt
-   into a Codex task. P3-02 (calibration) is merged and live.
-2. Claude: review each PR; HMDA live run (2 calls) after P3-02; `fema_nfhl` and `access` live
-   re-runs after P3-05.
-3. Owner: try the live tools (Check a home, Check many listings with a real Redfin CSV, Good place
-   to live) and send changes.
-4. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
-5. Check the 2026-11-03 refresh report (FHFA is monthly now; expect it to be due).
+1. Owner: try the live tools (Check a home, Check many listings with a real Redfin CSV, Good place
+   to live, Score vs price, Things to check) and send changes. Phase 3 is complete.
+2. Owner decision (P2-05b): how to place about 54,000 Travis condos (see Waiting on the owner).
+3. Check the 2026-11-03 refresh report (FHFA monthly; expect it to be due).
+4. Ideas for later (need a spec and approval): Phase 4 market trends (appraisal history by area).
 
 ## Open issues
 
